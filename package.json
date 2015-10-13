@@ -1,0 +1,18 @@
+{
+  "name": "infinispan",
+  "version": "0.0.1",
+  "description": "Infinispan Javascript client",
+  "main": "infinispan.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/jasmine-node spec"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jasmine-node": "^1.14.5",
+    "underscore": "^1.8.3"
+  }
+}
