@@ -27,12 +27,12 @@ describe("Unchecked variable number encoder", function() {
     expect(result.offset).toBe(1);
     expect(result.buffer.readUInt8()).toBe(0);
   });
-  it("can encode2 multiple numbers using pipeline", function() {
-    var encBuf = vnum.encode2(new Buffer(1), 0);
-    var result = f.pipeline(encBuf(0), encBuf(0));
-    expect(result.offset).toBe(1);
-    expect(result.buffer.readUInt8()).toBe(0);
-  });
+  //it("can encode2 multiple numbers using pipeline", function() {
+  //  var encBuf = vnum.encode2(new Buffer(1), 0);
+  //  var result = f.pipeline(encBuf(0), encBuf(0));
+  //  expect(result.offset).toBe(1);
+  //  expect(result.buffer.readUInt8()).toBe(0);
+  //});
 
   //it("can encode using pipeline", function() {
   //  var enc0off0 = f.partial2(vnum.encode, 0, 0);
