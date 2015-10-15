@@ -1,3 +1,4 @@
+var _ = require("underscore");
 var f = require("../lib/functional");
 
 function div(n, d) { return n / d }
@@ -16,8 +17,25 @@ describe("Curried function application", function() {
   });
 });
 
-describe("A suite", function() {
-  it("contains spec with an expectation", function() {
-    expect(true).toBe(true);
+function sqr(n) { return n * n; }
+var mSqr  = f.lift(sqr);
+
+var push = f.lift(function(stack, e) { return f.construct(e, stack) });
+var pop = f.lift(_.first, _.rest);
+
+describe("State-bearing action pipeline", function() {
+  it("can pipeline calculating square twice", function() {
+    var doubleSqr = f.actions([mSqr(), mSqr()],
+        function(_, state) {
+          return state;
+        });
+    expect(doubleSqr(10)).toBe(10000); // 10 * 10 -> 100; 100 * 100 -> 10000
+  });
+  it("can pipeline queue push and pop functions", function() {
+    var stackAction = f.actions([push(1), push(2), pop()],
+        function(values, state) {
+          return values;
+        });
+    expect(stackAction([])).toEqual([[1], [2, 1], 2]);
   });
 });
