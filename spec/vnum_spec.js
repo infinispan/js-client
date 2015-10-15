@@ -4,16 +4,21 @@ var f = require("../lib/functional");
 
 // Temporary functions - to be moved
 
-function encodeUByte(bytebuf, byte) {
-  var newOffset = bytebuf.buf.writeUInt8(byte, bytebuf.offset);
-  return {buf: bytebuf.buf, offset: newOffset};
-}
+//function encodeUByte(bytebuf, byte) {
+//  //var newOffset = bytebuf.buf.writeUInt8(byte, bytebuf.offset);
+//  //return {buf: bytebuf.buf, offset: newOffset};
+//  var newOffset = bytebuf.buf.writeUInt8(byte, bytebuf.offset);
+//  bytebuf.offset = newOffset;
+//  return newOffset;
+//}
 
-var mEncodeUByte = f.lift(encodeUByte);
+var mEncodeUByte = f.lift(vnum.encodeUByte, _.identity);
 
 // Test functions
 
-function identityState(_, state) { return state; }
+function lastOffset(values, _) {
+  return values[values.length - 1];
+}
 
 //function identityValues(values, _) { return values; }
 //function logState(elem) {
@@ -21,8 +26,8 @@ function identityState(_, state) { return state; }
 //  console.log(elem.offset);
 //}
 
-var singleByteEncode = f.actions([mEncodeUByte(0xA0)], identityState);
-var multiByteEncode = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], identityState);
+var singleByteEncode = f.actions([mEncodeUByte(0xA0)], lastOffset);
+var multiByteEncode = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], lastOffset);
 
 //var multiByteEncodeInter = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], identityValues);
 
@@ -47,23 +52,23 @@ describe("Encoder", function() {
   //  expect(result.offset).toBe(2);
   //});
   it("can encode a multiple bytes with actions", function() {
-    var initial = {buf: new Buffer(2), offset: 0};
-    var result = multiByteEncode(initial);
-    expect(result.buf.readUInt8(0)).toBe(0xA0);
-    expect(result.buf.readUInt8(1)).toBe(0xA1);
-    expect(result.offset).toBe(2);
+    var bytebuf = {buf: new Buffer(2), offset: 0};
+    var result = multiByteEncode(bytebuf);
+    expect(bytebuf.buf.readUInt8(0)).toBe(0xA0);
+    expect(bytebuf.buf.readUInt8(1)).toBe(0xA1);
+    expect(result).toBe(2);
   });
   it("can encode a single byte with actions", function() {
-    var initial = {buf: new Buffer(1), offset: 0};
-    var result = singleByteEncode(initial);
-    expect(result.buf.readUInt8()).toBe(0xA0);
-    expect(result.offset).toBe(1);
+    var bytebuf = {buf: new Buffer(1), offset: 0};
+    var result = singleByteEncode(bytebuf);
+    expect(bytebuf.buf.readUInt8()).toBe(0xA0);
+    expect(result).toBe(1);
   });
   it("can encode a single byte", function() {
-    var initial = {buf: new Buffer(1), offset: 0};
-    var result = encodeUByte(initial, 0xA0);
-    expect(result.buf.readUInt8()).toBe(0xA0);
-    expect(result.offset).toBe(1);
+    var bytebuf = {buf: new Buffer(1), offset: 0};
+    var result = vnum.encodeUByte(bytebuf, 0xA0);
+    expect(bytebuf.buf.readUInt8()).toBe(0xA0);
+    expect(result).toBe(1);
   })
 });
 
