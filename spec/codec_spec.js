@@ -1,5 +1,5 @@
 var _ = require("underscore");
-var vnum = require("../lib/vnum");
+var vnum = require("../lib/codec");
 var f = require("../lib/functional");
 
 // Temporary functions - to be moved
