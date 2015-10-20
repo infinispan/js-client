@@ -13,11 +13,16 @@ var f = require("../lib/functional");
 //}
 
 var mEncodeUByte = f.lift(vnum.encodeUByte, _.identity);
+var mDecodeUByte = f.lift(vnum.decodeUByte, _.identity);
 
 // Test functions
 
-function lastOffset(values, _) {
+function totalBytes(values, _) {
   return values[values.length - 1];
+}
+
+function decodedValues(values, _) {
+  return values;
 }
 
 //function identityValues(values, _) { return values; }
@@ -26,8 +31,11 @@ function lastOffset(values, _) {
 //  console.log(elem.offset);
 //}
 
-var singleByteEncode = f.actions([mEncodeUByte(0xA0)], lastOffset);
-var multiByteEncode = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], lastOffset);
+var singleByteEncode = f.actions([mEncodeUByte(0xA0)], totalBytes);
+var multiByteEncode = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], totalBytes);
+
+var singleByteDecode = f.actions([mDecodeUByte()], decodedValues);
+var multiByteDecode = f.actions([mDecodeUByte(), mDecodeUByte()], decodedValues);
 
 //var multiByteEncodeInter = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], identityValues);
 
@@ -53,22 +61,18 @@ describe("Encoder", function() {
   //});
   it("can encode a multiple bytes with actions", function() {
     var bytebuf = {buf: new Buffer(2), offset: 0};
-    var result = multiByteEncode(bytebuf);
-    expect(bytebuf.buf.readUInt8(0)).toBe(0xA0);
-    expect(bytebuf.buf.readUInt8(1)).toBe(0xA1);
-    expect(result).toBe(2);
+    expect(multiByteEncode(bytebuf)).toBe(2);
+    expect(multiByteDecode({buf: bytebuf.buf, offset: 0})).toEqual([0xA0, 0xA1]);
   });
   it("can encode a single byte with actions", function() {
     var bytebuf = {buf: new Buffer(1), offset: 0};
-    var result = singleByteEncode(bytebuf);
-    expect(bytebuf.buf.readUInt8()).toBe(0xA0);
-    expect(result).toBe(1);
+    expect(singleByteEncode(bytebuf)).toBe(1);
+    expect(singleByteDecode({buf: bytebuf.buf, offset: 0})).toEqual([0xA0]);
   });
   it("can encode a single byte", function() {
     var bytebuf = {buf: new Buffer(1), offset: 0};
-    var result = vnum.encodeUByte(bytebuf, 0xA0);
-    expect(bytebuf.buf.readUInt8()).toBe(0xA0);
-    expect(result).toBe(1);
+    expect(vnum.encodeUByte(bytebuf, 0xA0)).toBe(1);
+    expect(vnum.decodeUByte({buf: bytebuf.buf, offset: 0})).toBe(0xA0);
   })
 });
 
