@@ -38,4 +38,11 @@ describe("State-bearing action pipeline", function() {
         });
     expect(stackAction([])).toEqual([[1], [2, 1], 2]);
   });
+  it("can run preconditions for functions", function() {
+    var sqrPre = f.condition1(
+        f.validator("arg must be a number", _.isNumber));
+    function uncheckedSqr(n) { return n * n }
+    var checkedSqr = f.partial1(sqrPre, uncheckedSqr);
+    expect(checkedSqr(10)).toBe(100);
+  });
 });
