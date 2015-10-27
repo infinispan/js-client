@@ -1,6 +1,6 @@
 var _ = require("underscore");
 var f = require("../lib/functional");
-var vnum = require("../lib/codec");
+var codec = require("../lib/codec");
 
 // Temporary functions - to be moved
 
@@ -12,17 +12,23 @@ var vnum = require("../lib/codec");
 //  return newOffset;
 //}
 
-var mEncodeUByte = f.lift(vnum.encodeUByte, _.identity);
-var mEncodeVInt = f.lift(vnum.encodeVInt, _.identity);
-var mDecodeUByte = f.lift(vnum.decodeUByte, _.identity);
+var mEncodeUByte = f.lift(codec.encodeUByte, _.identity);
+var mEncodeVInt = f.lift(codec.encodeVInt, _.identity);
+var mEncodeVLong = f.lift(codec.encodeVLong, _.identity);
+var mDecodeUByte = f.lift(codec.decodeUByte, _.identity);
+var mDecodeVInt = f.lift(codec.decodeVInt, _.identity);
+var mDecodeVLong = f.lift(codec.decodeVLong, _.identity);
 
 // Test functions
 
-function totalBytes(values, _) {
+function totalBytes(values, state) {
+  //console.log(values);
+  //console.log(_.isArray(values));
+  //return _.reduce(values, function(a, b) { return a+b });
   return values[values.length - 1];
 }
 
-function decodedValues(values, _) {
+function decodedValues(values, state) {
   return values;
 }
 
@@ -37,45 +43,76 @@ var multiByteEncode = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], totalB
 
 var singleByteDecode = f.actions([mDecodeUByte()], decodedValues);
 var multiByteDecode = f.actions([mDecodeUByte(), mDecodeUByte()], decodedValues);
+var singleVLongDecode = f.actions([mDecodeVLong()], decodedValues);
+var multiVNumDecode = f.actions([mDecodeVInt(), mDecodeVLong()], decodedValues);
 
 //var multiByteEncodeInter = f.actions([mEncodeUByte(0xA0), mEncodeUByte(0xA1)], identityValues);
 
 // Tests
 
-describe("VInt encode/decode", function() {
+describe("Variable number encode/decode", function() {
   it("can encode 0", function() {
-    encodeDecodeVInt(0, 1);
+    encodeDecodeVNum(0, 1);
   });
   it("can encode 2^7 - 1", function() {
-    encodeDecodeVInt(Math.pow(2, 7) - 1, 1);
+    encodeDecodeVNum(Math.pow(2, 7) - 1, 1);
   });
   it("can encode 2^7", function() {
-    encodeDecodeVInt(Math.pow(2, 7), 2);
+    encodeDecodeVNum(Math.pow(2, 7), 2);
   });
   it("can encode 2^14 - 1", function() {
-    encodeDecodeVInt(Math.pow(2, 14) - 1, 2);
+    encodeDecodeVNum(Math.pow(2, 14) - 1, 2);
   });
   it("can encode 2^14", function() {
-    encodeDecodeVInt(Math.pow(2, 14), 3);
+    encodeDecodeVNum(Math.pow(2, 14), 3);
   });
   it("can encode 2^21 - 1", function() {
-    encodeDecodeVInt(Math.pow(2, 21) - 1, 3);
+    encodeDecodeVNum(Math.pow(2, 21) - 1, 3);
   });
   it("can encode 2^21", function() {
-    encodeDecodeVInt(Math.pow(2, 21), 4);
+    encodeDecodeVNum(Math.pow(2, 21), 4);
   });
   it("can encode 2^28 - 1", function() {
-    encodeDecodeVInt(Math.pow(2, 28) - 1, 4);
+    encodeDecodeVNum(Math.pow(2, 28) - 1, 4);
   });
   it("can encode 2^28", function() {
-    encodeDecodeVInt(Math.pow(2, 28), 5);
+    encodeDecodeVNum(Math.pow(2, 28), 5);
   });
   it("can encode 2^31 - 1", function() {
-    encodeDecodeVInt(Math.pow(2, 31) - 1, 5);
+    encodeDecodeVNum(Math.pow(2, 31) - 1, 5);
   });
-  it("fails to encode 2^31 because it is out of bounds", function() {
+  it("fails to encode 2^31 as a VInt because it is out of bounds", function() {
     var encode = f.actions([mEncodeVInt(Math.pow(2, 31))], totalBytes);
     expect(function() { encode(newByteBuf()) }).toThrow("must be less than 2^31");
+  });
+  it("can encode 2^31", function() {
+    encodeDecodeVLong(Math.pow(2, 31), 5);
+  });
+  it("can encode 2^35 - 1", function() {
+    encodeDecodeVLong(Math.pow(2, 35) - 1, 5);
+  });
+  it("can encode 2^35", function() {
+    encodeDecodeVLong(Math.pow(2, 35), 6);
+  });
+  it("can encode 2^42 - 1", function() {
+    encodeDecodeVLong(Math.pow(2, 42) - 1, 6);
+  });
+  it("can encode 2^42", function() {
+    encodeDecodeVLong(Math.pow(2, 42), 7);
+  });
+  it("can encode 2^49 - 1", function() {
+    encodeDecodeVLong(Math.pow(2, 49 - 1), 7);
+  });
+  it("can encode 2^49", function() {
+    encodeDecodeVLong(Math.pow(2, 49), 8);
+  });
+  it("can encode 2^53 - 1", function() {
+    encodeDecodeVLong(Math.pow(2, 53) - 1, 8);
+  });
+  it("fails to encode 2^53 as a VLong because it is out of bounds", function() {
+    var encode = f.actions([mEncodeVLong(Math.pow(2, 53))], totalBytes);
+    expect(function() { encode(newByteBuf()) })
+        .toThrow("must be less than 2^53 (javascript safe integer limitation)");
   });
   it("fails to encode a number when it's not a number", function() {
     var encode = f.actions([mEncodeVInt("blah")], totalBytes);
@@ -88,11 +125,18 @@ describe("VInt encode/decode", function() {
   });
 });
 
-function encodeDecodeVInt(num, expectedBytes) {
+function encodeDecodeVNum(num, expectedBytes) {
   var bytebuf = newByteBuf();
-  var encode = f.actions([mEncodeVInt(num)], totalBytes);
+  var encode = f.actions([mEncodeVInt(num), mEncodeVLong(num)], totalBytes);
+  expect(encode(bytebuf)).toBe(expectedBytes * 2);
+  expect(multiVNumDecode({buf: bytebuf.buf, offset: 0})).toEqual([num, num]);
+}
+
+function encodeDecodeVLong(num, expectedBytes) {
+  var bytebuf = newByteBuf();
+  var encode = f.actions([mEncodeVLong(num)], totalBytes);
   expect(encode(bytebuf)).toBe(expectedBytes);
-  // TODO: Decode!
+  expect(singleVLongDecode({buf: bytebuf.buf, offset: 0})).toEqual([num]);
 }
 
 describe("Basic encode/decode", function() {
@@ -108,6 +152,10 @@ describe("Basic encode/decode", function() {
   it("fails to encode a byte when the value is too big (256 or higher)", function() {
     var overLimitByteEncode = f.actions([mEncodeUByte(0x100)], totalBytes);
     expect(function() { overLimitByteEncode(newByteBuf()) }).toThrow("value is out of bounds");
+  });
+  it("fails to decode if past the buffer end", function() {
+    var bytebuf = newByteBuf();
+    expect(function() { singleByteDecode({buf: bytebuf.buf, offset: 128}) }).toThrow("index out of range");
   });
   it("can encode a byte with limit value 255", function() {
     var bytebuf = newByteBuf();
@@ -127,8 +175,8 @@ describe("Basic encode/decode", function() {
   });
   it("can encode a single byte", function() {
     var bytebuf = newByteBuf();
-    expect(vnum.encodeUByte(bytebuf, 0xA0)).toBe(1);
-    expect(vnum.decodeUByte({buf: bytebuf.buf, offset: 0})).toBe(0xA0);
+    expect(codec.encodeUByte(bytebuf, 0xA0)).toBe(1);
+    expect(codec.decodeUByte({buf: bytebuf.buf, offset: 0})).toBe(0xA0);
   });
 });
 
@@ -139,12 +187,12 @@ function newByteBuf() {
 //describe("Unchecked variable number encoder", function() {
 //  it("can encode positive numbers", function() {
 //    var buf = new Buffer(1);
-//    var result = vnum.encode(buf)(0, 0);
+//    var result = codec.encode(buf)(0, 0);
 //    expect(result.offset).toBe(1);
 //    expect(result.buffer.readUInt8()).toBe(0);
 //  });
 //  it("can encode using pipeline", function() {
-//    var encBuf = vnum.encode(new Buffer(1));
+//    var encBuf = codec.encode(new Buffer(1));
 //    var result = f.pipeline(encBuf(0, 0));
 //    expect(result.offset).toBe(1);
 //    expect(result.buffer.readUInt8()).toBe(0);
@@ -152,25 +200,25 @@ function newByteBuf() {
 //
 //  it("can encode2 positive numbers", function() {
 //    var buf = new Buffer(1);
-//    var result = vnum.encode2(buf, 0)(0);
+//    var result = codec.encode2(buf, 0)(0);
 //    expect(result.offset).toBe(1);
 //    expect(result.buffer.readUInt8()).toBe(0);
 //  });
 //  it("can encode2 a single number using pipeline", function() {
-//    var encBuf = vnum.encode2(new Buffer(1), 0);
+//    var encBuf = codec.encode2(new Buffer(1), 0);
 //    var result = f.pipeline(encBuf(0));
 //    expect(result.offset).toBe(1);
 //    expect(result.buffer.readUInt8()).toBe(0);
 //  });
 //  //it("can encode2 multiple numbers using pipeline", function() {
-//  //  var encBuf = vnum.encode2(new Buffer(1), 0);
+//  //  var encBuf = codec.encode2(new Buffer(1), 0);
 //  //  var result = f.pipeline(encBuf(0), encBuf(0));
 //  //  expect(result.offset).toBe(1);
 //  //  expect(result.buffer.readUInt8()).toBe(0);
 //  //});
 //
 //  //it("can encode using pipeline", function() {
-//  //  var enc0off0 = f.partial2(vnum.encode, 0, 0);
+//  //  var enc0off0 = f.partial2(codec.encode, 0, 0);
 //  //  var result = f.pipeline(new Buffer(1), enc0off0);
 //  //  expect(result.offset).toBe(1);
 //  //  expect(result.buffer.readUInt8()).toBe(0);
