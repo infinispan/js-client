@@ -38,11 +38,22 @@ describe("State-bearing action pipeline", function() {
         });
     expect(stackAction([])).toEqual([[1], [2, 1], 2]);
   });
-  it("can run preconditions for functions", function() {
+});
+
+describe("Partial functions", function() {
+  it("can be used to run preconditions for functions", function() {
     var sqrPre = f.condition1(
         f.validator("arg must be a number", _.isNumber));
     function uncheckedSqr(n) { return n * n }
     var checkedSqr = f.partial1(sqrPre, uncheckedSqr);
     expect(checkedSqr(10)).toBe(100);
+  });
+});
+
+describe("Array concatenation", function() {
+  it("can be used to concatenate arrays", function() {
+    var a1 = [1,2,3];
+    var a2 = [4,5,6];
+    expect(f.cat(a1, a2)).toEqual([1,2,3,4,5,6]);
   });
 });
