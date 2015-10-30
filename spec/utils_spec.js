@@ -1,5 +1,6 @@
 var utils = require("../lib/utils");
 
+// TODO: Sort out once counter has been constructed
 describe("A counter", function() {
   it("can be incremented", function() {
     var counter = utils.counter(0);
