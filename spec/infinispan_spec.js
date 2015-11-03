@@ -1,16 +1,27 @@
+var f = require("../lib/functional");
 var ispn = require("../lib/infinispan");
 var Promise = require('promise');
 
 describe("Infinispan client", function() {
   it("can put -> get -> remove a key/value pair", function(done) {
     ispn.client(11222, "127.0.0.1")
-      .then(assertGetNotFound("key"))
-      .then(assertRemoveNotFound("key"))
-      .then(assertPut("key", "value"))
-      .then(assertGetFound("key", "value"))
-      .then(assertRemoveFound("key"))
-      .then(assertGetNotFound("key"))
-      .then(assertRemoveNotFound("key"))
+      .then(assert(put("key", "value")))
+      .then(assert(get("key"), toBe("value")))
+      .then(assert(remove("key"), toBeTruthy))
+      .then(assert(get("key"), toBeUndefined))
+      .then(assert(remove("key"), toBeFalsy))
+      .catch(failed(done))
+      .finally(done);
+  });
+  it("can use conditional operations on a key/value pair", function(done) {
+    ispn.client(11222, "127.0.0.1")
+      .then(assert(putIfAbsent("cond", "v0"), toBeTruthy))
+      .then(assert(putIfAbsent("cond", "v1"), toBeFalsy))
+      .then(assert(get("cond"), toBe("v0")))
+      //.then(assertGetFound("key", "value"))
+      //.then(assertRemoveFound("key"))
+      //.then(assertGetNotFound("key"))
+      //.then(assertRemoveNotFound("key"))
       .catch(failed(done))
       .finally(done);
   });
@@ -23,61 +34,62 @@ describe("Infinispan client", function() {
   //});
 });
 
-function assertPut(k, v) {
+function put(k, v) {
   return function(client) {
-    console.log("About to call put: " + client);
-    return client.put(k, v).then(function() {
-      console.log("Put returned");
-      return client;
-    });
-    //client.put(k, v).then(success, failed);
-    //return client
+    return client.put(k, v);
   }
 }
 
-function assertGetFound(k, v) {
+function get(k) {
   return function(client) {
-    console.log("About to call get: " + client);
-    return client.get(k).then(function(value) {
-      expect(value).toBe(v);
-      return client;
-    });
+    return client.get(k);
   }
 }
 
-function assertGetNotFound(k) {
+function remove(k) {
   return function(client) {
-    console.log("About to call get: " + client);
-    return client.get(k).then(function(value) {
-      expect(value).toBeUndefined();
-      return client;
-    });
+    return client.remove(k);
   }
 }
 
-function assertRemoveFound(k) {
+function putIfAbsent(k, v) {
   return function(client) {
-    console.log("About to call remove: " + client);
-    return client.remove(k).then(function(removed) {
-      console.log("Remove returned: " + removed);
-      expect(removed).toBeTruthy();
-      return client;
-    });
-    //client.put(k, v).then(success, failed);
-    //return client
+    return client.putIfAbsent(k, v);
   }
 }
 
-function assertRemoveNotFound(k) {
-  return function(client) {
-    console.log("About to call remove: " + client);
-    return client.remove(k).then(function(removed) {
-      console.log("Remove returned: " + removed);
-      expect(removed).toBeFalsy();
-      return client;
-    });
-    //client.put(k, v).then(success, failed);
-    //return client
+function toBe(value) {
+  return function(expect) {
+    expect.toBe(value);
+  }
+}
+
+function toBeUndefined(expect) {
+  expect.toBeUndefined();
+}
+
+function toBeTruthy(expect) {
+  expect.toBeTruthy();
+}
+
+function toBeFalsy(expect) {
+  expect.toBeFalsy();
+}
+
+function assert(fun, expectFun) {
+  if (f.existy(expectFun)) {
+    return function(client) {
+      return fun(client).then(function(value) {
+        expectFun(expect(value));
+        return client;
+      });
+    }
+  } else {
+    return function(client) {
+      return fun(client).then(function() {
+        return client;
+      });
+    }
   }
 }
 
@@ -86,9 +98,3 @@ var failed = function(done) {
     done(error);
   };
 };
-
-//var failed = function(error) {
-//  console.log(error);
-//  throw new Error(error);
-//  //expect(error.message).toBeUndefined();
-//};
