@@ -3,27 +3,34 @@ var ispn = require("../lib/infinispan");
 var Promise = require('promise');
 
 describe("Infinispan client", function() {
-  it("can put -> get -> remove a key/value pair", function(done) {
-    ispn.client(11222, "127.0.0.1")
-      .then(assert(put("key", "value")))
-      .then(assert(get("key"), toBe("value")))
-      .then(assert(remove("key"), toBeTruthy))
-      .then(assert(get("key"), toBeUndefined))
-      .then(assert(remove("key"), toBeFalsy))
-      .catch(failed(done))
-      .finally(done);
+  var client = ispn.client(11222, "127.0.0.1");
+
+  beforeEach(function() {
+    client.then(assert(clear()));
   });
-  it("can use conditional operations on a key/value pair", function(done) {
-    ispn.client(11222, "127.0.0.1")
-      .then(assert(putIfAbsent("cond", "v0"), toBeTruthy))
-      .then(assert(putIfAbsent("cond", "v1"), toBeFalsy))
-      .then(assert(get("cond"), toBe("v0")))
-      //.then(assertGetFound("key", "value"))
-      //.then(assertRemoveFound("key"))
-      //.then(assertGetNotFound("key"))
-      //.then(assertRemoveNotFound("key"))
-      .catch(failed(done))
-      .finally(done);
+
+  it("can put -> get -> remove a key/value pair", function(done) { client
+    .then(assert(put("key", "value")))
+    .then(assert(get("key"), toBe("value")))
+    .then(assert(remove("key"), toBeTruthy))
+    .then(assert(get("key"), toBeUndefined))
+    .then(assert(remove("key"), toBeFalsy))
+    .catch(failed(done))
+    .finally(done);
+  });
+  it("can use conditional operations on a key/value pair", function(done) { client
+    .then(assert(putIfAbsent("cond", "v0"), toBeTruthy))
+    .then(assert(putIfAbsent("cond", "v1"), toBeFalsy))
+    .then(assert(get("cond"), toBe("v0")))
+    .then(assert(replace("cond", "v1"), toBeTruthy))
+    .then(assert(get("cond"), toBe("v1")))
+
+    //.then(assertGetFound("key", "value"))
+    //.then(assertRemoveFound("key"))
+    //.then(assertGetNotFound("key"))
+    //.then(assertRemoveNotFound("key"))
+    .catch(failed(done))
+    .finally(done);
   });
   //it("can ping server", function(done) {
   //  ispn.client(11222, "127.0.0.1").then(function(client) {
@@ -58,6 +65,18 @@ function putIfAbsent(k, v) {
   }
 }
 
+function replace(k, v) {
+  return function(client) {
+    return client.replace(k, v);
+  }
+}
+
+function clear() {
+  return function(client) {
+    return client.clear();
+  }
+}
+
 function toBe(value) {
   return function(expect) {
     expect.toBe(value);
@@ -75,6 +94,12 @@ function toBeTruthy(expect) {
 function toBeFalsy(expect) {
   expect.toBeFalsy();
 }
+
+//function toBe(versioned) {
+//  return function(expect) {
+//    expect.toBe(value);
+//  }
+//}
 
 function assert(fun, expectFun) {
   if (f.existy(expectFun)) {
