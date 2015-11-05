@@ -24,7 +24,7 @@ describe("Infinispan client", function() {
     .then(assert(get("cond"), toBe("v0")))
     .then(assert(replace("cond", "v1"), toBeTruthy))
     .then(assert(get("cond"), toBe("v1")))
-
+    .then(assert(getVersioned("cond"), toBeVersioned("v1")))
     //.then(assertGetFound("key", "value"))
     //.then(assertRemoveFound("key"))
     //.then(assertGetNotFound("key"))
@@ -77,27 +77,51 @@ function clear() {
   }
 }
 
-function toBe(value) {
-  return function(expect) {
-    expect.toBe(value);
+function getVersioned(k) {
+  return function(client) {
+    return client.getVersioned(k);
   }
 }
 
-function toBeUndefined(expect) {
-  expect.toBeUndefined();
+function toBe(value) {
+  return function(actual) {
+    expect(actual).toBe(value);
+  }
 }
 
-function toBeTruthy(expect) {
-  expect.toBeTruthy();
+function toBeUndefined(actual) {
+  expect(actual).toBeUndefined();
 }
 
-function toBeFalsy(expect) {
-  expect.toBeFalsy();
+function toBeTruthy(actual) {
+  expect(actual).toBeTruthy();
 }
 
-//function toBe(versioned) {
-//  return function(expect) {
-//    expect.toBe(value);
+function toBeFalsy(actual) {
+  expect(actual).toBeFalsy();
+}
+
+function toBeVersioned(value) {
+  return function(actual) {
+    expect(actual.value).toBe(value);
+    expect(actual.version).toBeDefined();
+  }
+}
+
+//function assertInspect(fun, expectFun) {
+//  if (f.existy(expectFun)) {
+//    return function(client) {
+//      return fun(client).then(function(value) {
+//        expectFun(expect(value));
+//        return client;
+//      });
+//    }
+//  } else {
+//    return function(client) {
+//      return fun(client).then(function() {
+//        return client;
+//      });
+//    }
 //  }
 //}
 
@@ -105,7 +129,7 @@ function assert(fun, expectFun) {
   if (f.existy(expectFun)) {
     return function(client) {
       return fun(client).then(function(value) {
-        expectFun(expect(value));
+        expectFun(value);
         return client;
       });
     }
