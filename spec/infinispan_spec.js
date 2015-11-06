@@ -24,11 +24,11 @@ describe("Infinispan client", function() {
     .then(assert(get("cond"), toBe("v0")))
     .then(assert(replace("cond", "v1"), toBeTruthy))
     .then(assert(get("cond"), toBe("v1")))
-    .then(assert(getVersioned("cond"), toBeVersioned("v1")))
-    //.then(assertGetFound("key", "value"))
-    //.then(assertRemoveFound("key"))
-    //.then(assertGetNotFound("key"))
-    //.then(assertRemoveNotFound("key"))
+    .then(assert(replaceWithVersion("cond", "v1", "v2"), toBeTruthy))
+    .then(assert(get("cond"), toBe("v2")))
+    .then(assert(replaceWithVersion("other"), toBeFalsy))
+    .then(assert(replaceWithVersion("cond", "v2", "v3", new Buffer([48, 49, 50, 51, 52, 53, 54, 55])), toBeFalsy))
+    .then(assert(get("cond"), toBe("v2")))
     .catch(failed(done))
     .finally(done);
   });
@@ -77,9 +77,32 @@ function clear() {
   }
 }
 
-function getVersioned(k) {
+//function getVersioned(k) {
+//  return function(client) {
+//    return client.getVersioned(k);
+//  }
+//}
+
+//function replaceWithVersion(k, v) {
+//  return function(stateful) {
+//    return stateful.client.replaceWithVersion(k, v, stateful.state);
+//  }
+//}
+
+function replaceWithVersion(k, old, v, version) {
   return function(client) {
-    return client.getVersioned(k);
+    return client.getVersioned(k).then(function(versioned) {
+      if (f.existy(old) && f.existy(v)) {
+        expect(versioned.value).toBe(old);
+        expect(versioned.version).toBeDefined();
+        if (f.existy(version)) // Optional method call provided version
+          return client.replaceWithVersion(k, v, version);
+
+        return client.replaceWithVersion(k, v, versioned.version);
+      } else {
+        expect(versioned).toBeUndefined();
+      }
+    });
   }
 }
 
@@ -101,12 +124,13 @@ function toBeFalsy(actual) {
   expect(actual).toBeFalsy();
 }
 
-function toBeVersioned(value) {
-  return function(actual) {
-    expect(actual.value).toBe(value);
-    expect(actual.version).toBeDefined();
-  }
-}
+//function toBeVersioned(value) {
+//  return function(actual) {
+//    expect(actual.value).toBe(value);
+//    expect(actual.version).toBeDefined();
+//    return actual.version;
+//  }
+//}
 
 //function assertInspect(fun, expectFun) {
 //  if (f.existy(expectFun)) {
@@ -133,12 +157,11 @@ function assert(fun, expectFun) {
         return client;
       });
     }
-  } else {
-    return function(client) {
-      return fun(client).then(function() {
-        return client;
-      });
-    }
+  }
+  return function(client) {
+    return fun(client).then(function() {
+      return client;
+    });
   }
 }
 
