@@ -9,10 +9,6 @@ describe("Infinispan client", function() {
     client.then(assert(clear()));
   });
 
-  var invalidVersion = function() {
-    return new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
-  };
-
   it("can put -> get -> remove a key/value pair", function(done) { client
     .then(assert(put("key", "value")))
     .then(assert(get("key"), toBe("value")))
@@ -28,15 +24,15 @@ describe("Infinispan client", function() {
     .then(assert(get("cond"), toBe("v0")))
     .then(assert(replace("cond", "v1"), toBeTruthy))
     .then(assert(get("cond"), toBe("v1")))
-    .then(assert(replaceWithVersion("cond", "v1", "v2"), toBeTruthy))
+    .then(assert(conditional(replaceWithVersion, "cond", "v1", "v2"), toBeTruthy))
     .then(assert(get("cond"), toBe("v2")))
-    .then(assert(replaceWithVersion("other"), toBeFalsy))
-    .then(assert(replaceWithVersion("cond", "v2", "v3", invalidVersion()), toBeFalsy))
+    .then(assert(notReplaceWithVersion("other"), toBeFalsy)) // key not found
+    .then(assert(notReplaceWithVersion("cond"), toBeFalsy)) // key found but invalid version
     .then(assert(get("cond"), toBe("v2")))
-    .then(assert(removeWithVersion("other"), toBeFalsy))
-    .then(assert(removeWithVersion("cond", "v2", invalidVersion()), toBeFalsy))
+    .then(assert(notRemoveWithVersion("other"), toBeFalsy))
+    .then(assert(notRemoveWithVersion("cond"), toBeFalsy))
     .then(assert(get("cond"), toBe("v2")))
-    .then(assert(removeWithVersion("cond", "v2"), toBeTruthy))
+    .then(assert(conditional(removeWithVersion, "cond", "v2"), toBeTruthy))
     .then(assert(get("cond"), toBeUndefined))
     .catch(failed(done))
     .finally(done);
@@ -86,37 +82,37 @@ function clear() {
   }
 }
 
-function replaceWithVersion(k, old, v, version) {
+function conditional(writeFun, k, old, v) {
   return function(client) {
     return client.getVersioned(k).then(function(versioned) {
-      if (f.existy(old) && f.existy(v)) {
-        expect(versioned.value).toBe(old);
-        expect(versioned.version).toBeDefined();
-        if (f.existy(version)) // Optional method call provided version
-          return client.replaceWithVersion(k, v, version);
-
-        return client.replaceWithVersion(k, v, versioned.version);
-      } else {
-        expect(versioned).toBeUndefined();
-      }
+      expect(versioned.value).toBe(old);
+      expect(versioned.version).toBeDefined();
+      return writeFun(client, k, versioned.version, v);
     });
   }
 }
 
-function removeWithVersion(k, old, version) {
-  return function(client) {
-    return client.getVersioned(k).then(function(versioned) {
-      if (f.existy(old)) {
-        expect(versioned.value).toBe(old);
-        expect(versioned.version).toBeDefined();
-        if (f.existy(version)) // Optional method call provided version
-          return client.removeWithVersion(k, version);
+var invalidVersion = function() {
+  return new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+};
 
-        return client.removeWithVersion(k, versioned.version);
-      } else {
-        expect(versioned).toBeUndefined();
-      }
-    });
+function replaceWithVersion(client, k, version, v) {
+  return client.replace(k, v, version);
+}
+
+function notReplaceWithVersion(k) {
+  return function(client) {
+    return client.replace(k, "ignore", invalidVersion());
+  }
+}
+
+function removeWithVersion(client, k, version) {
+  return client.remove(k, version);
+}
+
+function notRemoveWithVersion(k) {
+  return function(client) {
+    return client.remove(k, invalidVersion());
   }
 }
 
