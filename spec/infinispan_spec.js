@@ -60,13 +60,11 @@ describe("Infinispan client", function() {
     .catch(failed(done))
     .finally(done);
   });
-  //it("can ping server", function(done) {
-  //  ispn.client(11222, "127.0.0.1").then(function(client) {
-  //      client.ping().then(success);
-  //    })
-  //  .catch(failed)
-  //  .finally(done);
-  //});
+  it("can ping a server", function(done) { client
+    .then(assert(ping(), toBeUndefined))
+    .catch(failed(done))
+    .finally(done);
+  });
 });
 
 function put(k, v, opts) {
@@ -102,6 +100,12 @@ function replace(k, v, opts) {
 function clear() {
   return function(client) {
     return client.clear();
+  }
+}
+
+function ping() {
+  return function(client) {
+    return client.ping();
   }
 }
 
