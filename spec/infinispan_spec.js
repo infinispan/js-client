@@ -9,6 +9,10 @@ describe("Infinispan client", function() {
     client.then(assert(clear()));
   });
 
+  var prev = function() {
+    return { previous: true };
+  };
+
   it("can put -> get -> remove a key/value pair", function(done) { client
     .then(assert(put("key", "value")))
     .then(assert(get("key"), toBe("value")))
@@ -23,17 +27,36 @@ describe("Infinispan client", function() {
     .then(assert(putIfAbsent("cond", "v1"), toBeFalsy))
     .then(assert(get("cond"), toBe("v0")))
     .then(assert(replace("cond", "v1"), toBeTruthy))
+    .then(assert(replace("other", "v1"), toBeFalsy))
     .then(assert(get("cond"), toBe("v1")))
     .then(assert(conditional(replaceWithVersion, "cond", "v1", "v2"), toBeTruthy))
     .then(assert(get("cond"), toBe("v2")))
-    .then(assert(notReplaceWithVersion("other"), toBeFalsy)) // key not found
+    .then(assert(notReplaceWithVersion("_"), toBeFalsy)) // key not found
     .then(assert(notReplaceWithVersion("cond"), toBeFalsy)) // key found but invalid version
     .then(assert(get("cond"), toBe("v2")))
-    .then(assert(notRemoveWithVersion("other"), toBeFalsy))
+    .then(assert(notRemoveWithVersion("_"), toBeFalsy))
     .then(assert(notRemoveWithVersion("cond"), toBeFalsy))
     .then(assert(get("cond"), toBe("v2")))
     .then(assert(conditional(removeWithVersion, "cond", "v2"), toBeTruthy))
     .then(assert(get("cond"), toBeUndefined))
+    .catch(failed(done))
+    .finally(done);
+  });
+  it("can return previous values", function(done) { client
+    .then(assert(putIfAbsent("prev", "v0", prev()), toBeUndefined))
+    .then(assert(putIfAbsent("prev", "v1", prev()), toBe("v0")))
+    .then(assert(remove("prev", prev()), toBe("v0")))
+    .then(assert(remove("prev", prev()), toBeUndefined))
+    .then(assert(put("prev", "v1", prev()), toBeUndefined))
+    .then(assert(put("prev", "v2", prev()), toBe("v1")))
+    .then(assert(replace("prev", "v3", prev()), toBe("v2")))
+    .then(assert(replace("_", "v3", prev()), toBeUndefined))
+    .then(assert(conditional(replaceWithVersion, "prev", "v3", "v4", prev()), toBe("v3")))
+    .then(assert(notReplaceWithVersion("_", prev()), toBeUndefined)) // key not found
+    .then(assert(notReplaceWithVersion("prev", prev()), toBeUndefined)) // key found but invalid version
+    .then(assert(notRemoveWithVersion("_", prev()), toBeUndefined)) // key not found
+    .then(assert(notRemoveWithVersion("prev", prev()), toBeUndefined)) // key found but invalid version
+    .then(assert(conditional(removeWithVersion, "prev", "v4", prev()), toBe("v4")))
     .catch(failed(done))
     .finally(done);
   });
@@ -46,9 +69,9 @@ describe("Infinispan client", function() {
   //});
 });
 
-function put(k, v) {
+function put(k, v, opts) {
   return function(client) {
-    return client.put(k, v);
+    return client.put(k, v, opts);
   }
 }
 
@@ -58,21 +81,21 @@ function get(k) {
   }
 }
 
-function remove(k) {
+function remove(k, opts) {
   return function(client) {
-    return client.remove(k);
+    return client.remove(k, opts);
   }
 }
 
-function putIfAbsent(k, v) {
+function putIfAbsent(k, v, opts) {
   return function(client) {
-    return client.putIfAbsent(k, v);
+    return client.putIfAbsent(k, v, opts);
   }
 }
 
-function replace(k, v) {
+function replace(k, v, opts) {
   return function(client) {
-    return client.replace(k, v);
+    return client.replace(k, v, opts);
   }
 }
 
@@ -82,12 +105,12 @@ function clear() {
   }
 }
 
-function conditional(writeFun, k, old, v) {
+function conditional(writeFun, k, old, v, opts) {
   return function(client) {
     return client.getVersioned(k).then(function(versioned) {
       expect(versioned.value).toBe(old);
       expect(versioned.version).toBeDefined();
-      return writeFun(client, k, versioned.version, v);
+      return writeFun(client, k, versioned.version, v, opts);
     });
   }
 }
@@ -96,23 +119,23 @@ var invalidVersion = function() {
   return new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
 };
 
-function replaceWithVersion(client, k, version, v) {
-  return client.replace(k, v, version);
+function replaceWithVersion(client, k, version, v, opts) {
+  return client.replaceWithVersion(k, v, version, opts);
 }
 
-function notReplaceWithVersion(k) {
+function notReplaceWithVersion(k, opts) {
   return function(client) {
-    return client.replace(k, "ignore", invalidVersion());
+    return client.replaceWithVersion(k, "ignore", invalidVersion(), opts);
   }
 }
 
-function removeWithVersion(client, k, version) {
-  return client.remove(k, version);
+function removeWithVersion(client, k, version, opts) {
+  return client.removeWithVersion(k, version, opts);
 }
 
-function notRemoveWithVersion(k) {
+function notRemoveWithVersion(k, opts) {
   return function(client) {
-    return client.remove(k, invalidVersion());
+    return client.removeWithVersion(k, invalidVersion(), opts);
   }
 }
 
