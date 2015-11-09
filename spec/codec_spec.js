@@ -1,6 +1,6 @@
-var _ = require("underscore");
-var f = require("../lib/functional");
-var codec = require("../lib/codec");
+var _ = require('underscore');
+var f = require('../lib/functional');
+var codec = require('../lib/codec');
 
 // Test functions
 
@@ -33,8 +33,8 @@ var multiObjectDecode = f.actions([codec.decodeObject(), codec.decodeObject()], 
 
 // Tests
 
-describe("Bytes encode/decode", function() {
-  it("can encode a number of Bytes", function() {
+describe('Bytes encode/decode', function() {
+  it('can encode a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var bytesEncode = f.actions([codec.encodeBytes(bytes)], totalBytes);
     var bytebuf = assertEncode(newByteBuf(), bytesEncode, 8);
@@ -42,46 +42,46 @@ describe("Bytes encode/decode", function() {
     var actual = bytesDecode({buf: bytebuf.buf, offset: 0});
     expect(actual).toEqual([bytes]);
   });
-  it("can encode Object + Bytes + Object", function() {
+  it('can encode Object + Bytes + Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
-    var encodeChain = f.actions([codec.encodeObject("one"), codec.encodeBytes(bytes), codec.encodeObject("two")], totalBytes);
-    var bytebuf = assertEncode(newByteBuf(), encodeChain, strSize("one") + 8 + strSize("two"));
+    var encodeChain = f.actions([codec.encodeObject('one'), codec.encodeBytes(bytes), codec.encodeObject('two')], totalBytes);
+    var bytebuf = assertEncode(newByteBuf(), encodeChain, strSize('one') + 8 + strSize('two'));
     var decodeChain = f.actions([codec.decodeObject(), codec.decodeBytes(8), codec.decodeObject()], decodedValues);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
-    expect(actual[0]).toBe("one");
+    expect(actual[0]).toBe('one');
     expect(actual[1]).toEqual(bytes);
-    expect(actual[2]).toBe("two");
+    expect(actual[2]).toBe('two');
   });
-  it("can encode a chain of Bytes => Object", function() {
+  it('can encode a chain of Bytes => Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
-    var encodeChain = f.actions([codec.encodeBytes(bytes), codec.encodeObject("one")], totalBytes);
-    var bytebuf = assertEncode(newByteBuf(), encodeChain, 8 + strSize("one"));
+    var encodeChain = f.actions([codec.encodeBytes(bytes), codec.encodeObject('one')], totalBytes);
+    var bytebuf = assertEncode(newByteBuf(), encodeChain, 8 + strSize('one'));
     var decodeChain = f.actions([codec.decodeBytes(8), codec.decodeObject()], decodedValues);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
     expect(actual[0]).toEqual(bytes);
-    expect(actual[1]).toBe("one");
+    expect(actual[1]).toBe('one');
   });
-  it("can encode a chain of Object => Bytes", function() {
+  it('can encode a chain of Object => Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
-    var encodeChain = f.actions([codec.encodeObject("one"), codec.encodeBytes(bytes)], totalBytes);
-    var bytebuf = assertEncode(newByteBuf(), encodeChain, 8 + strSize("one"));
+    var encodeChain = f.actions([codec.encodeObject('one'), codec.encodeBytes(bytes)], totalBytes);
+    var bytebuf = assertEncode(newByteBuf(), encodeChain, 8 + strSize('one'));
     var decodeChain = f.actions([codec.decodeObject(), codec.decodeBytes(8)], decodedValues);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
-    expect(actual[0]).toBe("one");
+    expect(actual[0]).toBe('one');
     expect(actual[1]).toEqual(bytes);
   });
 });
 
-describe("Object encode/decode", function() {
-  it("can encode a String", function() {
-    var stringEncode = f.actions([codec.encodeObject("one")], totalBytes);
-    var bytebuf = assertEncode(newByteBuf(), stringEncode, strSize("one"));
-    expect(singleObjectDecode({buf: bytebuf.buf, offset: 0})).toEqual(["one"]);
+describe('Object encode/decode', function() {
+  it('can encode a String', function() {
+    var stringEncode = f.actions([codec.encodeObject('one')], totalBytes);
+    var bytebuf = assertEncode(newByteBuf(), stringEncode, strSize('one'));
+    expect(singleObjectDecode({buf: bytebuf.buf, offset: 0})).toEqual(['one']);
   });
-  it("can encode multiple Strings", function() {
-    var stringEncode = f.actions([codec.encodeObject("one"), codec.encodeObject("two")], totalBytes);
-    var bytebuf = assertEncode(newByteBuf(), stringEncode, strSize("one") + strSize("two"));
-    expect(multiObjectDecode({buf: bytebuf.buf, offset: 0})).toEqual(["one", "two"]);
+  it('can encode multiple Strings', function() {
+    var stringEncode = f.actions([codec.encodeObject('one'), codec.encodeObject('two')], totalBytes);
+    var bytebuf = assertEncode(newByteBuf(), stringEncode, strSize('one') + strSize('two'));
+    expect(multiObjectDecode({buf: bytebuf.buf, offset: 0})).toEqual(['one', 'two']);
   });
 });
 
@@ -90,78 +90,78 @@ function strSize(str) {
   return len + numSize(len);
 }
 
-describe("Variable number encode/decode", function() {
-  it("can encode 0", function() {
+describe('Variable number encode/decode', function() {
+  it('can encode 0', function() {
     encodeDecodeVNum(0);
   });
-  it("can encode 2^7 - 1", function() {
+  it('can encode 2^7 - 1', function() {
     encodeDecodeVNum(Math.pow(2, 7) - 1);
   });
-  it("can encode 2^7", function() {
+  it('can encode 2^7', function() {
     encodeDecodeVNum(Math.pow(2, 7));
   });
-  it("can encode 2^14 - 1", function() {
+  it('can encode 2^14 - 1', function() {
     encodeDecodeVNum(Math.pow(2, 14) - 1);
   });
-  it("can encode 2^14", function() {
+  it('can encode 2^14', function() {
     encodeDecodeVNum(Math.pow(2, 14));
   });
-  it("can encode 2^21 - 1", function() {
+  it('can encode 2^21 - 1', function() {
     encodeDecodeVNum(Math.pow(2, 21) - 1);
   });
-  it("can encode 2^21", function() {
+  it('can encode 2^21', function() {
     encodeDecodeVNum(Math.pow(2, 21));
   });
-  it("can encode 2^28 - 1", function() {
+  it('can encode 2^28 - 1', function() {
     encodeDecodeVNum(Math.pow(2, 28) - 1);
   });
-  it("can encode 2^28", function() {
+  it('can encode 2^28', function() {
     encodeDecodeVNum(Math.pow(2, 28));
   });
-  it("can encode 2^31 - 1", function() {
+  it('can encode 2^31 - 1', function() {
     encodeDecodeVNum(Math.pow(2, 31) - 1);
   });
-  it("fails to encode 2^31 as a VInt because it is out of bounds", function() {
+  it('fails to encode 2^31 as a VInt because it is out of bounds', function() {
     var encode = f.actions([codec.encodeVInt(Math.pow(2, 31))], totalBytes);
-    expect(function() { encode(newByteBuf()) }).toThrow("must be less than 2^31");
+    expect(function() { encode(newByteBuf()) }).toThrow('must be less than 2^31');
   });
-  it("can encode 2^31", function() {
+  it('can encode 2^31', function() {
     encodeDecodeVLong(Math.pow(2, 31));
   });
-  it("can encode 2^35 - 1", function() {
+  it('can encode 2^35 - 1', function() {
     encodeDecodeVLong(Math.pow(2, 35) - 1);
   });
-  it("can encode 2^35", function() {
+  it('can encode 2^35', function() {
     encodeDecodeVLong(Math.pow(2, 35));
   });
-  it("can encode 2^42 - 1", function() {
+  it('can encode 2^42 - 1', function() {
     encodeDecodeVLong(Math.pow(2, 42) - 1);
   });
-  it("can encode 2^42", function() {
+  it('can encode 2^42', function() {
     encodeDecodeVLong(Math.pow(2, 42));
   });
-  it("can encode 2^49 - 1", function() {
+  it('can encode 2^49 - 1', function() {
     encodeDecodeVLong(Math.pow(2, 49 - 1));
   });
-  it("can encode 2^49", function() {
+  it('can encode 2^49', function() {
     encodeDecodeVLong(Math.pow(2, 49));
   });
-  it("can encode 2^53 - 1", function() {
+  it('can encode 2^53 - 1', function() {
     encodeDecodeVLong(Math.pow(2, 53) - 1);
   });
-  it("fails to encode 2^53 as a VLong because it is out of bounds", function() {
+  it('fails to encode 2^53 as a VLong because it is out of bounds', function() {
     var encode = f.actions([codec.encodeVLong(Math.pow(2, 53))], totalBytes);
     expect(function() { encode(newByteBuf()) })
-        .toThrow("must be less than 2^53 (javascript safe integer limitation)");
+        .toThrow('must be less than 2^53 (javascript safe integer limitation)');
   });
-  it("fails to encode a number when it's not a number", function() {
-    var encode = f.actions([codec.encodeVInt("blah")], totalBytes);
+  it('fails to encode a number when it is not a number', function() {
+    var encode = f.actions([codec.encodeVInt('blah')], totalBytes);
     expect(function() { encode(newByteBuf()) })
-        .toThrow("must be a number, must be >= 0, must be less than 2^31");
+        .toThrow('must be a number, must be >= 0, must be less than 2^31');
   });
-  it("fails to encode a number when it's negative", function() {
+  it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeVInt(-1)], totalBytes);
-    expect(function() { encode(newByteBuf()) }).toThrow("must be >= 0");
+    expect(function() { encode(newByteBuf()) }).toThrow('must be >= 0');
   });
 });
 
@@ -188,34 +188,34 @@ function encodeDecodeVLong(num) {
   expect(singleVLongDecode({buf: bytebuf.buf, offset: 0})).toEqual([num]);
 }
 
-describe("Basic encode/decode", function() {
-  it("fails to encode a byte when it's not a number", function() {
-    var invalidByteEncode = f.actions([codec.encodeUByte("blah")], totalBytes);
+describe('Basic encode/decode', function() {
+  it('fails to encode a byte when it is not a number', function() {
+    var invalidByteEncode = f.actions([codec.encodeUByte('blah')], totalBytes);
     expect(function() { invalidByteEncode(newByteBuf()) })
-        .toThrow("must be a number, must be >= 0");
+        .toThrow('must be a number, must be >= 0');
   });
-  it("fails to encode a number when it's negative", function() {
+  it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeUByte(-1)], totalBytes);
-    expect(function() { encode(newByteBuf()) }).toThrow("must be >= 0");
+    expect(function() { encode(newByteBuf()) }).toThrow('must be >= 0');
   });
-  it("fails to encode a byte when the value is too big (256 or higher)", function() {
+  it('fails to encode a byte when the value is too big (256 or higher)', function() {
     var overLimitByteEncode = f.actions([codec.encodeUByte(0x100)], totalBytes);
-    expect(function() { overLimitByteEncode(newByteBuf()) }).toThrow("value is out of bounds");
+    expect(function() { overLimitByteEncode(newByteBuf()) }).toThrow('value is out of bounds');
   });
-  it("fails to decode if past the buffer end", function() {
+  it('fails to decode if past the buffer end', function() {
     var bytebuf = newByteBuf();
-    expect(function() { singleByteDecode({buf: bytebuf.buf, offset: 128}) }).toThrow("index out of range");
+    expect(function() { singleByteDecode({buf: bytebuf.buf, offset: 128}) }).toThrow('index out of range');
   });
-  it("can encode a byte with limit value 255", function() {
+  it('can encode a byte with limit value 255', function() {
     var limitByteEncode = f.actions([codec.encodeUByte(0xFF)], totalBytes);
     var bytebuf = assertEncode(newByteBuf(), limitByteEncode, 1);
     expect(singleByteDecode({buf: bytebuf.buf, offset: 0})).toEqual([0xFF]);
   });
-  it("can encode a multiple bytes with actions", function() {
+  it('can encode a multiple bytes with actions', function() {
     var bytebuf = assertEncode(newByteBuf(), multiByteEncode, 2);
     expect(multiByteDecode({buf: bytebuf.buf, offset: 0})).toEqual([0xA0, 0xA1]);
   });
-  it("can encode a single byte with actions", function() {
+  it('can encode a single byte with actions', function() {
     var bytebuf = assertEncode(newByteBuf(), singleByteEncode, 1);
     expect(singleByteDecode({buf: bytebuf.buf, offset: 0})).toEqual([0xA0]);
   });

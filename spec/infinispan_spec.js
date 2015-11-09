@@ -1,9 +1,9 @@
-var f = require("../lib/functional");
-var ispn = require("../lib/infinispan");
+var f = require('../lib/functional');
+var ispn = require('../lib/infinispan');
 var Promise = require('promise');
 
-describe("Infinispan client", function() {
-  var client = ispn.client(11222, "127.0.0.1");
+describe('Infinispan client', function() {
+  var client = ispn.client(11222, '127.0.0.1');
 
   beforeEach(function() {
     client.then(assert(clear()));
@@ -13,54 +13,54 @@ describe("Infinispan client", function() {
     return { previous: true };
   };
 
-  it("can put -> get -> remove a key/value pair", function(done) { client
-    .then(assert(put("key", "value")))
-    .then(assert(get("key"), toBe("value")))
-    .then(assert(remove("key"), toBeTruthy))
-    .then(assert(get("key"), toBeUndefined))
-    .then(assert(remove("key"), toBeFalsy))
+  it('can put -> get -> remove a key/value pair', function(done) { client
+    .then(assert(put('key', 'value')))
+    .then(assert(get('key'), toBe('value')))
+    .then(assert(remove('key'), toBeTruthy))
+    .then(assert(get('key'), toBeUndefined))
+    .then(assert(remove('key'), toBeFalsy))
     .catch(failed(done))
     .finally(done);
   });
-  it("can use conditional operations on a key/value pair", function(done) { client
-    .then(assert(putIfAbsent("cond", "v0"), toBeTruthy))
-    .then(assert(putIfAbsent("cond", "v1"), toBeFalsy))
-    .then(assert(get("cond"), toBe("v0")))
-    .then(assert(replace("cond", "v1"), toBeTruthy))
-    .then(assert(replace("other", "v1"), toBeFalsy))
-    .then(assert(get("cond"), toBe("v1")))
-    .then(assert(conditional(replaceWithVersion, "cond", "v1", "v2"), toBeTruthy))
-    .then(assert(get("cond"), toBe("v2")))
-    .then(assert(notReplaceWithVersion("_"), toBeFalsy)) // key not found
-    .then(assert(notReplaceWithVersion("cond"), toBeFalsy)) // key found but invalid version
-    .then(assert(get("cond"), toBe("v2")))
-    .then(assert(notRemoveWithVersion("_"), toBeFalsy))
-    .then(assert(notRemoveWithVersion("cond"), toBeFalsy))
-    .then(assert(get("cond"), toBe("v2")))
-    .then(assert(conditional(removeWithVersion, "cond", "v2"), toBeTruthy))
-    .then(assert(get("cond"), toBeUndefined))
+  it('can use conditional operations on a key/value pair', function(done) { client
+    .then(assert(putIfAbsent('cond', 'v0'), toBeTruthy))
+    .then(assert(putIfAbsent('cond', 'v1'), toBeFalsy))
+    .then(assert(get('cond'), toBe('v0')))
+    .then(assert(replace('cond', 'v1'), toBeTruthy))
+    .then(assert(replace('other', 'v1'), toBeFalsy))
+    .then(assert(get('cond'), toBe('v1')))
+    .then(assert(conditional(replaceWithVersion, 'cond', 'v1', 'v2'), toBeTruthy))
+    .then(assert(get('cond'), toBe('v2')))
+    .then(assert(notReplaceWithVersion('_'), toBeFalsy)) // key not found
+    .then(assert(notReplaceWithVersion('cond'), toBeFalsy)) // key found but invalid version
+    .then(assert(get('cond'), toBe('v2')))
+    .then(assert(notRemoveWithVersion('_'), toBeFalsy))
+    .then(assert(notRemoveWithVersion('cond'), toBeFalsy))
+    .then(assert(get('cond'), toBe('v2')))
+    .then(assert(conditional(removeWithVersion, 'cond', 'v2'), toBeTruthy))
+    .then(assert(get('cond'), toBeUndefined))
     .catch(failed(done))
     .finally(done);
   });
-  it("can return previous values", function(done) { client
-    .then(assert(putIfAbsent("prev", "v0", prev()), toBeUndefined))
-    .then(assert(putIfAbsent("prev", "v1", prev()), toBe("v0")))
-    .then(assert(remove("prev", prev()), toBe("v0")))
-    .then(assert(remove("prev", prev()), toBeUndefined))
-    .then(assert(put("prev", "v1", prev()), toBeUndefined))
-    .then(assert(put("prev", "v2", prev()), toBe("v1")))
-    .then(assert(replace("prev", "v3", prev()), toBe("v2")))
-    .then(assert(replace("_", "v3", prev()), toBeUndefined))
-    .then(assert(conditional(replaceWithVersion, "prev", "v3", "v4", prev()), toBe("v3")))
-    .then(assert(notReplaceWithVersion("_", prev()), toBeUndefined)) // key not found
-    .then(assert(notReplaceWithVersion("prev", prev()), toBeUndefined)) // key found but invalid version
-    .then(assert(notRemoveWithVersion("_", prev()), toBeUndefined)) // key not found
-    .then(assert(notRemoveWithVersion("prev", prev()), toBeUndefined)) // key found but invalid version
-    .then(assert(conditional(removeWithVersion, "prev", "v4", prev()), toBe("v4")))
+  it('can return previous values', function(done) { client
+    .then(assert(putIfAbsent('prev', 'v0', prev()), toBeUndefined))
+    .then(assert(putIfAbsent('prev', 'v1', prev()), toBe('v0')))
+    .then(assert(remove('prev', prev()), toBe('v0')))
+    .then(assert(remove('prev', prev()), toBeUndefined))
+    .then(assert(put('prev', 'v1', prev()), toBeUndefined))
+    .then(assert(put('prev', 'v2', prev()), toBe('v1')))
+    .then(assert(replace('prev', 'v3', prev()), toBe('v2')))
+    .then(assert(replace('_', 'v3', prev()), toBeUndefined))
+    .then(assert(conditional(replaceWithVersion, 'prev', 'v3', 'v4', prev()), toBe('v3')))
+    .then(assert(notReplaceWithVersion('_', prev()), toBeUndefined)) // key not found
+    .then(assert(notReplaceWithVersion('prev', prev()), toBeUndefined)) // key found but invalid version
+    .then(assert(notRemoveWithVersion('_', prev()), toBeUndefined)) // key not found
+    .then(assert(notRemoveWithVersion('prev', prev()), toBeUndefined)) // key found but invalid version
+    .then(assert(conditional(removeWithVersion, 'prev', 'v4', prev()), toBe('v4')))
     .catch(failed(done))
     .finally(done);
   });
-  it("can ping a server", function(done) { client
+  it('can ping a server', function(done) { client
     .then(assert(ping(), toBeUndefined))
     .catch(failed(done))
     .finally(done);
@@ -129,7 +129,7 @@ function replaceWithVersion(client, k, version, v, opts) {
 
 function notReplaceWithVersion(k, opts) {
   return function(client) {
-    return client.replaceWithVersion(k, "ignore", invalidVersion(), opts);
+    return client.replaceWithVersion(k, 'ignore', invalidVersion(), opts);
   }
 }
 
