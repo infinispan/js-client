@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var f = require('../lib/functional');
 var ispn = require('../lib/infinispan');
 var Promise = require('promise');
@@ -60,6 +61,16 @@ describe('Infinispan client', function() {
     .catch(failed(done))
     .finally(done);
   });
+  it('can use multi-key operations', function(done) {
+    var pairs = [{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}, {key: 'multi3', value: 'v3'}];
+    var keys = ['multi1', 'multi2'];
+    client
+      .then(assert(putAll(pairs), toBeUndefined))
+      .then(assert(getAll(keys), toContainAll([{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
+      .then(assert(getAll(['_']), toEqual([])))
+      .catch(failed(done))
+      .finally(done);
+  });
   it('can ping a server', function(done) { client
     .then(assert(ping(), toBeUndefined))
     .catch(failed(done))
@@ -70,6 +81,18 @@ describe('Infinispan client', function() {
 function put(k, v, opts) {
   return function(client) {
     return client.put(k, v, opts);
+  }
+}
+
+function getAll(keys) {
+  return function(client) {
+    return client.getAll(keys);
+  }
+}
+
+function putAll(pairs, opts) {
+  return function(client) {
+    return client.putAll(pairs, opts);
   }
 }
 
@@ -146,6 +169,18 @@ function notRemoveWithVersion(k, opts) {
 function toBe(value) {
   return function(actual) {
     expect(actual).toBe(value);
+  }
+}
+
+function toEqual(value) {
+  return function(actual) {
+    expect(actual).toEqual(value);
+  }
+}
+
+function toContainAll(value) {
+  return function(actual) {
+    expect(_.sortBy(actual, 'key')).toEqual(value);
   }
 }
 
