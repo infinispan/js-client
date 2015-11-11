@@ -2,7 +2,7 @@
   "name": "infinispan",
   "version": "0.0.1",
   "description": "Infinispan Javascript client",
-  "main": "infinispan.js",
+  "main": "index",
   "directories": {
     "test": "test"
   },
@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "jasmine-node": "^1.14.5",
+    "promise": "^7.0.4",
     "underscore": "^1.8.3"
   }
 }
