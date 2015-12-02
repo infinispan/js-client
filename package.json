@@ -9,8 +9,21 @@
   "scripts": {
     "test": "./node_modules/.bin/jasmine-node spec"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Galder Zamarreño",
+  "license": "Apache-2.0",
+  "keywords": [
+    "infinispan",
+    "cache",
+    "client",
+    "cluster",
+    "failover",
+    "hashing",
+    "nosql"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infinispan/js-client"
+  },
   "dependencies": {
     "jasmine-node": "^1.14.5",
     "promise": "^7.0.4",
