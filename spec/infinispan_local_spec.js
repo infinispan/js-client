@@ -1,12 +1,11 @@
 var _ = require('underscore');
 var f = require('../lib/functional');
-var ispn = require('../lib/infinispan');
 var Promise = require('promise');
 
 var t = require('./utils/testing'); // Testing dependency
 
 describe('Infinispan local client', function() {
-  var client = ispn.client(11222, '127.0.0.1');
+  var client = t.client();
 
   beforeEach(function() {
     client.then(t.assert(clear()));

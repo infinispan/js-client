@@ -1,6 +1,11 @@
 // Commons functions
 
 var f = require('../../lib/functional');
+var ispn = require('../../lib/infinispan');
+
+exports.client = function client() {
+  return ispn.client(11222, '127.0.0.1', {version : '2.2'});
+};
 
 exports.put = function put(k, v, opts) {
   return function(client) {
