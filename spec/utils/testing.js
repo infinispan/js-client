@@ -2,36 +2,55 @@
 
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
+var protocols = require('../../lib/protocols');
 
-exports.client = function client() {
+exports.client = function() {
   return ispn.client(11222, '127.0.0.1', {version : '2.2'});
 };
 
-exports.put = function put(k, v, opts) {
+exports.protocol = function() { return protocols.version23(); };
+
+exports.put = function(k, v, opts) {
+  return function(client) { return client.put(k, v, opts); }
+};
+
+exports.get = function(k) {
+  return function(client) { return client.get(k); }
+}
+
+exports.putIfAbsent = function(k, v, opts) {
+  return function(client) { return client.putIfAbsent(k, v, opts); }
+};
+
+exports.replace = function(k, v, opts) {
+  return function(client) { return client.replace(k, v, opts); }
+};
+
+exports.containsKey = function(k) {
+  return function(client) { return client.containsKey(k); }
+};
+
+exports.conditional = function(writeFun, k, old, v, opts) {
   return function(client) {
-    return client.put(k, v, opts);
+    return client.getVersioned(k).then(function(versioned) {
+      expect(versioned.value).toBe(old);
+      expect(versioned.version).toBeDefined();
+      return writeFun(k, versioned.version, v, opts)(client);
+    });
   }
 };
 
-exports.putIfAbsent = function putIfAbsent(k, v, opts) {
+exports.replaceV = function(k, version, v, opts) {
   return function(client) {
-    return client.putIfAbsent(k, v, opts);
+    return client.replaceWithVersion(k, v, version, opts);
   }
 };
 
-exports.replace = function replace(k, v, opts) {
-  return function(client) {
-    return client.replace(k, v, opts);
-  }
+exports.putAll = function(pairs, opts) {
+  return function(client) { return client.putAll(pairs, opts); }
 };
 
-exports.containsKey = function containsKey(k) {
-  return function(client) {
-    return client.containsKey(k);
-  }
-};
-
-exports.assert = function assert(fun, expectFun) {
+exports.assert = function(fun, expectFun) {
   if (f.existy(expectFun)) {
     return function(client) {
       return fun(client).then(function(value) {
@@ -41,8 +60,33 @@ exports.assert = function assert(fun, expectFun) {
     }
   }
   return function(client) {
-    return fun(client).then(function() {
-      return client;
-    });
+    return fun(client).then(function() { return client; });
+  }
+};
+
+exports.toBe = function(value) {
+  return function(actual) { expect(actual).toBe(value); }
+};
+
+exports.toContain = function(value) {
+  return function(actual) { expect(actual).toContain(value); }
+};
+
+exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
+exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };
+exports.toBeFalsy = function(actual) { expect(actual).toBeFalsy(); };
+
+exports.vNumSize = function(num) {
+  var limits = [7,14,21,28,35,42,49,53];
+  for (var i = 0; i < limits.length; i++) {
+    var limit = limits[i];
+    if (num < Math.pow(2, limit)) return Math.ceil(limit / 7);
   }
 }
+
+exports.newByteBuf = function() { return {buf: new Buffer(128), offset: 0}; };
+exports.assertEncode = function(bytebuf, encode, expectedBytes) {
+  expect(encode(bytebuf)).toBe(expectedBytes);
+  expect(bytebuf.buf.length).toBe(expectedBytes);
+  return bytebuf;
+};

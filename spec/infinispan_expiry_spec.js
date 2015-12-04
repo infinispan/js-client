@@ -7,34 +7,49 @@ var t = require('./utils/testing'); // Testing dependency
 describe('Infinispan local client working with expiry operations', function() {
   var client = t.client();
 
-  //it('can validate incorrect duration definitions', function(done) { client
-  //  .then(assertError(t.put('_', '_', {lifespan: '1z'}), toContain('Unknown duration unit')))
-  //  .then(assertError(t.putIfAbsent('_', '_', {lifespan: 'aa'}), toContain('Unknown duration format')))
-  //  .then(assertError(t.replace('_', '_', {lifespan: 1}), toContain('Positive duration provided without time unit')))
-  //  .catch(failed(done))
-  //  .finally(done);
-  //});
-
-  it('removes keys when their lifespan has expired', function(done) { client
-    .then(t.assert(t.put('expiry', 'value', {lifespan: '100ms'})))
-    .then(t.assert(t.containsKey('expiry'), toBeTruthy))
-    .then(waitToExpire('expiry'))
-    //.then(t.assert(t.putIfAbsent('expiryIfAbsent', 'value', {lifespan: '1000000μs'})))
-    //.then(t.assert(t.containsKey('expiryIfAbsent'), toBeTruthy))
-    //.then(waitToExpire('expiryIfAbsent'))
+  it('can validate incorrect duration definitions', function(done) { client
+    .then(assertError(t.put('_', '_', {lifespan: '1z'}), t.toContain('Unknown duration unit')))
+    .then(assertError(t.putIfAbsent('_', '_', {lifespan: 'aa'}), t.toContain('Unknown duration format')))
+    .then(assertError(t.replace('_', '_', {lifespan: 1}), t.toContain('Positive duration provided without time unit')))
+    .then(assertError(t.putAll([{key: '_', value: '_'}], {lifespan: '1z'}), t.toContain('Unknown duration unit')))
+    .then(assertError(t.replaceV('_', '_', '_', {lifespan: 1}), t.toContain('Positive duration provided without time unit')))
     .catch(failed(done))
     .finally(done);
   });
 
+  it('removes keys when their lifespan has expired', function(done) { client
+    .then(t.assert(t.put('life', 'value', {lifespan: '100ms'})))
+    .then(t.assert(t.containsKey('life'), t.toBeTruthy))
+    .then(waitLifespanExpire('life'))
+    .then(t.assert(t.putIfAbsent('life-absent', 'value', {lifespan: '100000μs'})))
+    .then(t.assert(t.containsKey('life-absent'), t.toBeTruthy))
+    .then(waitLifespanExpire('life-absent'))
+    .then(t.assert(t.putIfAbsent('life-replace', 'v0')))
+    .then(t.assert(t.get('life-replace'), t.toBe('v0')))
+    .then(t.assert(t.replace('life-replace', 'v1', {lifespan: '100000000ns'})))
+    .then(t.assert(t.get('life-replace'), t.toBe('v1')))
+    .then(waitLifespanExpire('life-replace'))
+    .catch(failed(done))
+    .finally(done);
+  });
+
+  it('removes keys when their max idle time has expired', function(done) {
+    var pairs = [{key: 'idle-multi1', value: 'v1'}, {key: 'idle-multi2', value: 'v2'}];
+    client
+      .then(t.assert(t.put('idle-replace', 'v0')))
+      .then(t.assert(t.conditional(t.replaceV, 'idle-replace', 'v0', 'v1', {maxIdle: '100ms'}), t.toBeTruthy))
+      .then(t.assert(t.get('idle-replace'), t.toBe('v1')))
+      .then(waitIdleTimeExpire('idle-replace'))
+      .then(t.assert(t.putAll(pairs, {maxIdle: '100000μs'}), t.toBeUndefined))
+      .then(t.assert(t.containsKey('idle-multi2'), t.toBeTruthy))
+      .then(waitIdleTimeExpire('idle-multi2'))
+      .catch(failed(done))
+      .finally(done);
+  });
+
 });
 
-
-function sleepFor(sleepDuration){
-  var now = new Date().getTime();
-  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
-}
-
-function waitToExpire(key) {
+function waitLifespanExpire(key) {
   return function(client) {
     var contains = true;
     waitsFor(function() {
@@ -46,27 +61,27 @@ function waitToExpire(key) {
     }, '`' + key + '` key should be expired', 150);
 
     return client;
-    //sleepFor(2000);
-    //return client.containsKey(key).done(function(success) {
-    //  console.log("containsKey? " + success);
-    //});
+  }
+}
 
-    //return waitsFor(function() {
-    //  var contains = true;
-    //  console.log('Call containsKey: ' + key);
-    //  client.containsKey(key)
-    //    //.then(function(success) {
-    //    //  console.log('containsKey is: ' + contains);
-    //    //  contains = success;
-    //    //})
-    //    .done(function(success) {
-    //      console.log('containsKey is: ' + contains);
-    //      contains = success;
-    //    }); // wait for contains to return
-    //  console.log('Wait finished');
-    //  console.log('Contains? ' + contains);
-    //  return !contains;
-    //}, '`' + key + '` key should be expired', 2000)
+function sleepFor(sleepDuration){
+  var now = new Date().getTime();
+  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
+}
+
+function waitIdleTimeExpire(key) {
+  return function(client) {
+    var contains = true;
+    sleepFor(200); // sleep required
+    waitsFor(function() {
+      client.containsKey(key).done(function(success) {
+        contains = success;
+      });
+
+      return !contains;
+    }, '`' + key + '` key should be expired', 1);
+
+    return client;
   }
 }
 
@@ -87,28 +102,8 @@ function assertError(fun, expectErrorFun) {
   }
 }
 
-// DUP
-function toBe(value) {
-  return function(actual) {
-    expect(actual).toBe(value);
-  }
-}
 
-function toContain(value) {
-  return function(actual) {
-    expect(actual).toContain(value);
-  }
-}
-
-function toBeTruthy(actual) {
-  expect(actual).toBeTruthy();
-}
-
-function toBeFalsy(actual) {
-  expect(actual).toBeFalsy();
-}
-
-// DUP
+// TODO: Duplicate
 var failed = function(done) {
   return function(error) {
     done(error);
