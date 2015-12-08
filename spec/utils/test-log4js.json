@@ -1,0 +1,11 @@
+{
+  "appenders": [
+    {
+      "category": "client",
+      "type": "file",
+      "filename": "tmp-tests.log",
+      "level": "TRACE"
+    }
+  ]
+
+}

@@ -3,8 +3,10 @@
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
 var protocols = require('../../lib/protocols');
+var log4js = require('log4js');
 
 exports.client = function() {
+  log4js.configure('spec/utils/test-log4js.json')
   return ispn.client(11222, '127.0.0.1', {version : '2.2'});
 };
 
