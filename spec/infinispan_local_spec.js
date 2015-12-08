@@ -57,9 +57,9 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.replace('_', 'v3', prev()), t.toBeUndefined))
     .then(t.assert(t.conditional(t.replaceV, 'prev', 'v3', 'v4', prev()), t.toBe('v3')))
     .then(t.assert(notReplaceWithVersion('_', prev()), t.toBeUndefined)) // key not found
-    .then(t.assert(notReplaceWithVersion('prev', prev()), t.toBeUndefined)) // key found but invalid version
+    .then(t.assert(notReplaceWithVersion('prev', prev()), t.toBe('v4'))) // key found but invalid version
     .then(t.assert(notRemoveWithVersion('_', prev()), t.toBeUndefined)) // key not found
-    .then(t.assert(notRemoveWithVersion('prev', prev()), t.toBeUndefined)) // key found but invalid version
+    .then(t.assert(notRemoveWithVersion('prev', prev()), t.toBe('v4'))) // key found but invalid version
     .then(t.assert(t.conditional(removeWithVersion, 'prev', 'v4', prev()), t.toBe('v4')))
     .catch(failed(done))
     .finally(done);
