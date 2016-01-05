@@ -27,7 +27,7 @@ describe('Bytes encode/decode', function() {
     var bytebuf = t.assertEncode(t.newByteBuf(), bytesEncode, 8);
     var bytesDecode = f.actions([codec.decodeBytes(8)], codec.allDecoded);
     var actual = bytesDecode({buf: bytebuf.buf, offset: 0});
-    expect(actual).toEqual([bytes]);
+    expect(JSON.stringify(actual[0])).toBe(JSON.stringify(bytes));
   });
   it('can encode Object + Bytes + Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
@@ -36,7 +36,7 @@ describe('Bytes encode/decode', function() {
     var decodeChain = f.actions([codec.decodeObject(), codec.decodeBytes(8), codec.decodeObject()], codec.allDecoded);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
     expect(actual[0]).toBe('one');
-    expect(actual[1]).toEqual(bytes);
+    expect(JSON.stringify(actual[1])).toBe(JSON.stringify(bytes));
     expect(actual[2]).toBe('two');
   });
   it('can encode a chain of Bytes => Object', function() {
@@ -45,7 +45,7 @@ describe('Bytes encode/decode', function() {
     var bytebuf = t.assertEncode(t.newByteBuf(), encodeChain, 8 + strSize('one'));
     var decodeChain = f.actions([codec.decodeBytes(8), codec.decodeObject()], codec.allDecoded);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
-    expect(actual[0]).toEqual(bytes);
+    expect(JSON.stringify(actual[0])).toBe(JSON.stringify(bytes));
     expect(actual[1]).toBe('one');
   });
   it('can encode a chain of Object => Bytes', function() {
@@ -55,7 +55,7 @@ describe('Bytes encode/decode', function() {
     var decodeChain = f.actions([codec.decodeObject(), codec.decodeBytes(8)], codec.allDecoded);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
     expect(actual[0]).toBe('one');
-    expect(actual[1]).toEqual(bytes);
+    expect(JSON.stringify(actual[1])).toBe(JSON.stringify(bytes));
   });
 });
 
@@ -179,11 +179,11 @@ describe('Basic encode/decode', function() {
   });
   it('fails to encode a byte when the value is too big (256 or higher)', function() {
     var overLimitByteEncode = f.actions([codec.encodeUByte(0x100)], codec.bytesEncoded);
-    expect(function() { overLimitByteEncode(t.newByteBuf()) }).toThrow('value is out of bounds');
+    expect(function() { overLimitByteEncode(t.newByteBuf()) }).toThrow();
   });
   it('fails to decode if past the buffer end', function() {
     var bytebuf = t.newByteBuf();
-    expect(function() { singleByteDecode({buf: bytebuf.buf, offset: 128}) }).toThrow('index out of range');
+    expect(function() { singleByteDecode({buf: bytebuf.buf, offset: 128}) }).toThrow();
   });
   it('can encode a byte with limit value 255', function() {
     var limitByteEncode = f.actions([codec.encodeUByte(0xFF)], codec.bytesEncoded);
