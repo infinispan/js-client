@@ -66,6 +66,12 @@ exports.assert = function(fun, expectFun) {
   }
 };
 
+exports.disconnect = function() {
+  return function(client) {
+    return client.disconnect();
+  }
+};
+
 exports.toBe = function(value) {
   return function(actual) { expect(actual).toBe(value); }
 };
@@ -86,7 +92,9 @@ exports.vNumSize = function(num) {
   }
 }
 
-exports.newByteBuf = function() { return {buf: new Buffer(128), offset: 0}; };
+exports.newByteBuf = function(size) {
+  return {buf: new Buffer(f.existy(size) ? size : 128), offset: 0};
+};
 exports.assertEncode = function(bytebuf, encode, expectedBytes) {
   expect(encode(bytebuf)).toBe(expectedBytes);
   expect(bytebuf.buf.length).toBe(expectedBytes);

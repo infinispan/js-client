@@ -21,6 +21,14 @@ var multiObjectDecode = f.actions([codec.decodeObject(), codec.decodeObject()], 
 // Tests
 
 describe('Bytes encode/decode', function() {
+  it('can resize buffer when encoding a number of Bytes', function() {
+    var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+    var bytesEncode = f.actions([codec.encodeBytes(bytes)], codec.bytesEncoded);
+    var bytebuf = t.assertEncode(t.newByteBuf(1), bytesEncode, 8);
+    var bytesDecode = f.actions([codec.decodeBytes(8)], codec.allDecoded);
+    var actual = bytesDecode({buf: bytebuf.buf, offset: 0});
+    expect(JSON.stringify(actual[0])).toBe(JSON.stringify(bytes));
+  });
   it('can encode a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var bytesEncode = f.actions([codec.encodeBytes(bytes)], codec.bytesEncoded);
@@ -60,6 +68,11 @@ describe('Bytes encode/decode', function() {
 });
 
 describe('Object encode/decode', function() {
+  it('can resize buffer when encoding a String', function() {
+    var stringEncode = f.actions([codec.encodeObject('one two three four five six')], codec.bytesEncoded);
+    var bytebuf = t.assertEncode(t.newByteBuf(1), stringEncode, strSize('one two three four five six'));
+    expect(singleObjectDecode({buf: bytebuf.buf, offset: 0})).toEqual(['one two three four five six']);
+  });
   it('can encode a String', function() {
     var stringEncode = f.actions([codec.encodeObject('one')], codec.bytesEncoded);
     var bytebuf = t.assertEncode(t.newByteBuf(), stringEncode, strSize('one'));
@@ -78,6 +91,20 @@ function strSize(str) {
 }
 
 describe('Variable number encode/decode', function() {
+  it('can resize buffer when encoding a VInt', function() {
+    var num = Math.pow(2, 31) - 1;
+    var encode = f.actions([codec.encodeVInt(num)], codec.bytesEncoded);
+    var decode = f.actions([codec.decodeVInt()], codec.allDecoded);
+    var bytebuf = t.assertEncode(t.newByteBuf(1), encode, 5);
+    expect(decode({buf: bytebuf.buf, offset: 0})).toEqual([num]);
+  });
+  it('can resize buffer when encoding a VLong', function() {
+    var num = Math.pow(2, 53) - 1;
+    var encode = f.actions([codec.encodeVLong(num)], codec.bytesEncoded);
+    var decode = f.actions([codec.decodeVLong()], codec.allDecoded);
+    var bytebuf = t.assertEncode(t.newByteBuf(1), encode, 8);
+    expect(decode({buf: bytebuf.buf, offset: 0})).toEqual([num]);
+  });
   it('can encode 0', function() {
     encodeDecodeVNum(0);
   });
@@ -168,6 +195,19 @@ function encodeDecodeVLong(num) {
 }
 
 describe('Basic encode/decode', function() {
+  it('can resize buffer multiple times to write numbers', function() {
+    var numbers = [0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9];
+    var encoders = _.map(numbers, function (num) { return codec.encodeUByte(num); });
+    var decoders = _.map(numbers, function (num) { return codec.decodeUByte(); });
+    var encodeActions = f.actions(encoders, codec.bytesEncoded);
+    var decodeActions = f.actions(decoders, codec.allDecoded);
+    var bytebuf = t.assertEncode(t.newByteBuf(1), encodeActions, 10);
+    expect(decodeActions({buf: bytebuf.buf, offset: 0})).toEqual(numbers);
+  });
+  it('can resize buffer to write numbers', function() {
+    var bytebuf = t.assertEncode(t.newByteBuf(1), multiByteEncode, 2);
+    expect(multiByteDecode({buf: bytebuf.buf, offset: 0})).toEqual([0xA0, 0xA1]);
+  });
   it('fails to encode a byte when it is not a number', function() {
     var invalidByteEncode = f.actions([codec.encodeUByte('blah')], codec.bytesEncoded);
     expect(function() { invalidByteEncode(t.newByteBuf()) })
