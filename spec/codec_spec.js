@@ -27,7 +27,7 @@ describe('Bytes encode/decode', function() {
     var bytebuf = t.assertEncode(t.newByteBuf(1), bytesEncode, 8);
     var bytesDecode = f.actions([codec.decodeBytes(8)], codec.allDecoded);
     var actual = bytesDecode({buf: bytebuf.buf, offset: 0});
-    expect(JSON.stringify(actual[0])).toBe(JSON.stringify(bytes));
+    t.assertBuffer(actual[0], bytes);
   });
   it('can encode a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
@@ -35,7 +35,7 @@ describe('Bytes encode/decode', function() {
     var bytebuf = t.assertEncode(t.newByteBuf(), bytesEncode, 8);
     var bytesDecode = f.actions([codec.decodeBytes(8)], codec.allDecoded);
     var actual = bytesDecode({buf: bytebuf.buf, offset: 0});
-    expect(JSON.stringify(actual[0])).toBe(JSON.stringify(bytes));
+    t.assertBuffer(actual[0], bytes);
   });
   it('can encode Object + Bytes + Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
@@ -44,7 +44,7 @@ describe('Bytes encode/decode', function() {
     var decodeChain = f.actions([codec.decodeObject(), codec.decodeBytes(8), codec.decodeObject()], codec.allDecoded);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
     expect(actual[0]).toBe('one');
-    expect(JSON.stringify(actual[1])).toBe(JSON.stringify(bytes));
+    t.assertBuffer(actual[1], bytes);
     expect(actual[2]).toBe('two');
   });
   it('can encode a chain of Bytes => Object', function() {
@@ -53,7 +53,7 @@ describe('Bytes encode/decode', function() {
     var bytebuf = t.assertEncode(t.newByteBuf(), encodeChain, 8 + strSize('one'));
     var decodeChain = f.actions([codec.decodeBytes(8), codec.decodeObject()], codec.allDecoded);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
-    expect(JSON.stringify(actual[0])).toBe(JSON.stringify(bytes));
+    t.assertBuffer(actual[0], bytes);
     expect(actual[1]).toBe('one');
   });
   it('can encode a chain of Object => Bytes', function() {
@@ -63,11 +63,16 @@ describe('Bytes encode/decode', function() {
     var decodeChain = f.actions([codec.decodeObject(), codec.decodeBytes(8)], codec.allDecoded);
     var actual = decodeChain({buf: bytebuf.buf, offset: 0});
     expect(actual[0]).toBe('one');
-    expect(JSON.stringify(actual[1])).toBe(JSON.stringify(bytes));
+    t.assertBuffer(actual[1], bytes);
   });
 });
 
 describe('Object encode/decode', function() {
+  it('can resize buffer when encoding a String', function() {
+    var stringEncode = f.actions([codec.encodeObject('one two three four five six')], codec.bytesEncoded);
+    var bytebuf = t.assertEncode(t.newByteBuf(1), stringEncode, strSize('one two three four five six'));
+    expect(singleObjectDecode({buf: bytebuf.buf, offset: 0})).toEqual(['one two three four five six']);
+  });
   it('can resize buffer when encoding a String', function() {
     var stringEncode = f.actions([codec.encodeObject('one two three four five six')], codec.bytesEncoded);
     var bytebuf = t.assertEncode(t.newByteBuf(1), stringEncode, strSize('one two three four five six'));

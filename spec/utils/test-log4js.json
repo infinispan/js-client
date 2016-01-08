@@ -1,7 +1,6 @@
 {
   "appenders": [
     {
-      "category": "client",
       "type": "fileSync",
       "filename": "tmp-tests.log",
       "level": "TRACE"

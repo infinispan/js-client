@@ -1,6 +1,4 @@
 var _ = require('underscore');
-var f = require('../lib/functional');
-var Promise = require('promise');
 
 var t = require('./utils/testing'); // Testing dependency
 
@@ -83,6 +81,14 @@ describe('Infinispan local client', function() {
   });
   it('can put -> get a big value', function(done) {
     var value = randomStr(128);
+    client
+      .then(t.assert(t.put('key', value)))
+      .then(t.assert(t.get('key'), toEqual(value)))
+      .catch(failed(done))
+      .finally(done);
+  });
+  it('can put -> get a really big value', function(done) {
+    var value = randomStr(1024 * 1024);
     client
       .then(t.assert(t.put('key', value)))
       .then(t.assert(t.get('key'), toEqual(value)))

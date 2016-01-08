@@ -100,3 +100,7 @@ exports.assertEncode = function(bytebuf, encode, expectedBytes) {
   expect(bytebuf.buf.length).toBe(expectedBytes);
   return bytebuf;
 };
+
+exports.assertBuffer = function(expected, actual) {
+  expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
+};
