@@ -95,12 +95,20 @@ describe('Infinispan local client', function() {
       .catch(failed(done))
       .finally(done);
   });
+  it('can put -> get -> remove a key/value pair on a named cache', function(done) { t.client("namedCache")
+      .then(t.assert(t.put('key', 'value')))
+      .then(t.assert(t.get('key'), t.toBe('value')))
+      .then(t.assert(remove('key'), t.toBeTruthy))
+      .then(t.disconnect())
+      .catch(failed(done))
+      .finally(done);
+  });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) {
     client.then(t.disconnect())
       .catch(failed(done))
       .finally(done);
-  })
+  });
 });
 
 function getAll(keys) {

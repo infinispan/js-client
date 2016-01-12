@@ -5,9 +5,9 @@ var ispn = require('../../lib/infinispan');
 var protocols = require('../../lib/protocols');
 var log4js = require('log4js');
 
-exports.client = function() {
-  log4js.configure('spec/utils/test-log4js.json')
-  return ispn.client(11222, '127.0.0.1', {version : '2.2'});
+exports.client = function(cacheName) {
+  log4js.configure('spec/utils/test-log4js.json');
+  return ispn.client(11222, '127.0.0.1', {version : '2.2', cacheName: cacheName});
 };
 
 exports.protocol = function() { return protocols.version23(); };
@@ -90,7 +90,7 @@ exports.vNumSize = function(num) {
     var limit = limits[i];
     if (num < Math.pow(2, limit)) return Math.ceil(limit / 7);
   }
-}
+};
 
 exports.newByteBuf = function(size) {
   return {buf: new Buffer(f.existy(size) ? size : 128), offset: 0};
