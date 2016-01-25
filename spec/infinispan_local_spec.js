@@ -71,6 +71,8 @@ describe('Infinispan local client', function() {
       .then(t.assert(getAll(['_']), toEqual([])))
       .then(t.assert(getBulk(), toEqualPairs(pairs)))
       .then(t.assert(getBulk(3), toEqualPairs(pairs)))
+      .then(t.assert(getBulkKeys(), toEqualPairs(['multi1', 'multi2', 'multi3'])))
+      .then(t.assert(getBulkKeys(3), toEqualPairs(['multi1', 'multi2', 'multi3'])))
       .catch(failed(done))
       .finally(done);
   });
@@ -144,6 +146,12 @@ function ping() {
 function getBulk(count) {
   return function(client) {
     return client.getBulk(count);
+  }
+}
+
+function getBulkKeys(count) {
+  return function(client) {
+    return client.getBulkKeys(count);
   }
 }
 
