@@ -1,5 +1,7 @@
 // Commons functions
 
+var _ = require('underscore');
+
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
 var protocols = require('../../lib/protocols');
@@ -18,7 +20,15 @@ exports.put = function(k, v, opts) {
 
 exports.get = function(k) {
   return function(client) { return client.get(k); }
-}
+};
+
+exports.getM = function(k) {
+  return function(client) { return client.getWithMetadata(k); }
+};
+
+exports.getV = function(k) {
+  return function(client) { return client.getVersioned(k); }
+};
 
 exports.putIfAbsent = function(k, v, opts) {
   return function(client) { return client.putIfAbsent(k, v, opts); }
@@ -32,9 +42,9 @@ exports.containsKey = function(k) {
   return function(client) { return client.containsKey(k); }
 };
 
-exports.conditional = function(writeFun, k, old, v, opts) {
+exports.conditional = function(writeFun, getFun, k, old, v, opts) {
   return function(client) {
-    return client.getVersioned(k).then(function(versioned) {
+    return getFun(k)(client).then(function(versioned) {
       expect(versioned.value).toBe(old);
       expect(versioned.version).toBeDefined();
       return writeFun(k, versioned.version, v, opts)(client);
@@ -66,6 +76,12 @@ exports.assert = function(fun, expectFun) {
   }
 };
 
+exports.clear = function() {
+  return function(client) {
+    return client.clear();
+  }
+};
+
 exports.disconnect = function() {
   return function(client) {
     return client.disconnect();
@@ -77,8 +93,15 @@ exports.toBe = function(value) {
 };
 
 exports.toContain = function(value) {
-  return function(actual) { expect(actual).toContain(value); }
+  return function(actual) {
+    if (_.isObject(value)) expect(actual).toEqual(jasmine.objectContaining(value));
+    else expect(actual).toContain(value);
+  }
 };
+
+//exports.toObjectContainAll = function(attrs) {
+//  return function(actual) { expect(actual).toEqual(jasmine.objectContaining(attrs)); }
+//};
 
 exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
 exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };

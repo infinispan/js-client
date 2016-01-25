@@ -6,7 +6,7 @@ describe('Infinispan local client', function() {
   var client = t.client();
 
   beforeEach(function() {
-    client.then(t.assert(clear()));
+    client.then(t.assert(t.clear()));
   });
 
   var prev = function() {
@@ -31,7 +31,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.replace('cond', 'v1'), t.toBeTruthy))
     .then(t.assert(t.replace('other', 'v1'), t.toBeFalsy))
     .then(t.assert(t.get('cond'), t.toBe('v1')))
-    .then(t.assert(t.conditional(t.replaceV, 'cond', 'v1', 'v2'), t.toBeTruthy))
+    .then(t.assert(t.conditional(t.replaceV, t.getV, 'cond', 'v1', 'v2'), t.toBeTruthy))
     .then(t.assert(t.get('cond'), t.toBe('v2')))
     .then(t.assert(notReplaceWithVersion('_'), t.toBeFalsy)) // key not found
     .then(t.assert(notReplaceWithVersion('cond'), t.toBeFalsy)) // key found but invalid version
@@ -39,7 +39,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(notRemoveWithVersion('_'), t.toBeFalsy))
     .then(t.assert(notRemoveWithVersion('cond'), t.toBeFalsy))
     .then(t.assert(t.get('cond'), t.toBe('v2')))
-    .then(t.assert(t.conditional(removeWithVersion, 'cond', 'v2'), t.toBeTruthy))
+    .then(t.assert(t.conditional(removeWithVersion, t.getV, 'cond', 'v2'), t.toBeTruthy))
     .then(t.assert(t.get('cond'), t.toBeUndefined))
     .catch(failed(done))
     .finally(done);
@@ -53,12 +53,12 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.put('prev', 'v2', prev()), t.toBe('v1')))
     .then(t.assert(t.replace('prev', 'v3', prev()), t.toBe('v2')))
     .then(t.assert(t.replace('_', 'v3', prev()), t.toBeUndefined))
-    .then(t.assert(t.conditional(t.replaceV, 'prev', 'v3', 'v4', prev()), t.toBe('v3')))
+    .then(t.assert(t.conditional(t.replaceV, t.getV, 'prev', 'v3', 'v4', prev()), t.toBe('v3')))
     .then(t.assert(notReplaceWithVersion('_', prev()), t.toBeUndefined)) // key not found
     .then(t.assert(notReplaceWithVersion('prev', prev()), t.toBe('v4'))) // key found but invalid version
     .then(t.assert(notRemoveWithVersion('_', prev()), t.toBeUndefined)) // key not found
     .then(t.assert(notRemoveWithVersion('prev', prev()), t.toBe('v4'))) // key found but invalid version
-    .then(t.assert(t.conditional(removeWithVersion, 'prev', 'v4', prev()), t.toBe('v4')))
+    .then(t.assert(t.conditional(removeWithVersion, t.getV, 'prev', 'v4', prev()), t.toBe('v4')))
     .catch(failed(done))
     .finally(done);
   });
@@ -67,10 +67,10 @@ describe('Infinispan local client', function() {
     var keys = ['multi1', 'multi2'];
     client
       .then(t.assert(t.putAll(pairs), t.toBeUndefined))
-      .then(t.assert(getAll(keys), toContainAll([{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
+      .then(t.assert(getAll(keys), toEqualPairs([{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
       .then(t.assert(getAll(['_']), toEqual([])))
-      .then(t.assert(getBulk(), toContainAll(pairs)))
-      .then(t.assert(getBulk(3), toContainAll(pairs)))
+      .then(t.assert(getBulk(), toEqualPairs(pairs)))
+      .then(t.assert(getBulk(3), toEqualPairs(pairs)))
       .catch(failed(done))
       .finally(done);
   });
@@ -95,7 +95,8 @@ describe('Infinispan local client', function() {
       .catch(failed(done))
       .finally(done);
   });
-  it('can put -> get -> remove a key/value pair on a named cache', function(done) { t.client("namedCache")
+  it('can put -> get -> remove a key/value pair on a named cache', function(done) {
+    t.client("namedCache")
       .then(t.assert(t.put('key', 'value')))
       .then(t.assert(t.get('key'), t.toBe('value')))
       .then(t.assert(remove('key'), t.toBeTruthy))
@@ -103,12 +104,23 @@ describe('Infinispan local client', function() {
       .catch(failed(done))
       .finally(done);
   });
-  // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
-  it('disconnects client', function(done) {
-    client.then(t.disconnect())
+  it('can get key/value pairs with their immortal metadata', function(done) {
+    var immortal = { created : -1, lifespan: -1, lastUsed: -1, maxIdle: -1 };
+    client
+      .then(t.assert(t.put('meta', 'v0')))
+      .then(t.assert(t.getM('meta'), t.toContain(_.extend({ value: 'v0' }, immortal))))
+      .then(t.assert(t.conditional(t.replaceV, t.getM, 'meta', 'v0', 'v1'), t.toBeTruthy))
+      .then(t.assert(t.getM('meta'), t.toContain(_.extend({ value: 'v1' }, immortal))))
       .catch(failed(done))
       .finally(done);
   });
+  // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
+  it('disconnects client', function(done) { client
+      .then(t.disconnect())
+      .catch(failed(done))
+      .finally(done);
+  });
+
 });
 
 function getAll(keys) {
@@ -120,12 +132,6 @@ function getAll(keys) {
 function remove(k, opts) {
   return function(client) {
     return client.remove(k, opts);
-  }
-}
-
-function clear() {
-  return function(client) {
-    return client.clear();
   }
 }
 
@@ -169,7 +175,7 @@ function toEqual(value) {
   }
 }
 
-function toContainAll(value) {
+function toEqualPairs(value) {
   return function(actual) {
     expect(_.sortBy(actual, 'key')).toEqual(value);
   }
