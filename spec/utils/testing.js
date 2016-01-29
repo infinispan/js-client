@@ -64,18 +64,8 @@ exports.putAll = function(pairs, opts) {
   return function(client) { return client.putAll(pairs, opts); }
 };
 
-exports.assert = function(fun, expectFun) {
-  if (f.existy(expectFun)) {
-    return function(client) {
-      return fun(client).then(function(value) {
-        expectFun(value);
-        return client;
-      });
-    }
-  }
-  return function(client) {
-    return fun(client).then(function() { return client; });
-  }
+exports.size = function(k) {
+  return function(client) { return client.size(); }
 };
 
 exports.clear = function() {
@@ -113,18 +103,26 @@ exports.onMany = function(eventListeners) {
   };
 };
 
-//exports.removeListener = function(listenerId) {
-//  return function(client) {
-//    return client.removeListener(listenerId);
-//  }
-//};
-
 exports.removeListener = function(done) {
   return function(client, listenerId) {
     client.removeListener(listenerId).then(function() {
       if (f.existy(done)) done();
     });
   };
+};
+
+exports.assert = function(fun, expectFun) {
+  if (f.existy(expectFun)) {
+    return function(client) {
+      return fun(client).then(function(value) {
+        expectFun(value);
+        return client;
+      });
+    }
+  }
+  return function(client) {
+    return fun(client).then(function() { return client; });
+  }
 };
 
 exports.toBe = function(value) {
@@ -162,7 +160,7 @@ exports.assertEncode = function(bytebuf, encode, expectedBytes) {
 exports.expectToBeBuffer = expectToBeBuffer;
 function expectToBeBuffer(actual, expected) {
   expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
-};
+}
 
 exports.expectEvent = function(expectedKey, expectedValue, eventDone) {
   return function(client) {

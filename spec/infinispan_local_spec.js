@@ -15,13 +15,16 @@ describe('Infinispan local client', function() {
   };
 
   it('can put -> get -> remove a key/value pair', function(done) { client
+    .then(t.assert(t.size(), t.toBe(0)))
     .then(t.assert(t.put('key', 'value')))
+    .then(t.assert(t.size(), t.toBe(1)))
     .then(t.assert(t.get('key'), t.toBe('value')))
     .then(t.assert(t.containsKey('key'), t.toBeTruthy))
     .then(t.assert(remove('key'), t.toBeTruthy))
     .then(t.assert(t.get('key'), t.toBeUndefined))
     .then(t.assert(t.containsKey('key'), t.toBeFalsy))
     .then(t.assert(remove('key'), t.toBeFalsy))
+    .then(t.assert(t.size(), t.toBe(0)))
     .catch(failed(done))
     .finally(done);
   });
@@ -68,6 +71,7 @@ describe('Infinispan local client', function() {
     var keys = ['multi1', 'multi2'];
     client
       .then(t.assert(t.putAll(pairs), t.toBeUndefined))
+      .then(t.assert(t.size(), t.toBe(3)))
       .then(t.assert(getAll(keys), toEqualPairs([{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
       .then(t.assert(getAll(['_']), toEqual([])))
       .then(t.assert(getBulk(), toEqualPairs(pairs)))
