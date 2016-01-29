@@ -36,12 +36,12 @@ describe('Bytes encode/decode', function() {
   it('can resize buffer when encoding a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeBytes(8), 1);
-    t.assertBuffer(actual[0], bytes);
+    t.expectToBeBuffer(actual[0], bytes);
   });
   it('can encode a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeBytes(8));
-    t.assertBuffer(actual[0], bytes);
+    t.expectToBeBuffer(actual[0], bytes);
   });
   it('can encode Object + Bytes + Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
@@ -49,7 +49,7 @@ describe('Bytes encode/decode', function() {
         [codec.encodeObject('one'), codec.encodeBytes(bytes), codec.encodeObject('two')],
         [codec.decodeObject(), codec.decodeBytes(8), codec.decodeObject()]);
     expect(actual[0]).toBe('one');
-    t.assertBuffer(actual[1], bytes);
+    t.expectToBeBuffer(actual[1], bytes);
     expect(actual[2]).toBe('two');
   });
   it('can encode a chain of Bytes => Object', function() {
@@ -57,7 +57,7 @@ describe('Bytes encode/decode', function() {
     var actual = encodeDecode(8 + strSize('one'),
         [codec.encodeBytes(bytes), codec.encodeObject('one')],
         [codec.decodeBytes(8), codec.decodeObject()]);
-    t.assertBuffer(actual[0], bytes);
+    t.expectToBeBuffer(actual[0], bytes);
     expect(actual[1]).toBe('one');
   });
   it('can encode a chain of Object => Bytes', function() {
@@ -66,7 +66,7 @@ describe('Bytes encode/decode', function() {
         [codec.encodeObject('one'), codec.encodeBytes(bytes)],
         [codec.decodeObject(), codec.decodeBytes(8)]);
     expect(actual[0]).toBe('one');
-    t.assertBuffer(actual[1], bytes);
+    t.expectToBeBuffer(actual[1], bytes);
   });
 });
 

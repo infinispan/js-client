@@ -56,6 +56,12 @@ describe('Infinispan local client working with expiry operations', function() {
     .catch(failed(done))
     .finally(done);
   });
+  it('can listen for expired events', function(done) { client
+      .then(t.assert(t.on('expiry', t.expectEvent('listen-expiry', undefined, t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
+      .then(waitForExpiryEvent('listen-expiry'))
+      .catch(failed(done));
+  });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) {
     client.then(t.disconnect())
@@ -76,6 +82,16 @@ function waitLifespanExpire(key) {
       return !contains;
     }, '`' + key + '` key should be expired', 150);
 
+    return client;
+  }
+}
+
+function waitForExpiryEvent(key) {
+  return function(client) {
+    sleepFor(200); // sleep required, waitFor() does not work with event
+    client.containsKey(key).done(function(success) {
+      expect(success).toBeFalsy();
+    });
     return client;
   }
 }

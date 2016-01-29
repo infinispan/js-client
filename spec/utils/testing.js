@@ -2,10 +2,12 @@
 
 var _ = require('underscore');
 
+var log4js = require('log4js');
+var Promise = require('promise');
+
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
 var protocols = require('../../lib/protocols');
-var log4js = require('log4js');
 
 exports.client = function(cacheName) {
   log4js.configure('spec/utils/test-log4js.json');
@@ -88,6 +90,43 @@ exports.disconnect = function() {
   }
 };
 
+exports.on = function(event, listener, opts) {
+  return function(client) {
+    return client.addListener(event, listener(client), opts);
+  }
+};
+
+exports.onMany = function(eventListeners) {
+  return function(client) {
+    var head = _.head(eventListeners);
+    var tail = _.tail(eventListeners);
+    return client.addListener(head.event, head.listener).then(function(listenerId) {
+      var promises = _.map(tail, function(e) {
+        return client.addListener(e.event, e.listener(client), {'listenerId' : listenerId });
+      });
+
+      var all = Promise.all(promises);
+      return all.then(function(listenerIds) {
+        _.map(listenerIds, function(lid) { expect(lid).toBe(listenerId); });
+      })
+    });
+  };
+};
+
+//exports.removeListener = function(listenerId) {
+//  return function(client) {
+//    return client.removeListener(listenerId);
+//  }
+//};
+
+exports.removeListener = function(done) {
+  return function(client, listenerId) {
+    client.removeListener(listenerId).then(function() {
+      if (f.existy(done)) done();
+    });
+  };
+};
+
 exports.toBe = function(value) {
   return function(actual) { expect(actual).toBe(value); }
 };
@@ -98,10 +137,6 @@ exports.toContain = function(value) {
     else expect(actual).toContain(value);
   }
 };
-
-//exports.toObjectContainAll = function(attrs) {
-//  return function(actual) { expect(actual).toEqual(jasmine.objectContaining(attrs)); }
-//};
 
 exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
 exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };
@@ -124,6 +159,42 @@ exports.assertEncode = function(bytebuf, encode, expectedBytes) {
   return bytebuf;
 };
 
-exports.assertBuffer = function(expected, actual) {
+exports.expectToBeBuffer = expectToBeBuffer;
+function expectToBeBuffer(actual, expected) {
   expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
+};
+
+exports.expectEvent = function(expectedKey, expectedValue, eventDone) {
+  return function(client) {
+    if (f.existy(expectedValue)) {
+      return function(eventKey, eventVersion, listenerId) {
+        expect(eventKey).toBe(expectedKey);
+        return client.getVersioned(expectedKey).then(function(versioned) {
+          expect(expectedValue).toBe(versioned.value);
+          expectToBeBuffer(eventVersion, versioned.version);
+          if (f.existy(eventDone)) eventDone(client, listenerId);
+        });
+      }
+    } else {
+      return function(eventKey, listenerId) {
+        expect(eventKey).toBe(expectedKey);
+        if (f.existy(eventDone)) eventDone(client, listenerId);
+      }
+    }
+  }
+};
+
+exports.expectEvents = function(keys, eventDone) {
+  return function(client) {
+    var remain = keys;
+    return function(eventKey, eventVersion, listenerId) {
+      var match = _.filter(remain, function(k) {
+        return _.isEqual(k, eventKey);
+      });
+      expect(match.length).toBe(1);
+      remain = _.without(remain, eventKey);
+      if (_.isEmpty(remain) && f.existy(eventDone))
+        eventDone(client, listenerId);
+    }
+  }
 };

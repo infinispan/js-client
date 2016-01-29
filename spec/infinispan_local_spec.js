@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var f = require('../lib/functional');
 
 var t = require('./utils/testing'); // Testing dependency
 
@@ -115,6 +116,58 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.getM('meta'), t.toContain(_.extend({ value: 'v1' }, immortal))))
       .catch(failed(done))
       .finally(done);
+  });
+  it('can listen for only create events', function(done) { client
+      .then(t.assert(t.on('create', t.expectEvent('listen-create', 'value', t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-create', 'value'), t.toBeTruthy))
+      .catch(failed(done));
+  });
+  it('can listen for only modified events', function(done) { client
+      .then(t.assert(t.on('modify', t.expectEvent('listen-modify', 'v1', t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-modify', 'v0'), t.toBeTruthy))
+      .then(t.assert(t.replace('listen-modify', 'v1'), t.toBeTruthy))
+      .catch(failed(done));
+  });
+  it('can listen for only removed events', function(done) { client
+      .then(t.assert(t.on('remove', t.expectEvent('listen-remove', undefined, t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-remove', 'v0'), t.toBeTruthy))
+      .then(t.assert(t.replace('listen-remove', 'v1'), t.toBeTruthy))
+      .then(t.assert(remove('listen-remove'), t.toBeTruthy))
+      .catch(failed(done));
+  });
+  it('can listen for create/modified/remove events in distinct listeners', function(done) { client
+      .then(t.assert(t.on('create', t.expectEvent('listen-distinct', 'v0', t.removeListener()))))
+      .then(t.assert(t.on('modify', t.expectEvent('listen-distinct', 'v1', t.removeListener()))))
+      .then(t.assert(t.on('remove', t.expectEvent('listen-distinct', undefined, t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-distinct', 'v0'), t.toBeTruthy))
+      .then(t.assert(t.replace('listen-distinct', 'v1'), t.toBeTruthy))
+      .then(t.assert(remove('listen-distinct'), t.toBeTruthy))
+      .catch(failed(done));
+  });
+  it('can listen for create/modified/remove events in same listener', function(done) { client
+      .then(t.assert(t.onMany(
+          [{event: 'create', listener: t.expectEvent('listen-same', 'v0')},
+           {event: 'modify', listener: t.expectEvent('listen-same', 'v1')},
+           {event: 'remove', listener: t.expectEvent('listen-same', undefined, t.removeListener(done))}
+          ])))
+      .then(t.assert(t.putIfAbsent('listen-same', 'v0'), t.toBeTruthy))
+      .then(t.assert(t.replace('listen-same', 'v1'), t.toBeTruthy))
+      .then(t.assert(remove('listen-same'), t.toBeTruthy))
+      .catch(failed(done));
+  });
+  it('can listen for only create events', function(done) { client
+      .then(t.assert(t.on('create', t.expectEvent('listen-create', 'value', t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-create', 'value'), t.toBeTruthy))
+      .catch(failed(done));
+  });
+  it('can listen for state events when adding listener to non-empty cache', function(done) { client
+      .then(t.assert(t.putIfAbsent('listen-state-0', 'v0'), t.toBeTruthy))
+      .then(t.assert(t.putIfAbsent('listen-state-1', 'v1'), t.toBeTruthy))
+      .then(t.assert(t.putIfAbsent('listen-state-2', 'v2'), t.toBeTruthy))
+      .then(t.assert(t.on('create', t.expectEvents(
+          ['listen-state-0', 'listen-state-1', 'listen-state-2'], t.removeListener(done)),
+          {'includeState' : true})))
+      .catch(failed(done));
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
