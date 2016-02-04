@@ -46,21 +46,11 @@ describe('Infinispan local client working with expiry operations', function() {
       .catch(failed(done))
       .finally(done);
   });
-  it('can get key/value pairs with their expirable metadata', function(done) { client
-    .then(t.assert(t.put('life-meta', 'value', {lifespan: '60s'})))
-    .then(t.assert(t.getM('life-meta'), t.toContain({ value: 'value', lifespan : 60})))
-    .then(t.assert(t.putIfAbsent('cond-exp-meta', 'v0', {maxIdle: '45m'})))
-    .then(t.assert(t.getM('cond-exp-meta'), t.toContain({ value: 'v0', maxIdle : 2700})))
-    .then(t.assert(t.replace('cond-exp-meta', 'v1', {lifespan: '1d', maxIdle: '1h'})))
-    .then(t.assert(t.getM('cond-exp-meta'), t.toContain({ value: 'v1', lifespan: 86400, maxIdle : 3600})))
-    .catch(failed(done))
-    .finally(done);
-  });
   it('can listen for expired events', function(done) { client
-      .then(t.assert(t.on('expiry', t.expectEvent('listen-expiry', undefined, t.removeListener(done)))))
-      .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
-      .then(waitForExpiryEvent('listen-expiry'))
-      .catch(failed(done));
+    .then(t.assert(t.on('expiry', t.expectEvent('listen-expiry', undefined, t.removeListener(done)))))
+    .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
+    .then(waitForExpiryEvent('listen-expiry'))
+    .catch(failed(done));
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) {

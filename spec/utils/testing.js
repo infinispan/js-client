@@ -11,10 +11,10 @@ var protocols = require('../../lib/protocols');
 
 exports.client = function(cacheName) {
   log4js.configure('spec/utils/test-log4js.json');
-  return ispn.client(11222, '127.0.0.1', {version : '2.2', cacheName: cacheName});
+  return ispn.client(11222, '127.0.0.1', {cacheName: cacheName});
 };
 
-exports.protocol = function() { return protocols.version23(); };
+exports.protocol = function() { return protocols.version25(); };
 
 exports.put = function(k, v, opts) {
   return function(client) { return client.put(k, v, opts); }
@@ -168,8 +168,8 @@ exports.expectEvent = function(expectedKey, expectedValue, eventDone) {
       return function(eventKey, eventVersion, listenerId) {
         expect(eventKey).toBe(expectedKey);
         return client.getVersioned(expectedKey).then(function(versioned) {
-          expect(expectedValue).toBe(versioned.value);
-          expectToBeBuffer(eventVersion, versioned.version);
+          expect(versioned.value).toBe(expectedValue);
+          expectToBeBuffer(versioned.version, eventVersion);
           if (f.existy(eventDone)) eventDone(client, listenerId);
         });
       }

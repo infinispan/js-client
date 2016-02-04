@@ -23,6 +23,25 @@ var multiVNumDecode = [codec.decodeVInt(), codec.decodeVLong()];
 
 // Tests
 
+describe('Variable bytes decode', function() {
+  it('can decode a variable sized byte array', function() {
+    var bytes = new Buffer([3, 49, 50, 51]);
+    var actual = encodeDecode(4, codec.encodeBytes(bytes), codec.decodeVariableBytes(), 1);
+    t.expectToBeBuffer(actual[0], new Buffer([49, 50, 51]));
+  });
+});
+
+describe('Signed number encode/decode', function() {
+  it('can encode a negative numbers as positive ones', function() {
+    assert(-2147483648, 5, codec.encodeSignedInt(-2147483648), codec.decodeSignedInt());
+    assert(2147483647, 5, codec.encodeSignedInt(2147483647), codec.decodeSignedInt());
+    assert(-2, 1, codec.encodeSignedInt(-2), codec.decodeSignedInt());
+    assert(-1, 1, codec.encodeSignedInt(-1), codec.decodeSignedInt());
+    assert(1, 1, codec.encodeSignedInt(1), codec.decodeSignedInt());
+    assert(0, 1, codec.encodeSignedInt(0), codec.decodeSignedInt());
+  });
+});
+
 describe('String encode/decode', function() {
   it('can encode a String', function() {
     assert('one', strSize('one'), codec.encodeString('one'), codec.decodeObject());
@@ -35,19 +54,19 @@ describe('String encode/decode', function() {
 describe('Bytes encode/decode', function() {
   it('can resize buffer when encoding a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
-    var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeBytes(8), 1);
+    var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeFixedBytes(8), 1);
     t.expectToBeBuffer(actual[0], bytes);
   });
   it('can encode a number of Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
-    var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeBytes(8));
+    var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeFixedBytes(8));
     t.expectToBeBuffer(actual[0], bytes);
   });
   it('can encode Object + Bytes + Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(strSize('one') + 8 + strSize('one'),
         [codec.encodeObject('one'), codec.encodeBytes(bytes), codec.encodeObject('two')],
-        [codec.decodeObject(), codec.decodeBytes(8), codec.decodeObject()]);
+        [codec.decodeObject(), codec.decodeFixedBytes(8), codec.decodeObject()]);
     expect(actual[0]).toBe('one');
     t.expectToBeBuffer(actual[1], bytes);
     expect(actual[2]).toBe('two');
@@ -56,7 +75,7 @@ describe('Bytes encode/decode', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8 + strSize('one'),
         [codec.encodeBytes(bytes), codec.encodeObject('one')],
-        [codec.decodeBytes(8), codec.decodeObject()]);
+        [codec.decodeFixedBytes(8), codec.decodeObject()]);
     t.expectToBeBuffer(actual[0], bytes);
     expect(actual[1]).toBe('one');
   });
@@ -64,7 +83,7 @@ describe('Bytes encode/decode', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8 + strSize('one'),
         [codec.encodeObject('one'), codec.encodeBytes(bytes)],
-        [codec.decodeObject(), codec.decodeBytes(8)]);
+        [codec.decodeObject(), codec.decodeFixedBytes(8)]);
     expect(actual[0]).toBe('one');
     t.expectToBeBuffer(actual[1], bytes);
   });

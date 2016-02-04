@@ -1,7 +1,6 @@
 var _ = require('underscore');
-var f = require('../lib/functional');
-
 var t = require('./utils/testing'); // Testing dependency
+var Promise = require('promise');
 
 describe('Infinispan local client', function() {
   var client = t.client();
@@ -121,6 +120,16 @@ describe('Infinispan local client', function() {
       .catch(failed(done))
       .finally(done);
   });
+  it('can get key/value pairs with their expirable metadata', function(done) { client
+      .then(t.assert(t.put('life-meta', 'value', {lifespan: '60s'})))
+      .then(t.assert(t.getM('life-meta'), t.toContain({ value: 'value', lifespan : 60})))
+      .then(t.assert(t.putIfAbsent('cond-exp-meta', 'v0', {maxIdle: '45m'})))
+      .then(t.assert(t.getM('cond-exp-meta'), t.toContain({ value: 'v0', maxIdle : 2700})))
+      .then(t.assert(t.replace('cond-exp-meta', 'v1', {lifespan: '1d', maxIdle: '1h'})))
+      .then(t.assert(t.getM('cond-exp-meta'), t.toContain({ value: 'v1', lifespan: 86400, maxIdle : 3600})))
+      .catch(failed(done))
+      .finally(done);
+  });
   it('can listen for only create events', function(done) { client
       .then(t.assert(t.on('create', t.expectEvent('listen-create', 'value', t.removeListener(done)))))
       .then(t.assert(t.putIfAbsent('listen-create', 'value'), t.toBeTruthy))
@@ -141,10 +150,10 @@ describe('Infinispan local client', function() {
   });
   it('can listen for create/modified/remove events in distinct listeners', function(done) { client
       .then(t.assert(t.on('create', t.expectEvent('listen-distinct', 'v0', t.removeListener()))))
-      .then(t.assert(t.on('modify', t.expectEvent('listen-distinct', 'v1', t.removeListener()))))
-      .then(t.assert(t.on('remove', t.expectEvent('listen-distinct', undefined, t.removeListener(done)))))
       .then(t.assert(t.putIfAbsent('listen-distinct', 'v0'), t.toBeTruthy))
+      .then(t.assert(t.on('modify', t.expectEvent('listen-distinct', 'v1', t.removeListener()))))
       .then(t.assert(t.replace('listen-distinct', 'v1'), t.toBeTruthy))
+      .then(t.assert(t.on('remove', t.expectEvent('listen-distinct', undefined, t.removeListener(done)))))
       .then(t.assert(remove('listen-distinct'), t.toBeTruthy))
       .catch(failed(done));
   });
@@ -172,6 +181,31 @@ describe('Infinispan local client', function() {
           ['listen-state-0', 'listen-state-1', 'listen-state-2'], t.removeListener(done)),
           {'includeState' : true})))
       .catch(failed(done));
+  });
+  it('can iterate over entries', function(done) {
+    var pairs = [
+      {key: 'it1', value: 'v1', done: false},
+      {key: 'it2', value: 'v2', done: false},
+      {key: 'it3', value: 'v3', done: false}];
+    client
+        .then(t.assert(t.putAll(pairs), t.toBeUndefined))
+        .then(parIterator(1, pairs)) // Iterate all data, 1 element at time, parallel
+        .then(seqIterator(3, pairs)) // Iterate all data, 3 elements at time, sequential
+        .catch(failed(done))
+        .finally(done);
+  });
+  it('can iterate over entries getting their expirable metadata', function(done) {
+    var pairs = [{key: 'it-exp-1', value: 'v1'}, {key: 'it-exp-2', value: 'v2'}];
+    var expected = _.map(pairs, function(pair) {
+      _.extend(pair, {done: false, lifespan: 86400, maxIdle : 3600});
+      return pair;
+    });
+    client
+        .then(t.assert(t.putAll(pairs, {lifespan: '1d', maxIdle: '1h'}), t.toBeUndefined))
+        .then(parIterator(1, expected, {metadata: true})) // Iterate all data, 1 element at time, parallel
+        .then(seqIterator(3, expected, {metadata: true})) // Iterate all data, 3 elements at time, sequential
+        .catch(failed(done))
+        .finally(done);
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
@@ -234,6 +268,52 @@ function notRemoveWithVersion(k, opts) {
   }
 }
 
+function expectIteratorDone(it) {
+  return function() {
+    return it.next().then(function(entry) {
+      expect(entry.done).toBeTruthy();
+    })
+  }
+}
+
+function parIterator(batchSize, expected, opts) {
+  return function(client) {
+    return client.iterator(batchSize, opts).then(function(it) {
+      var promises = _.map(_.range(expected.length), function() {
+        return it.next().then(function(entry) { return entry; })
+      });
+      return Promise.all(promises)
+        .then(function(actual) { toContainAll(expected)(actual); })
+        .then(expectIteratorDone(it))
+        .then(expectIteratorDone(it)) // Second time should not go remote
+        .then(function() { return it.close(); }) // Close iterator
+        .then(function() { return client; });
+    })
+  }
+}
+
+function seqIterator(batchSize, expected, opts) {
+  return function(client) {
+    return client.iterator(batchSize, opts).then(function(it) {
+      var p = _.reduce(_.range(expected.length),
+        function(p) {
+          return p.then(function(array) {
+             return it.next().then(function(entry) {
+               array.push(entry);
+               return array;
+             })
+          });
+        }, Promise.resolve([]));
+
+      return p
+          .then(function(array) { toContainAll(expected)(array); })
+          .then(function() { return it.close(); }) // Close iterator
+          .then(function() { return client; });
+    })
+  }
+}
+
+
 function toEqual(value) {
   return function(actual) {
     expect(actual).toEqual(value);
@@ -243,6 +323,18 @@ function toEqual(value) {
 function toEqualPairs(value) {
   return function(actual) {
     expect(_.sortBy(actual, 'key')).toEqual(value);
+  }
+}
+
+function toContainAll(expected) {
+  return function(actual) {
+    var sorted = _.sortBy(actual, 'key');
+    var zipped = _.zip(sorted, expected);
+    _.map(zipped, function(e) {
+      var actualEntry = e[0];
+      var expectedEntry = e[1];
+      t.toContain(expectedEntry)(actualEntry);
+    });
   }
 }
 
