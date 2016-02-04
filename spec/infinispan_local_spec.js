@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
 var Promise = require('promise');
 
@@ -114,9 +115,9 @@ describe('Infinispan local client', function() {
     var immortal = { created : -1, lifespan: -1, lastUsed: -1, maxIdle: -1 };
     client
       .then(t.assert(t.put('meta', 'v0')))
-      .then(t.assert(t.getM('meta'), t.toContain(_.extend({ value: 'v0' }, immortal))))
+      .then(t.assert(t.getM('meta'), t.toContain(f.merge({ value: 'v0' }, immortal))))
       .then(t.assert(t.conditional(t.replaceV, t.getM, 'meta', 'v0', 'v1'), t.toBeTruthy))
-      .then(t.assert(t.getM('meta'), t.toContain(_.extend({ value: 'v1' }, immortal))))
+      .then(t.assert(t.getM('meta'), t.toContain(f.merge({ value: 'v1' }, immortal))))
       .catch(failed(done))
       .finally(done);
   });
@@ -197,8 +198,7 @@ describe('Infinispan local client', function() {
   it('can iterate over entries getting their expirable metadata', function(done) {
     var pairs = [{key: 'it-exp-1', value: 'v1'}, {key: 'it-exp-2', value: 'v2'}];
     var expected = _.map(pairs, function(pair) {
-      _.extend(pair, {done: false, lifespan: 86400, maxIdle : 3600});
-      return pair;
+      return f.merge(pair, {done: false, lifespan: 86400, maxIdle : 3600});
     });
     client
         .then(t.assert(t.putAll(pairs, {lifespan: '1d', maxIdle: '1h'}), t.toBeUndefined))
