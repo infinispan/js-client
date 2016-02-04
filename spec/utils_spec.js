@@ -2,15 +2,6 @@ var utils = require('../lib/utils');
 
 var t = require('./utils/testing'); // Testing dependency
 
-describe('A counter', function() {
-  it('can be incremented', function() {
-    var counter = utils.counter(0);
-    expect(counter.incr()).toBe(1);
-    expect(counter.incr()).toBe(2);
-    expect(counter.incr()).toBe(3);
-  });
-});
-
 describe('A replayable buffer', function() {
   it('can have byte buffers appended to it', function() {
     var data = utils.replayableBuffer(0);
