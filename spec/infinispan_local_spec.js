@@ -4,7 +4,7 @@ var t = require('./utils/testing'); // Testing dependency
 var Promise = require('promise');
 
 describe('Infinispan local client', function() {
-  var client = t.client();
+  var client = t.client(t.local);
 
   beforeEach(function() {
     client.then(t.assert(t.clear()));
@@ -103,7 +103,7 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can put -> get -> remove a key/value pair on a named cache', function(done) {
-    t.client("namedCache")
+    t.client(t.local, "namedCache")
       .then(t.assert(t.put('key', 'value')))
       .then(t.assert(t.get('key'), t.toBe('value')))
       .then(t.assert(remove('key'), t.toBeTruthy))
@@ -207,6 +207,13 @@ describe('Infinispan local client', function() {
         .catch(failed(done))
         .finally(done);
   });
+  it('can failover to a secondary node if first node is not available', function(done) {
+    t.client([{port: 1234, host: '127.0.0.1'}, t.local])
+        .then(t.assert(ping(), t.toBeUndefined))
+        .then(t.disconnect())
+        .catch(failed(done))
+        .finally(done);
+  });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
       .then(t.disconnect())
@@ -295,7 +302,7 @@ function parIterator(batchSize, expected, opts) {
 function seqIterator(batchSize, expected, opts) {
   return function(client) {
     return client.iterator(batchSize, opts).then(function(it) {
-      var p = _.reduce(_.range(expected.length),
+      var p = _.foldl(_.range(expected.length),
         function(p) {
           return p.then(function(array) {
              return it.next().then(function(entry) {

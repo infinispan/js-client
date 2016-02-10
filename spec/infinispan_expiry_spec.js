@@ -3,7 +3,7 @@ var _ = require('underscore');
 var t = require('./utils/testing'); // Testing dependency
 
 describe('Infinispan local client working with expiry operations', function() {
-  var client = t.client();
+  var client = t.client(t.local);
 
   beforeEach(function() {
     client.then(t.assert(t.clear()));
