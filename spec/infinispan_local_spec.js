@@ -103,7 +103,7 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can put -> get -> remove a key/value pair on a named cache', function(done) {
-    t.client(t.local, "namedCache")
+    t.client(t.local, 'namedCache')
       .then(t.assert(t.put('key', 'value')))
       .then(t.assert(t.get('key'), t.toBe('value')))
       .then(t.assert(remove('key'), t.toBeTruthy))

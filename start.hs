@@ -14,8 +14,8 @@ ispnHome = "/opt/infinispan-server"
 ispnSh = "/infinispan-server/bin/standalone.sh"
 clusteredStandaloneSh = "/infinispan-server/bin/standalone.sh -c clustered.xml"
 clusterOpts = "-Djboss.node.name="%s%" \
- \-Djboss.socket.binding.port-offset="%d%" \
- \-Djgroups.join_timeout=1000"
+    \-Djboss.socket.binding.port-offset="%d%" \
+    \-Djgroups.join_timeout=1000"
 
 mkTmpDir :: Text -> Shell Turtle.FilePath
 mkTmpDir s = using (mktempdir "/tmp" s)
@@ -26,11 +26,14 @@ cpR src dst = format ("cp -r "%s%" "%fp%"") src dst
 exec :: MonadIO io => Text -> io ExitCode
 exec cmd = shell cmd empty
 
+asyncExec :: Text -> Shell (Async ExitCode)
+asyncExec = using . fork . exec
+
 startServer :: Turtle.FilePath -> Shell (Async ExitCode)
-startServer h = using $ fork $ exec ((format fp h) <> ispnSh)
+startServer h = asyncExec $ (format fp h) <> ispnSh
 
 startClusterServer :: Turtle.FilePath -> Text -> Shell (Async ExitCode)
-startClusterServer h ps = using $ fork $ exec ((format fp h) <> clusteredStandaloneSh <> " " <> ps)
+startClusterServer h ps = asyncExec $ (format fp h) <> clusteredStandaloneSh <> " " <> ps
 
 launchLocalNode :: Shell (Async ExitCode)
 launchLocalNode = do
