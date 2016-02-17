@@ -6,7 +6,7 @@ The results of the asynchronous operations are represented using
 promises make it easy to transform/chain multiple asynchronous invocations
 and they improve error handling by making it easy to centralise it.
 
-The client is under heavy development but here's a summary of the its 
+The client is under heavy development but here's a summary of its 
 current capabilities:
 
 * `infinispan` client can be constructed with a single server address or 
