@@ -70,6 +70,10 @@ exports.size = function(k) {
   return function(client) { return client.size(); }
 };
 
+exports.stats = function() {
+  return function(client) { return client.stats(); }
+};
+
 exports.clear = function() {
   return function(client) {
     return client.clear();
@@ -124,6 +128,18 @@ exports.assert = function(fun, expectFun) {
   }
   return function(client) {
     return fun(client).then(function() { return client; });
+  }
+};
+
+exports.assertStats = function(fun, statsFun) {
+  return function(client) {
+    var before = client.stats().then(function(before) {return before});
+    var put = before.then(function() { return fun(client); });
+    var after = put.then(function() { return client.stats(); });
+    return Promise.all([before, after]).then(function(stats) {
+      statsFun(stats[0], stats[1]);
+      return client;
+    });
   }
 };
 

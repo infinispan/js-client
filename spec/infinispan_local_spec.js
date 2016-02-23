@@ -214,6 +214,14 @@ describe('Infinispan local client', function() {
         .catch(failed(done))
         .finally(done);
   });
+  it('can query statistic values', function(done) { client
+      .then(t.assertStats(t.put('stats-key', 'stats-value'), toBeStatIncr('stores')))
+      .then(t.assertStats(t.get('stats-key'), toBeStatIncr('hits')))
+      .then(t.assertStats(t.get('stats-miss-key'), toBeStatIncr('misses')))
+      .then(t.assertStats(remove('stats-miss-key'), toBeStatIncr('removeMisses')))
+      .then(t.assertStats(remove('stats-key'), toBeStatIncr('removeHits')))
+      .catch(failed(done)).finally(done);
+  });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
       .then(t.disconnect())
@@ -342,6 +350,12 @@ function toContainAll(expected) {
       var expectedEntry = e[1];
       t.toContain(expectedEntry)(actualEntry);
     });
+  }
+}
+
+function toBeStatIncr(stat) {
+  return function(before, after) {
+    expect(after[stat]).toBe(before[stat] + 1);
   }
 }
 
