@@ -6,8 +6,9 @@ var Promise = require('promise');
 describe('Infinispan local client', function() {
   var client = t.client(t.local);
 
-  beforeEach(function() {
-    client.then(t.assert(t.clear()));
+  beforeEach(function(done) { client
+      .then(t.assert(t.clear()))
+      .catch(t.failed(done)).finally(done);
   });
 
   var prev = function() {
@@ -82,7 +83,7 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can ping a server', function(done) { client
-    .then(t.assert(ping(), t.toBeUndefined))
+    .then(t.assert(t.ping(), t.toBeUndefined))
     .catch(failed(done))
     .finally(done);
   });
@@ -209,7 +210,7 @@ describe('Infinispan local client', function() {
   });
   it('can failover to a secondary node if first node is not available', function(done) {
     t.client([{port: 1234, host: '127.0.0.1'}, t.local])
-        .then(t.assert(ping(), t.toBeUndefined))
+        .then(t.assert(t.ping(), t.toBeUndefined))
         .then(t.disconnect())
         .catch(failed(done))
         .finally(done);
@@ -221,6 +222,11 @@ describe('Infinispan local client', function() {
       .then(t.assertStats(remove('stats-miss-key'), toBeStatIncr('removeMisses')))
       .then(t.assertStats(remove('stats-key'), toBeStatIncr('removeHits')))
       .catch(failed(done)).finally(done);
+  });
+  it('can retrieve topology information', function(done) { client
+    .then(t.assert(t.getTopologyInfo(), t.toEqual(
+        {topologyId: 0, members: [{host: '127.0.0.1', port: 11222}]})))
+    .catch(failed(done)).finally(done);
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
@@ -240,12 +246,6 @@ function getAll(keys) {
 function remove(k, opts) {
   return function(client) {
     return client.remove(k, opts);
-  }
-}
-
-function ping() {
-  return function(client) {
-    return client.ping();
   }
 }
 

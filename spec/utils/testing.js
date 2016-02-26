@@ -4,12 +4,17 @@ var _ = require('underscore');
 
 var log4js = require('log4js');
 var Promise = require('promise');
+var exec = Promise.denodeify(require('child_process').exec);
 
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
 var protocols = require('../../lib/protocols');
 
 exports.local = {port: 11222, host: '127.0.0.1'};
+exports.cluster1 = {port: 11322, host: '127.0.0.1'};
+
+var HOME='/opt/infinispan-server';
+var CLUSTER_CLI_PORTS = [10090, 10190];
 
 exports.client = function(args, cacheName) {
   log4js.configure('spec/utils/test-log4js.json');
@@ -80,6 +85,12 @@ exports.clear = function() {
   }
 };
 
+exports.ping = function() {
+  return function(client) {
+    return client.ping();
+  }
+};
+
 exports.disconnect = function() {
   return function(client) {
     return client.disconnect();
@@ -117,6 +128,19 @@ exports.removeListener = function(done) {
   };
 };
 
+exports.getTopologyInfo = function() {
+  return function(client) {
+    return Promise.resolve(client.getTopologyInfo());
+  }
+};
+
+exports.getMembers = function() {
+  return function(client) {
+    return Promise.resolve(
+        _.sortBy(client.getTopologyInfo().members, 'port'));
+  }
+};
+
 exports.assert = function(fun, expectFun) {
   if (f.existy(expectFun)) {
     return function(client) {
@@ -143,8 +167,24 @@ exports.assertStats = function(fun, statsFun) {
   }
 };
 
+exports.resetStats = function(client) {
+  var resets = _.map(CLUSTER_CLI_PORTS, function(port) {
+    return exec(
+        HOME + '/bin/ispn-cli.sh --controller=127.0.0.1:' + port +
+        ' --connect --command=/subsystem=datagrid-infinispan' +
+        '/cache-container=clustered/distributed-cache=default:reset-statistics')
+  });
+  return Promise.all(resets).then(function(outs) {
+    return client;
+  });
+};
+
 exports.toBe = function(value) {
   return function(actual) { expect(actual).toBe(value); }
+};
+
+exports.toEqual = function(value) {
+  return function(actual) { expect(actual).toEqual(value); }
 };
 
 exports.toContain = function(value) {
@@ -214,3 +254,10 @@ exports.expectEvents = function(keys, eventDone) {
     }
   }
 };
+
+exports.failed = function(done) {
+  return function(error) {
+    done(error);
+  };
+};
+

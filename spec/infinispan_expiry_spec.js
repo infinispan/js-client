@@ -5,8 +5,9 @@ var t = require('./utils/testing'); // Testing dependency
 describe('Infinispan local client working with expiry operations', function() {
   var client = t.client(t.local);
 
-  beforeEach(function() {
-    client.then(t.assert(t.clear()));
+  beforeEach(function(done) { client
+      .then(t.assert(t.clear()))
+      .catch(t.failed(done)).finally(done);
   });
 
   it('can validate incorrect duration definitions', function(done) { client
