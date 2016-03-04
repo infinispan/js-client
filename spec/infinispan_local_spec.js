@@ -1,7 +1,9 @@
 var _ = require('underscore');
+var Promise = require('promise');
+var readFile = Promise.denodeify(require('fs').readFile);
+
 var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
-var Promise = require('promise');
 
 describe('Infinispan local client', function() {
   var client = t.client(t.local);
@@ -170,11 +172,6 @@ describe('Infinispan local client', function() {
       .then(t.assert(remove('listen-same'), t.toBeTruthy))
       .catch(failed(done));
   });
-  it('can listen for only create events', function(done) { client
-      .then(t.assert(t.on('create', t.expectEvent('listen-create', 'value', t.removeListener(done)))))
-      .then(t.assert(t.putIfAbsent('listen-create', 'value'), t.toBeTruthy))
-      .catch(failed(done));
-  });
   it('can listen for state events when adding listener to non-empty cache', function(done) { client
       .then(t.assert(t.putIfAbsent('listen-state-0', 'v0'), t.toBeTruthy))
       .then(t.assert(t.putIfAbsent('listen-state-1', 'v1'), t.toBeTruthy))
@@ -227,6 +224,17 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.getTopologyInfo(), t.toEqual(
         {topologyId: 0, members: [{host: '127.0.0.1', port: 11222}]})))
     .catch(failed(done)).finally(done);
+  });
+  it('can execute a script remotely to store and retrieve data', function(done) {
+    Promise.all([client, readFile('spec/utils/typed-put-get.js')])
+        .then(function(vals) {
+          var c = vals[0];
+          return c.addScript('typed-put-get.js', vals[1].toString())
+              .then(function() { return c; } );
+        })
+        .then(t.assert(t.exec('typed-put-get.js', {k: 'typed-key', v: 'typed-value'}),
+                       t.toBe('typed-value')))
+        .catch(failed(done)).finally(done);
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client

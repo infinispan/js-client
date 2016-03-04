@@ -6,24 +6,6 @@ var Promise = require('promise');
 describe('Infinispan cluster client', function() {
   var client = t.client(t.cluster1);
 
-  // connect 127.0.0.1:10090, connect 127.0.0.1:10190 <- cluster
-  // cd subsystem=datagrid-infinispan
-  // cd cache-container=clustered
-  // cd distributed-cache=default
-  // :reset-statistics
-
-  // ./bin/ispn-cli.sh --controller=127.0.0.1:10090 --connect --commands=cd\ subsystem=datagrid-infinispan,cd\ cache-container=clustered,cd\ distributed-cache=default,:reset-statistics
-  // ./bin/ispn-cli.sh --controller=127.0.0.1:10190 --connect --commands=cd\ subsystem=datagrid-infinispan,cd\ cache-container=clustered,cd\ distributed-cache=default,:reset-statistics
-
-  // ./bin/ispn-cli.sh --controller=127.0.0.1:10090 --connect --command=/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:reset-statistics
-  // ./bin/ispn-cli.sh --controller=127.0.0.1:10190 --connect --command=/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:reset-statistics
-
-  //beforeEach(function(done) { client
-  //    .then(t.resetStats)
-  //    .then(t.assert(t.clear()))
-  //    .catch(t.failed(done)).finally(done);
-  //});
-
   // Since Jasmine 1.3 does not have beforeAll callback and stats resets is a
   // bit slow, execute it as first test so that it only gets executed once.
   it('resets statistics', function(done) { client
@@ -32,15 +14,11 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done)).finally(done);
   });
 
-  //var prev = function() {
-  //  return { previous: true };
-  //};
-
-  //it('can get cluster topology from a server node', function(done) { client
-  //    .then(t.assert(t.getMembers(), t.toContain(
-  //        [{host: '127.0.0.1', port: 11322}, {host: '127.0.0.1', port: 11422}])))
-  //    .catch(t.failed(done)).finally(done);
-  //});
+  it('can get cluster topology from a server node', function(done) { client
+      .then(t.assert(t.getMembers(), t.toContain(
+          [{host: '127.0.0.1', port: 11322}, {host: '127.0.0.1', port: 11422}])))
+      .catch(t.failed(done)).finally(done);
+  });
 
   it('can load balance key-less operations in round-robin fashion', function(done) { client
       .then(assertRoundRobin())

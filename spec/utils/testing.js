@@ -120,6 +120,12 @@ exports.onMany = function(eventListeners) {
   };
 };
 
+exports.exec = function(scriptName, params) {
+  return function(client) {
+    return client.execute(scriptName, params);
+  }
+};
+
 exports.removeListener = function(done) {
   return function(client, listenerId) {
     client.removeListener(listenerId).then(function() {
