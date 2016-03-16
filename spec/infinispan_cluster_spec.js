@@ -20,8 +20,13 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done)).finally(done);
   });
 
+  it('can use consistent hashing to direct key-based ops to owner nodes', function(done) { client
+      .then(routeConsistentHash())
+      .catch(t.failed(done)).finally(done);
+  });
+
   it('can load balance key-less operations in round-robin fashion', function(done) { client
-      .then(assertRoundRobin())
+      .then(routeRoundRobin())
       .catch(t.failed(done)).finally(done);
   });
 
@@ -32,32 +37,79 @@ describe('Infinispan cluster client', function() {
       .finally(done);
   });
 
-  function assertRoundRobin() {
+  function routeRoundRobin() {
     // Key-less operations should be executed in round-robin fashion.
     // This test verifies that if two putAll operations are executed,
     // these calls end up in different nodes by checking that each only
     // affects one node's statistics
     return function(client) {
-      var before0 = client.stats().then(function(before) {return before});
-      var before1 = client.stats().then(function(before) {return before});
-      var storesBefore = Promise.all([before0, before1]).then(function(stats) {
-        expect(stats[0].stores).toBe(stats[1].stores);
-        return stats[0].stores;
+      var statsBefore = getStats(client, t.cluster);
+
+      var data = _.map(_.range(t.clusterSize()), function(i) {
+        return [{key: 'round-robin-' + i + '0', value: i + '0'},
+                {key: 'round-robin-' + i + '1', value: i + '1'}]
       });
-      var pairs0 = [{key: 'rr00', value: '00'}, {key: 'rr01', value: '01'}];
-      var pairs1 = [{key: 'rr10', value: '10'}, {key: 'rr11', value: '11'}];
-      var putAll0 = storesBefore.then(function() { return client.putAll(pairs0); });
-      var putAll1 = storesBefore.then(function() { return client.putAll(pairs1); });
-      var allPuts = Promise.all([putAll0, putAll1]);
-      var after0 = allPuts.then(function() { return client.stats(); });
-      var after1 = allPuts.then(function() { return client.stats(); });
-      return Promise.all([storesBefore, after0, after1]).then(function(stats) {
-        var prevStores = stats[0];
-        expect(stats[1].stores).toBe(prevStores + 2);
-        expect(stats[2].stores).toBe(prevStores + 2);
+
+      var puts = statsBefore.then(function() {
+        return pmap(data, function(pairs) {
+          return client.putAll(pairs);
+        });
+      });
+
+      var statsAfter = _.map(_.range(t.clusterSize()), function() {
+        return puts.then(function() { return client.stats(); });
+      });
+
+      return Promise.all(f.cat([statsBefore], statsAfter)).then(function(stats) {
+        _.forEach(_.tail(stats), function(stat) {
+          expect(stat.stores).toBe(stats[0].stores + 2);
+        });
         return client;
       });
     }
+  }
+
+  function routeConsistentHash() {
+    return function(client) {
+      var ownerPairs = [[t.cluster1, t.cluster2], [t.cluster2, t.cluster3], [t.cluster3, t.cluster1]];
+      var keys = _.map(ownerPairs, function(pair) {
+        return t.findKeyForServers(client, pair);
+      });
+
+      var statsBefore = getStats(client, t.cluster);
+
+      var puts = statsBefore.then(function() {
+        return pmap(keys, function(key) {
+          return client.put(key, "value");
+        });
+      });
+
+      var statsAfter = _.map(t.cluster, function() {
+        return puts.then(function() { return client.stats(); });
+      });
+
+      return Promise.all(f.cat([statsBefore], statsAfter)).then(function(stats) {
+        _.forEach(_.tail(stats), function(stat) {
+          expect(stat.stores).toBe(stats[0].stores + 1);
+          expect(stat.currentNumberOfEntries).toBe(2 * (stats[0].stores + 1));
+        });
+        return client;
+      });
+    }
+  }
+
+  function getStats(c, cluster) {
+    var stats = pmap(cluster, function() { return c.stats(); });
+    return stats.then(function(stats) {
+      _.forEach(stats, function(stat) {
+        expect(stat.stores).toBe(stats[0].stores);
+      });
+      return stats[0];
+    });
+  }
+
+  function pmap(obj, iteratee, context) {
+    return Promise.all(_.map(obj, iteratee, context));
   }
 
 });

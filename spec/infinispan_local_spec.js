@@ -90,7 +90,7 @@ describe('Infinispan local client', function() {
     .finally(done);
   });
   it('can put -> get a big value', function(done) {
-    var value = randomStr(128);
+    var value = t.randomStr(128);
     client
       .then(t.assert(t.put('key', value)))
       .then(t.assert(t.get('key'), toEqual(value)))
@@ -98,7 +98,7 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can put -> get a really big value', function(done) {
-    var value = randomStr(1024 * 1024);
+    var value = t.randomStr(1024 * 1024);
     client
       .then(t.assert(t.put('key', value)))
       .then(t.assert(t.get('key'), toEqual(value)))
@@ -221,8 +221,8 @@ describe('Infinispan local client', function() {
       .catch(failed(done)).finally(done);
   });
   it('can retrieve topology information', function(done) { client
-    .then(t.assert(t.getTopologyInfo(), t.toEqual(
-        {topologyId: 0, members: [{host: '127.0.0.1', port: 11222}]})))
+    .then(t.assert(t.getTopologyId(), t.toBe(0)))
+    .then(t.assert(t.getMembers(), t.toEqual([{host: '127.0.0.1', port: 11222}])))
     .catch(failed(done)).finally(done);
   });
   it('can execute a script remotely to store and retrieve data', function(done) {
@@ -372,13 +372,3 @@ var failed = function(done) {
     done(error);
   };
 };
-
-function randomStr(size)  {
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < size; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;
-}

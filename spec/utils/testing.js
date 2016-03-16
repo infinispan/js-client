@@ -8,13 +8,19 @@ var exec = Promise.denodeify(require('child_process').exec);
 
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
+var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
 exports.local = {port: 11222, host: '127.0.0.1'};
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
+exports.cluster2 = {port: 11422, host: '127.0.0.1'};
+exports.cluster3 = {port: 11522, host: '127.0.0.1'};
+exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
 
 var HOME='/opt/infinispan-server';
-var CLUSTER_CLI_PORTS = [10090, 10190];
+var CLUSTER_CLI_PORTS = [10090, 10190, 10290];
+
+var logger = u.logger('testing');
 
 exports.client = function(args, cacheName) {
   log4js.configure('spec/utils/test-log4js.json');
@@ -134,16 +140,16 @@ exports.removeListener = function(done) {
   };
 };
 
-exports.getTopologyInfo = function() {
+exports.getTopologyId = function() {
   return function(client) {
-    return Promise.resolve(client.getTopologyInfo());
+    return Promise.resolve(client.getTopologyInfo().getTopologyId());
   }
 };
 
 exports.getMembers = function() {
   return function(client) {
     return Promise.resolve(
-        _.sortBy(client.getTopologyInfo().members, 'port'));
+        _.sortBy(client.getTopologyInfo().getMembers(), 'port'));
   }
 };
 
@@ -180,10 +186,10 @@ exports.resetStats = function(client) {
         ' --connect --command=/subsystem=datagrid-infinispan' +
         '/cache-container=clustered/distributed-cache=default:reset-statistics')
   });
-  return Promise.all(resets).then(function(outs) {
-    return client;
-  });
+  return Promise.all(resets).then(function() { return client; });
 };
+
+exports.clusterSize = function() { return CLUSTER_CLI_PORTS.length; };
 
 exports.toBe = function(value) {
   return function(actual) { expect(actual).toBe(value); }
@@ -267,3 +273,28 @@ exports.failed = function(done) {
   };
 };
 
+exports.randomStr = function(size) {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < size; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+};
+
+exports.findKeyForServers = function(client, addrs) {
+  var attempts = 1000;
+  var key;
+  do {
+    key = exports.randomStr(8);
+    var owners = client.getTopologyInfo().findOwners(key);
+    attempts--;
+  } while (!_.isEqual(addrs, owners) && attempts >= 0);
+
+  if (attempts < 0)
+    throw new Error("Could not find any key owned by: " + addrs);
+
+  logger.debugf("Generated key=%s hashing to %s", key, u.showArrayAddress(addrs));
+  return key;
+};

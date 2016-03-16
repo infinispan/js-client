@@ -8,6 +8,7 @@ describe('Murmur Hash v3', function() {
     {expected: 0x7C968B75, input: [-124]},
     {expected: 0x66349ADC, input: [ 122,   82]},
     {expected: 0xC29925E0, input: [ 113,   16,   69]},
+    {expected: 0x85C121DA, input: [   3,  111,  110, 101]},
     {expected: 0x1ADDB01E, input: [ 103,  -53,  -50,   37]},
     {expected: 0x0A853868, input: [  40,  -87,  -11,   65, -128]},
     {expected: 0x069DB0FA, input: [  35,   45,  -107, -83,  126,  126]},

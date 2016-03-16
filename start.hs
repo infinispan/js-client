@@ -46,6 +46,7 @@ mkClusterOpts n p = format (clusterOpts) n p
 
 launchClusterNode :: NodeName -> PortOffset -> Shell (Async ExitCode)
 launchClusterNode n p = do
+    _ <- (sleep 2.0)
     dir <- mkTmpDir "cluster"
     _   <- exec (cpR ispnHome dir)
     startClusterServer dir (mkClusterOpts n p)
@@ -54,7 +55,9 @@ main = sh (do
     local      <- launchLocalNode
     cluster1   <- launchClusterNode "node1" 100
     cluster2   <- launchClusterNode "node2" 200
+    cluster3   <- launchClusterNode "node3" 300
     -- TODO: Check that cluster forms
     _ <- liftIO (wait local)
     _ <- liftIO (wait cluster1)
-    liftIO (wait cluster2))
+    _ <- liftIO (wait cluster2)
+    liftIO (wait cluster3))
