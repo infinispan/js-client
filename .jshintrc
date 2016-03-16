@@ -1,0 +1,6 @@
+{
+    "globalstrict"  : true,
+    "devel"         : true,
+    "node"          : true,
+    "eqeqeq"        : true
+}
