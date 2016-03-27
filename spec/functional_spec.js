@@ -2,11 +2,18 @@ var _ = require('underscore');
 var f = require('../lib/functional');
 
 function div(n, d) { return n / d }
+function performSomeCalculation(a, b, c) {
+  return (a + b) / c;
+}
 
 describe('Partial function application', function() {
   it('works with 2 parameters', function() {
     var div10By2 = f.partial2(div, 10, 2);
     expect(div10By2()).toBe(5);
+  });
+  it('works with 3 parameters', function() {
+    var action = f.partial3(performSomeCalculation, 10, 2, 3);
+    expect(action()).toBe(4);
   });
 });
 
@@ -14,6 +21,10 @@ describe('Curried function application', function() {
   it('works with 2 parameters', function() {
     var div10By2 = f.curry2(div)(2)(10);
     expect(div10By2).toBe(5);
+  });
+  it('works with 3 parameters', function() {
+    var action = f.curry3(performSomeCalculation)(3)(2)(10);
+    expect(action).toBe(4);
   });
 });
 
@@ -55,5 +66,8 @@ describe('Array concatenation', function() {
     var a1 = [1,2,3];
     var a2 = [4,5,6];
     expect(f.cat(a1, a2)).toEqual([1,2,3,4,5,6]);
+  });
+  it('tests cat method if no parameter is passed', function() {
+    expect(f.cat()).toEqual([]);
   });
 });
