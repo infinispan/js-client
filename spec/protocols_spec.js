@@ -27,6 +27,11 @@ describe('Protocols', function() {
   it('can encode/decode max idle', function() {
     encodeDecodeUnits('maxIdle', maxIdle);
   });
+  it('connects with undefined HotRod Protocol', function (done) {
+    t.expectToThrow(function () {
+      t.client(t.local, null, '1.1');
+    }, 'Unknown protocol version: 1.1', done);
+  });
 
   function encodeDecodeUnits(name, converter) {
     var exp = object(name);

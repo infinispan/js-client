@@ -22,9 +22,23 @@ var CLUSTER_CLI_PORTS = [10090, 10190, 10290];
 
 var logger = u.logger('testing');
 
-exports.client = function(args, cacheName) {
+exports.client = function(args, cacheName, hotrodProtocolVersion) {
   log4js.configure('spec/utils/test-log4js.json');
-  return ispn.client(args, {cacheName: cacheName});
+
+  var options = [];
+  if (f.existy(cacheName)) {
+    options.cacheName = cacheName;
+  }
+
+  if (f.existy(hotrodProtocolVersion)) {
+    options.version = hotrodProtocolVersion;
+  } else {
+    var version = exports.getHotrodProtocolVersion();
+    if (f.existy(version)) {
+      options.version = version;
+    }
+  }
+  return ispn.client(args, options);
 };
 
 exports.protocol = function() { return protocols.version25(); };
@@ -51,6 +65,10 @@ exports.putIfAbsent = function(k, v, opts) {
 
 exports.replace = function(k, v, opts) {
   return function(client) { return client.replace(k, v, opts); }
+};
+
+exports.remove = function(k, opts) {
+  return function(client) { return client.remove(k, opts);  }
 };
 
 exports.containsKey = function(k) {
@@ -298,3 +316,142 @@ exports.findKeyForServers = function(client, addrs) {
   logger.debugf("Generated key=%s hashing to %s", key, u.showArrayAddress(addrs));
   return key;
 };
+
+exports.getAll = function(keys) {
+  return function(client) {
+    return client.getAll(keys);
+  }
+};
+
+exports.getBulk = function(count) {
+  return function(client) {
+    return client.getBulk(count);
+  }
+};
+
+exports.getBulkKeys = function(count) {
+  return function(client) {
+    return client.getBulkKeys(count);
+  }
+};
+
+exports.invalidVersion = function() {
+  return new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+};
+
+exports.notReplaceWithVersion = function(k, opts) {
+  return function(client) {
+    return client.replaceWithVersion(k, 'ignore', exports.invalidVersion(), opts);
+  }
+};
+
+exports.removeWithVersion = function(k, version, opts) {
+  return function(client) {
+    return client.removeWithVersion(k, version, opts);
+  }
+};
+
+exports.notRemoveWithVersion = function(k, opts) {
+  return function(client) {
+    return client.removeWithVersion(k, exports.invalidVersion(), opts);
+  }
+};
+
+exports.expectIteratorDone = function(it) {
+  return function() {
+    return it.next().then(function(entry) {
+      expect(entry.done).toBeTruthy();
+    })
+  }
+};
+
+exports.parIterator = function(batchSize, expected, opts) {
+  return function(client) {
+    return client.iterator(batchSize, opts).then(function(it) {
+      var promises = _.map(_.range(expected.length), function() {
+        return it.next().then(function(entry) { return entry; })
+      });
+      return Promise.all(promises)
+          .then(function(actual) {
+            exports.toContainAll(expected)(actual);
+          })
+          .then(exports.expectIteratorDone(it))
+          .then(exports.expectIteratorDone(it)) // Second time should not go remote
+          .then(function() { return it.close(); }) // Close iterator
+          .then(function() { return client; });
+    })
+  }
+};
+
+exports.seqIterator = function(batchSize, expected, opts) {
+  return function(client) {
+    return client.iterator(batchSize, opts).then(function(it) {
+      var p = _.foldl(_.range(expected.length),
+          function(p) {
+            return p.then(function(array) {
+              return it.next().then(function(entry) {
+                array.push(entry);
+                return array;
+              })
+            });
+          }, Promise.resolve([]));
+
+      return p
+          .then(function(array) { exports.toContainAll(expected)(array); })
+          .then(function() { return it.close(); }) // Close iterator
+          .then(function() { return client; });
+    })
+  }
+};
+
+exports.toEqual = function(value) {
+  return function(actual) {
+    expect(actual).toEqual(value);
+  }
+};
+
+exports.toEqualPairs = function(value) {
+  return function(actual) {
+    if (_.isObject(actual[0])) {
+      expect(_.sortBy(actual, 'key')).toEqual(value);
+    } else {
+      expect(actual.sort()).toEqual(value);
+    }
+  }
+};
+
+exports.toContainAll = function(expected) {
+  return function(actual) {
+    var sorted = _.sortBy(actual, 'key');
+    var zipped = _.zip(sorted, expected);
+    _.map(zipped, function(e) {
+      var actualEntry = e[0];
+      var expectedEntry = e[1];
+      exports.toContain(expectedEntry)(actualEntry);
+    });
+  }
+};
+
+exports.toBeStatIncr = function(stat) {
+  return function(before, after) {
+    expect(after[stat]).toBe(before[stat] + 1);
+  }
+};
+
+exports.prev = function() {
+  return { previous: true };
+};
+
+exports.expectToThrow = function(func, errorMessage, done) {
+  expect(func).toThrow(errorMessage);
+  if (f.existy(done)) done();
+};
+
+exports.getHotrodProtocolVersion = function() {
+  var version;
+  if (f.existy(process.env.protocol)) {
+     version = process.env.protocol;
+  }
+
+  return version;
+}
