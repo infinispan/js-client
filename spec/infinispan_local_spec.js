@@ -178,18 +178,11 @@ describe('Infinispan local client', function() {
   });
 
   if (process.env.protocol == null || process.env.protocol == '2.5') {
-    it('can iterate over entries', function (done) {
-      var pairs = [
-        {key: 'it1', value: 'v1', done: false},
-        {key: 'it2', value: 'v2', done: false},
-        {key: 'it3', value: 'v3', done: false}];
-      client
-          .then(t.assert(t.putAll(pairs), t.toBeUndefined))
-          .then(t.parIterator(1, pairs)) // Iterate all data, 1 element at time, parallel
-          .then(t.seqIterator(3, pairs)) // Iterate all data, 3 elements at time, sequential
-          .catch(t.failed(done))
-          .finally(done);
-    });
+
+    it('can iterate over entries',
+       tests.iterateEntries('local', client)
+    );
+
     it('can iterate over entries getting their expirable metadata', function (done) {
       var pairs = [{key: 'it-exp-1', value: 'v1'}, {key: 'it-exp-2', value: 'v2'}];
       var expected = _.map(pairs, function (pair) {

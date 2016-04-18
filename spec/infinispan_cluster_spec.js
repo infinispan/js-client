@@ -24,13 +24,19 @@ describe('Infinispan cluster client', function() {
 
   it('can use consistent hashing to direct key-based ops to owner nodes', function(done) { client
       .then(routeConsistentHash())
+      .then(t.assert(t.clear()))
       .catch(t.failed(done)).finally(done);
   });
 
   it('can load balance key-less operations in round-robin fashion', function(done) { client
       .then(routeRoundRobin())
+      .then(t.assert(t.clear()))
       .catch(t.failed(done)).finally(done);
   });
+
+  it('can iterate over entries in a cluster',
+     tests.iterateEntries('cluster', client)
+  );
 
   xit('can listen for create/modified/remove events in distinct listeners', function(done) { client
       .then(t.assert(t.clear()))
