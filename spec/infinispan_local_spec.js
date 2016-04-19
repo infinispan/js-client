@@ -226,6 +226,12 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.exec('typed-size.js'), t.toBe('0')))
       .catch(t.failed(done)).finally(done);
   });
+  it('can execute a script remotely to get node address from cacheManager', function(done) {
+    client
+      .then(t.loadAndExec('spec/utils/typed-cachemanager-put-get.js', 'typed-cachemanager-put-get.js'))
+      .then(t.assert(t.exec('typed-cachemanager-put-get.js'), t.toBe('a')))
+      .catch(t.failed(done)).finally(done);
+  });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
       .then(t.disconnect())

@@ -23,6 +23,18 @@ var multiVNumDecode = [codec.decodeVInt(), codec.decodeVLong()];
 
 // Tests
 
+describe('JBoss String encode/decode', function() {
+  it('can encode a 128 char String as JBoss String', function() {
+    assertJBossString(t.randomStr(128), 131, [3, 62, -128]);
+  });
+  it('can encode a 127 char String as JBoss String', function() {
+    assertJBossString(t.randomStr(127), 130, [3, 62, 127]);
+  });
+  it('can encode a 1 char String as JBoss String', function() {
+    assertJBossString('a', 4, [3, 62, 1]);
+  });
+});
+
 describe('Variable bytes decode', function() {
   it('can decode a variable sized byte array', function() {
     var bytes = new Buffer([3, 49, 50, 51]);
@@ -212,4 +224,16 @@ function encodeDecode(size, encoder, decoder, bufferSize) {
   var bytebuf = t.assertEncode(t.newByteBuf(bufferSize), enc, size);
   var dec = f.actions(_.isArray(decoder) ? decoder : [decoder], codec.allDecoded);
   return dec({buf: bytebuf.buf, offset: 0});
+}
+
+function assertJBossString(str, bufferSize, header) {
+  var enc = f.actions(codec.encodeJBossString(str), codec.bytesEncoded);
+  var bytebuf = t.assertEncode(t.newByteBuf(1), enc, bufferSize);
+  t.expectToBeBuffer(bytebuf.buf, Buffer.concat([new Buffer(header), toUTF8Bytes(str)]));
+}
+
+function toUTF8Bytes(str) {
+  var buf = new Buffer(Buffer.byteLength(str));
+  buf.write(str);
+  return buf;
 }
