@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var Promise = require('promise');
 
 var t = require('./utils/testing'); // Testing dependency
 
@@ -130,21 +131,15 @@ describe('Infinispan local client working with expiry operations', function() {
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) {
-    client.then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
-
-    client1.then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
-
-    client2.then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
-
-    client3.then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
+    // Guarantee that even if one of the disconnect fails, all disconnects have been called
+    Promise.all([client, client1, client2, client3])
+      .then(function(clients) {
+        return Promise.all(_.map(clients, function(client) {
+          return client.disconnect();
+        }));
+      })
+      .catch(t.failed(done))
+      .finally(done);
   });
 
 });
