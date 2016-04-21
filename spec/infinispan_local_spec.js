@@ -1,9 +1,8 @@
 var _ = require('underscore');
-var Promise = require('promise');
-var readFile = Promise.denodeify(require('fs').readFile);
 
 var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
+var tests = require('./tests'); // Shared tests
 
 describe('Infinispan local client', function() {
   var client = t.client(t.local);
@@ -225,16 +224,14 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.getMembers(), t.toEqual([{host: '127.0.0.1', port: 11222}])))
     .catch(t.failed(done)).finally(done);
   });
-  it('can execute a script remotely to store and retrieve data', function(done) {
-    Promise.all([client, readFile('spec/utils/typed-put-get.js')])
-        .then(function(vals) {
-          var c = vals[0];
-          return c.addScript('typed-put-get.js', vals[1].toString())
-              .then(function() { return c; } );
-        })
-        .then(t.assert(t.exec('typed-put-get.js', {k: 'typed-key', v: 'typed-value'}),
-                       t.toBe('typed-value')))
-        .catch(t.failed(done)).finally(done);
+  it('can execute a script remotely to store and retrieve data',
+     tests.execPutGet('local', client)
+  );
+  it('can execute a script remotely that returns size', function(done) {
+    client
+      .then(t.loadAndExec('spec/utils/typed-size.js', 'typed-size.js'))
+      .then(t.assert(t.exec('typed-size.js'), t.toBe('0')))
+      .catch(t.failed(done)).finally(done);
   });
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client

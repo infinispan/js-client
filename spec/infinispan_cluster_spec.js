@@ -1,8 +1,9 @@
 var _ = require('underscore');
+var Promise = require('promise');
+
 var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
-var Promise = require('promise');
-var readFile = Promise.denodeify(require('fs').readFile);
+var tests = require('./tests'); // Shared tests
 
 describe('Infinispan cluster client', function() {
   var client = t.client(t.cluster1);
@@ -63,18 +64,9 @@ describe('Infinispan cluster client', function() {
           {'includeState' : true})))
       .catch(t.failed(done));
   });
-  it('can execute a script remotely to store and retrieve data in local mode using different clients', function(done) {
-    Promise.all([client, readFile('spec/utils/typed-put-get.js')])
-        .then(function(vals) {
-          var c = vals[0];
-          return c.addScript('typed-put-get.js', vals[1].toString())
-              .then(function() { return c; } );
-        })
-        .then(t.assert(t.exec('typed-put-get.js', {k: 'typed-key', v: 'typed-value'}),
-            t.toBe('typed-value')))
-        .catch(t.failed(done)).finally(done);
-  });
-
+  xit('can execute a script remotely to store and retrieve data in cluster mode',
+     tests.execPutGet('cluster', client)
+  );
   xit('can execute a script remotely to store and retrieve data in distributed mode', function(done) {
     Promise.all([client, readFile('spec/utils/typed-put-get-dist.js')])
         .then(function(vals) {

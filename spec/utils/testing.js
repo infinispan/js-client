@@ -5,6 +5,7 @@ var _ = require('underscore');
 var log4js = require('log4js');
 var Promise = require('promise');
 var exec = Promise.denodeify(require('child_process').exec);
+var readFile = Promise.denodeify(require('fs').readFile);
 
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
@@ -147,6 +148,17 @@ exports.onMany = function(eventListeners) {
 exports.exec = function(scriptName, params) {
   return function(client) {
     return client.execute(scriptName, params);
+  }
+};
+
+exports.loadAndExec = function(path, name) {
+  return function(client) {
+    return Promise.all([client, readFile(path)])
+      .then(function(vals) {
+        var c = vals[0];
+        return c.addScript(name, vals[1].toString())
+          .then(function() { return c; } );
+      })
   }
 };
 
