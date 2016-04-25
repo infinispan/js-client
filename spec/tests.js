@@ -11,7 +11,7 @@ exports.execPutGet = function(prefix, client) {
   }
 };
 
-exports.iterateEntries = function(prefix, client) {
+ exports.iterateEntries = function(prefix, client) {
   return function(done) {
     var pairs = [
       {key: prefix + '-it1', value: 'v1', done: false},

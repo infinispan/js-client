@@ -156,7 +156,8 @@ exports.loadAndExec = function(path, name) {
     return Promise.all([client, readFile(path)])
       .then(function(vals) {
         var c = vals[0];
-        return c.addScript(name, vals[1].toString())
+        var scriptName = f.existy(name) ? name : path.split('/').pop();
+        return c.addScript(scriptName, vals[1].toString())
           .then(function() { return c; } );
       })
   }
