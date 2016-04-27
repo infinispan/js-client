@@ -71,19 +71,23 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done));
   });
   xit('can execute a script remotely to store and retrieve data in cluster mode',
-     tests.execPutGet('cluster', client)
+      tests.execPutGet(
+        'spec/utils/typed-put-get.js', 'cluster', client, t.toBe('cluster-typed-value')
+      )
   );
-  xit('can execute a script remotely to store and retrieve data in distributed mode', function(done) {
-    Promise.all([client, readFile('spec/utils/typed-put-get-dist.js')])
-        .then(function(vals) {
-          var c = vals[0];
-          return c.addScript('typed-put-get-dist.js', vals[1].toString())
-              .then(function() { return c; } );
-        })
-        .then(t.assert(t.exec('typed-put-get-dist.js', {k: 'typed-key', v: 'typed-value'}),
-            t.toContain(['typed-value', 'typed-value', 'typed-value'])))
-        .catch(t.failed(done)).finally(done);
-  });
+  it('can execute a script remotely to store and retrieve data in distributed mode',
+      tests.execPutGet(
+        'spec/utils/typed-put-get-dist.js', 'dist-cluster', client
+        , toEqualJson(_.range(t.clusterSize())
+                        .map(function() { return 'dist-cluster-typed-value'; }))
+      )
+  );
+
+  function toEqualJson(value) {
+    return function(actual) {
+      expect(JSON.parse(actual)).toEqual(value);
+    }
+  }
 
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client

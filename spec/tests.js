@@ -1,12 +1,12 @@
 var t = require('./utils/testing'); // Testing dependency
 
-exports.execPutGet = function(prefix, client) {
+exports.execPutGet = function(path, prefix, client, expectFun) {
   return function(done) {
     var scriptName = prefix + '-typed-put-get.js';
     var params = {k: prefix + '-typed-key', v: prefix + '-typed-value'};
     client
-      .then(t.loadAndExec('spec/utils/typed-put-get.js', scriptName))
-      .then(t.assert(t.exec(scriptName, params), t.toBe(prefix + '-typed-value')))
+      .then(t.loadAndExec(path, scriptName))
+      .then(t.assert(t.exec(scriptName, params), expectFun))
       .catch(t.failed(done)).finally(done);
   }
 };

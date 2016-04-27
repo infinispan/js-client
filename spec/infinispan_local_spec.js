@@ -218,7 +218,9 @@ describe('Infinispan local client', function() {
     .catch(t.failed(done)).finally(done);
   });
   it('can execute a script remotely to store and retrieve data',
-     tests.execPutGet('local', client)
+     tests.execPutGet(
+       'spec/utils/typed-put-get.js', 'local', client, t.toBe('local-typed-value')
+     )
   );
   it('can execute a script remotely that returns size', function(done) {
     client
