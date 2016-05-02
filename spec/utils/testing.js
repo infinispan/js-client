@@ -165,9 +165,9 @@ exports.loadAndExec = function(path, name) {
 
 exports.removeListener = function(done) {
   return function(client, listenerId) {
-    client.removeListener(listenerId).then(function() {
-      if (f.existy(done)) done();
-    });
+    client.removeListener(listenerId)
+      .then(function() { if (f.existy(done)) done(); })
+      .catch(function(err) { if (f.existy(done)) done(err); })
   };
 };
 

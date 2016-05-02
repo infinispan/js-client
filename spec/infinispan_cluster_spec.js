@@ -38,38 +38,15 @@ describe('Infinispan cluster client', function() {
      tests.iterateEntries('cluster', client)
   );
 
-  xit('can listen for create/modified/remove events in distinct listeners', function(done) { client
+  it('can remove listener in cluster', function(done) { client
       .then(t.assert(t.clear()))
-      .then(t.assert(t.on('create', t.expectEvent('listen-distinct', 'v0', t.removeListener()))))
-      .then(t.assert(t.putIfAbsent('listen-distinct', 'v0'), t.toBeTruthy))
-      .then(t.assert(t.on('modify', t.expectEvent('listen-distinct', 'v1', t.removeListener()))))
-      .then(t.assert(t.replace('listen-distinct', 'v1'), t.toBeTruthy))
-      .then(t.assert(t.on('remove', t.expectEvent('listen-distinct', undefined, t.removeListener(done)))))
-      .then(t.assert(t.remove('listen-distinct'), t.toBeTruthy))
+      .then(t.assert(t.on('create', t.expectEvent('listen-distinct-1', 'v1', t.removeListener()))))
+      .then(t.assert(t.putIfAbsent('listen-distinct-1', 'v1'), t.toBeTruthy))
+      .then(t.assert(t.on('create', t.expectEvent('listen-distinct-2', 'v2', t.removeListener(done)))))
+      .then(t.assert(t.putIfAbsent('listen-distinct-2', 'v2'), t.toBeTruthy))
       .catch(t.failed(done));
   });
-  xit('can listen for create/modified/remove events in same listener', function(done) { client
-      .then(t.assert(t.clear()))
-      .then(t.assert(t.onMany(
-          [{event: 'create', listener: t.expectEvent('listen-same', 'v0')},
-              {event: 'modify', listener: t.expectEvent('listen-same', 'v1')},
-              {event: 'remove', listener: t.expectEvent('listen-same', undefined, t.removeListener(done))}
-          ])))
-      .then(t.assert(t.putIfAbsent('listen-same', 'v0'), t.toBeTruthy))
-      .then(t.assert(t.replace('listen-same', 'v1'), t.toBeTruthy))
-      .then(t.assert(t.remove('listen-same'), t.toBeTruthy))
-      .catch(t.failed(done));
-  });
-  xit('can listen for state events when adding listener to non-empty cache', function(done) { client
-      .then(t.assert(t.clear()))
-      .then(t.assert(t.putIfAbsent('listen-state-0', 'v0'), t.toBeTruthy))
-      .then(t.assert(t.putIfAbsent('listen-state-1', 'v1'), t.toBeTruthy))
-      .then(t.assert(t.putIfAbsent('listen-state-2', 'v2'), t.toBeTruthy))
-      .then(t.assert(t.on('create', t.expectEvents(
-          ['listen-state-0', 'listen-state-1', 'listen-state-2'], t.removeListener(done)),
-          {'includeState' : true})))
-      .catch(t.failed(done));
-  });
+
   xit('can execute a script remotely to store and retrieve data in cluster mode',
       tests.execPutGet(
         'spec/utils/typed-put-get.js', 'cluster', client, t.toBe('cluster-typed-value')
