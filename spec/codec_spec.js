@@ -61,6 +61,15 @@ describe('String encode/decode', function() {
   it('can encode an undefined String with 0 length', function() {
     assert(0, 1, codec.encodeString(undefined), codec.decodeUByte());
   });
+  it('can encode a String that fits exactly within buffer', function() {
+    var str = t.randomStr(31);
+    assert(str, 32, codec.encodeString(str), codec.decodeObject(), 32);
+  });
+  it('can encode a String that needs expanding to include length', function() {
+    // Length of String needs to be bigger than 8 bytes for expansion at String
+    var str = t.randomStr(32);
+    assert(str, 33, codec.encodeString(str), codec.decodeObject(), 32);
+  });
 });
 
 describe('Bytes encode/decode', function() {
@@ -113,6 +122,12 @@ describe('Object encode/decode', function() {
     assert(['one', 'two'], strSize('one') + strSize('two'),
            [codec.encodeObject('one'), codec.encodeObject('two')],
            [codec.decodeObject(), codec.decodeObject()]);
+  });
+  it('can encode a Buffer that fits exactly within buffer', function() {
+    assertBuffer(t.randomStr(31), 32, 32);
+  });
+  it('can encode a Buffer that needs expanding to include length', function() {
+    assertBuffer(t.randomStr(32), 33, 32);
   });
 });
 
@@ -230,6 +245,13 @@ function assertJBossString(str, bufferSize, header) {
   var enc = f.actions(codec.encodeJBossString(str), codec.bytesEncoded);
   var bytebuf = t.assertEncode(t.newByteBuf(1), enc, bufferSize);
   t.expectToBeBuffer(bytebuf.buf, Buffer.concat([new Buffer(header), toUTF8Bytes(str)]));
+}
+
+function assertBuffer(str, size, bufferSize) {
+  var enc = codec.encodeObject(new Buffer(str));
+  var dec = codec.decodeString();
+  var ret = encodeDecode(size, enc, dec, bufferSize);
+  expect(ret).toEqual([str]);
 }
 
 function toUTF8Bytes(str) {
