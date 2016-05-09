@@ -40,9 +40,9 @@ describe('Infinispan cluster client', function() {
 
   it('can remove listener in cluster', function(done) { client
       .then(t.assert(t.clear()))
-      .then(t.assert(t.on('create', t.expectEvent('listen-distinct-1', 'v1', t.removeListener()))))
+      .then(t.on('create', t.expectEvent('listen-distinct-1', done, false, 'v1')))
       .then(t.assert(t.putIfAbsent('listen-distinct-1', 'v1'), t.toBeTruthy))
-      .then(t.assert(t.on('create', t.expectEvent('listen-distinct-2', 'v2', t.removeListener(done)))))
+      .then(t.on('create', t.expectEvent('listen-distinct-2', done, true, 'v2')))
       .then(t.assert(t.putIfAbsent('listen-distinct-2', 'v2'), t.toBeTruthy))
       .catch(t.failed(done));
   });

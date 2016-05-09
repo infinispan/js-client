@@ -110,13 +110,13 @@ describe('Infinispan local client working with expiry operations', function() {
       .finally(done);
   });
   it('can listen for expired events', function(done) { client
-    .then(t.assert(t.on('expiry', t.expectEvent('listen-expiry', undefined, t.removeListener(done)))))
+    .then(t.on('expiry', t.expectEvent('listen-expiry', done, true)))
     .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
     .then(waitForExpiryEvent('listen-expiry'))
     .catch(t.failed(done));
   });
   it('can listen for expired events in cluster', function(done) { client1
-      .then(t.assert(t.on('expiry', t.expectEvent('listen-expiry', undefined, t.removeListener(done)))))
+      .then(t.on('expiry', t.expectEvent('listen-expiry', done, true)))
       .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
       .then(function(client) {
         return client2

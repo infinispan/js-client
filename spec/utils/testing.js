@@ -124,7 +124,8 @@ exports.disconnect = function() {
 
 exports.on = function(event, listener, opts) {
   return function(client) {
-    return client.addListener(event, listener(client), opts);
+    return client.addListener(event, listener(client), opts)
+      .then(function() { return client; });
   }
 };
 
@@ -137,10 +138,11 @@ exports.onMany = function(eventListeners) {
         return client.addListener(e.event, e.listener(client), {'listenerId' : listenerId });
       });
 
-      var all = Promise.all(promises);
-      return all.then(function(listenerIds) {
-        _.map(listenerIds, function(lid) { expect(lid).toBe(listenerId); });
-      })
+      return Promise.all(promises)
+        .then(function(listenerIds) {
+          _.map(listenerIds, function(lid) { expect(lid).toBe(listenerId); });
+          return client;
+        })
     });
   };
 };
@@ -161,14 +163,6 @@ exports.loadAndExec = function(path, name) {
           .then(function() { return c; } );
       })
   }
-};
-
-exports.removeListener = function(done) {
-  return function(client, listenerId) {
-    client.removeListener(listenerId)
-      .then(function() { if (f.existy(done)) done(); })
-      .catch(function(err) { if (f.existy(done)) done(err); })
-  };
 };
 
 exports.getTopologyId = function() {
@@ -263,27 +257,54 @@ function expectToBeBuffer(actual, expected) {
   expect(JSON.stringify(actual)).toBe(JSON.stringify(expected));
 }
 
-exports.expectEvent = function(expectedKey, expectedValue, eventDone) {
+exports.expectEvent = function(key, done, removeAfterEvent, value) {
   return function(client) {
-    if (f.existy(expectedValue)) {
+    if (f.existy(value)) {
       return function(eventKey, eventVersion, listenerId) {
-        expect(eventKey).toBe(expectedKey);
-        return client.getVersioned(expectedKey).then(function(versioned) {
-          expect(versioned.value).toBe(expectedValue);
-          expectToBeBuffer(versioned.version, eventVersion);
-          if (f.existy(eventDone)) eventDone(client, listenerId);
-        });
+        expect(eventKey).toBe(key);
+        assertListenerVersioned(key, value, eventVersion)(client)
+          .then(function() {
+            removeListener(client, listenerId, removeAfterEvent, done);
+          })
+          .catch(function(err) {
+            client.removeListener(listenerId)
+              .finally(exports.failed(done)(err));
+          });
       }
     } else {
       return function(eventKey, listenerId) {
-        expect(eventKey).toBe(expectedKey);
-        if (f.existy(eventDone)) eventDone(client, listenerId);
+        expect(eventKey).toBe(key);
+        removeListener(client, listenerId, removeAfterEvent, done);
       }
     }
   }
 };
 
-exports.expectEvents = function(keys, eventDone) {
+function removeListener(client, listenerId, removeAfterEvent, done) {
+  if (removeAfterEvent)
+    return client.removeListener(listenerId)
+      .then(function() { done(); })
+      .catch(function(err) { done(err); });
+  else
+    return client.removeListener(listenerId);
+}
+
+function assertListenerVersioned(key, value, version, listenerId, done) {
+  return function(client) {
+    return Promise.all([client.getVersioned(key), client.getWithMetadata(key)])
+      .then(function(results) {
+        var getV = results[0];
+        var getM = results[1];
+        expect(getV.value).toBe(value);
+        expect(getM.value).toBe(value);
+        expectToBeBuffer(getV.version, version);
+        expectToBeBuffer(getM.version, version);
+        return [client, listenerId];
+      })
+  }
+}
+
+exports.expectEvents = function(keys, done) {
   return function(client) {
     var remain = keys;
     return function(eventKey, eventVersion, listenerId) {
@@ -292,8 +313,8 @@ exports.expectEvents = function(keys, eventDone) {
       });
       expect(match.length).toBe(1);
       remain = _.without(remain, eventKey);
-      if (_.isEmpty(remain) && f.existy(eventDone))
-        eventDone(client, listenerId);
+      if (_.isEmpty(remain))
+        removeListener(client, listenerId, true, done);
     }
   }
 };
