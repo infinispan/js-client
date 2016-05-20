@@ -33,6 +33,9 @@ describe('JBoss String encode/decode', function() {
   it('can encode a 1 char String as JBoss String', function() {
     assertJBossString('a', 4, [3, 62, 1]);
   });
+  it('can encode a unicode String as JBoss String', function() {
+    assertJBossString('բարեվ', 13, [3, 62, 5]);
+  });
 });
 
 describe('Variable bytes decode', function() {

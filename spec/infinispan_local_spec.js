@@ -222,6 +222,12 @@ describe('Infinispan local client', function() {
        'spec/utils/typed-put-get.js', 'local', client, t.toBe('local-typed-value')
      )
   );
+  it('can execute a script remotely to store and retrieve unicode data', function(done) {
+     client
+       .then(t.loadAndExec('spec/utils/typed-put-get-unicode.js', 'typed-put-get-unicode.js'))
+       .then(t.assert(t.exec('typed-put-get-unicode.js'), t.toBe('բարեվ')))
+       .catch(t.failed(done)).finally(done);
+  });
   it('can execute a script remotely that returns size', function(done) {
     client
       .then(t.loadAndExec('spec/utils/typed-size.js'))
