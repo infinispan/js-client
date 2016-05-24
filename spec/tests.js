@@ -7,6 +7,7 @@ exports.execPutGet = function(path, prefix, client, expectFun) {
     client
       .then(t.loadAndExec(path, scriptName))
       .then(t.assert(t.exec(scriptName, params), expectFun))
+      .then(t.assert(t.get(prefix + "-typed-key"), t.toBe(prefix + "-typed-value")))
       .catch(t.failed(done)).finally(done);
   }
 };
