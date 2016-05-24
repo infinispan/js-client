@@ -6,6 +6,7 @@ var log4js = require('log4js');
 var Promise = require('promise');
 var exec = Promise.denodeify(require('child_process').exec);
 var readFile = Promise.denodeify(require('fs').readFile);
+var util = require('util');
 
 var f = require('../../lib/functional');
 var ispn = require('../../lib/infinispan');
@@ -19,6 +20,10 @@ exports.cluster3 = {port: 11522, host: '127.0.0.1'};
 exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
 
 var HOME='/opt/infinispan-server';
+var ISPN_CLI = util.format('%s/bin/%s', HOME, 'ispn-cli.sh');
+var JDG_CLI = util.format('%s/bin/%s', HOME, 'cli.sh');
+var CLIS = [ISPN_CLI, JDG_CLI];
+
 var CLUSTER_CLI_PORTS = [10090, 10190, 10290];
 
 var logger = u.logger('testing');
@@ -205,14 +210,29 @@ exports.assertStats = function(fun, statsFun) {
 };
 
 exports.resetStats = function(client) {
-  var resets = _.map(CLUSTER_CLI_PORTS, function(port) {
-    return exec(
-        HOME + '/bin/ispn-cli.sh --controller=127.0.0.1:' + port +
+  var cli = findCli();
+  if (f.existy(cli)) {
+    var resets = _.map(CLUSTER_CLI_PORTS, function(port) {
+      return exec(
+        cli + ' --controller=127.0.0.1:' + port +
         ' --connect --command=/subsystem=datagrid-infinispan' +
         '/cache-container=clustered/distributed-cache=default:reset-statistics')
-  });
-  return Promise.all(resets).then(function() { return client; });
+    });
+    return Promise.all(resets).then(function() { return client; });
+  }
+
+  return Promise.reject('Unable to locate any of the CLI scripts: ' + CLIS);
 };
+
+function findCli() {
+  var fs = require('fs');
+  return _.foldl(CLIS, function(found, cli) {
+    if (f.existy(found))
+      return found;
+
+    return fs.existsSync(cli) ? cli : undefined;
+  }, undefined);
+}
 
 exports.clusterSize = function() { return CLUSTER_CLI_PORTS.length; };
 
