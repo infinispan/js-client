@@ -47,7 +47,7 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done));
   });
 
-  xit('can execute a script remotely to store and retrieve data in cluster mode',
+  it('can execute a script remotely to store and retrieve data in cluster mode',
       tests.execPutGet(
         'spec/utils/typed-put-get.js', 'cluster', client, t.toBe('cluster-typed-value')
       )
@@ -59,6 +59,14 @@ describe('Infinispan cluster client', function() {
                         .map(function() { return 'dist-cluster-typed-value'; }))
       )
   );
+  it('can execute a distributed script remotely that returns undefined', function(done) {
+    client
+      .then(t.loadAndExec('spec/utils/typed-null-return-dist.js'))
+      .then(t.assert(t.exec('typed-null-return-dist.js'),
+                     toEqualJson(_.range(t.clusterSize())
+                                   .map(function() { return ''; }))))
+      .catch(t.failed(done)).finally(done);
+  });
 
   function toEqualJson(value) {
     return function(actual) {
