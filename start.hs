@@ -16,12 +16,16 @@ clusteredStandaloneSh = "/infinispan-server/bin/standalone.sh -c clustered.xml"
 clusterOpts = "-Djboss.node.name="%s%" \
     \-Djboss.socket.binding.port-offset="%d%" \
     \-Djgroups.join_timeout=1000"
+addUserSh = ""%fp%"/infinispan-server/bin/add-user.sh -u admin -p 'mypassword'"
 
 mkTmpDir :: Text -> Shell Turtle.FilePath
 mkTmpDir s = using (mktempdir "/tmp" s)
 
 cpR :: Text -> Turtle.FilePath -> Text
 cpR src dst = format ("cp -r "%s%" "%fp%"") src dst
+
+addUser :: Turtle.FilePath -> Text
+addUser path = format (addUserSh) path
 
 exec :: MonadIO io => Text -> io ExitCode
 exec cmd = shell cmd empty
@@ -39,6 +43,7 @@ launchLocalNode :: Shell (Async ExitCode)
 launchLocalNode = do
     dir <- mkTmpDir "local"
     _   <- exec (cpR ispnHome dir)
+    _   <- exec (addUser dir)
     startServer dir
 
 mkClusterOpts :: NodeName -> PortOffset -> Text
@@ -49,6 +54,7 @@ launchClusterNode n p = do
     _ <- (sleep 2.0)
     dir <- mkTmpDir "cluster"
     _   <- exec (cpR ispnHome dir)
+    _   <- exec (addUser dir)
     startClusterServer dir (mkClusterOpts n p)
 
 main = sh (do

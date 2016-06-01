@@ -29,7 +29,12 @@ var CLUSTER_CLI_PORTS = [10090, 10190, 10290];
 var logger = u.logger('testing');
 
 exports.client = function(args, cacheName, hotrodProtocolVersion) {
-  log4js.configure('spec/utils/test-log4js.json');
+  try {
+    log4js.configure('spec/utils/test-log4js.json');
+  } catch (error) {
+    // In case running specs from IDEs
+    log4js.configure('utils/test-log4js.json');
+  }
 
   var options = [];
   if (f.existy(cacheName)) {
@@ -210,6 +215,7 @@ exports.assertStats = function(fun, statsFun) {
 };
 
 exports.resetStats = function(client) {
+  // TODO: Switch to withCli
   var cli = findCli();
   if (f.existy(cli)) {
     var resets = _.map(CLUSTER_CLI_PORTS, function(port) {
@@ -232,6 +238,14 @@ function findCli() {
 
     return fs.existsSync(cli) ? cli : undefined;
   }, undefined);
+}
+
+function withCli(fun) {
+  var cli = findCli();
+  if (f.existy(cli))
+    return fun(cli);
+
+  return Promise.reject('Unable to locate any of the CLI scripts: ' + CLIS);
 }
 
 exports.clusterSize = function() { return CLUSTER_CLI_PORTS.length; };
@@ -427,7 +441,7 @@ exports.parIterator = function(batchSize, expected, opts) {
       });
       return Promise.all(promises)
           .then(function(actual) {
-            exports.toContainAll(expected)(actual);
+            exports.toContainAllEntries(expected)(actual);
           })
           .then(exports.expectIteratorDone(it))
           .then(exports.expectIteratorDone(it)) // Second time should not go remote
@@ -451,7 +465,7 @@ exports.seqIterator = function(batchSize, expected, opts) {
           }, Promise.resolve([]));
 
       return p
-          .then(function(array) { exports.toContainAll(expected)(array); })
+          .then(function(array) { exports.toContainAllEntries(expected)(array); })
           .then(function() { return it.close(); }) // Close iterator
           .then(function() { return client; });
     })
@@ -474,10 +488,16 @@ exports.toEqualPairs = function(value) {
   }
 };
 
-exports.toContainAll = function(expected) {
+exports.toContainAllEntries = function(expected) {
   return function(actual) {
     var sorted = _.sortBy(actual, 'key');
-    var zipped = _.zip(sorted, expected);
+    return exports.toContainAll(expected)(sorted);
+  }
+};
+
+exports.toContainAll = function(expected) {
+  return function(actual) {
+    var zipped = _.zip(actual, expected);
     _.map(zipped, function(e) {
       var actualEntry = e[0];
       var expectedEntry = e[1];
@@ -508,4 +528,31 @@ exports.getHotrodProtocolVersion = function() {
   }
 
   return version;
-}
+};
+
+exports.getClusterMembers = function(mgmtPort) {
+  return withCli(function(cli) {
+    return new Promise(function (fulfill, reject) {
+      var port = f.existy(mgmtPort) ? mgmtPort : _.last(CLUSTER_CLI_PORTS);
+      var nodeExec = require('child_process').exec;
+      nodeExec(
+        cli + ' --controller=127.0.0.1:' + port +
+        ' --connect "--command=/subsystem=datagrid-infinispan' +
+        '/cache-container=clustered:read-attribute(name=members)"',
+        function (error, stdout, stderr) {
+          if (f.existy(error)) {
+            var errorMessage = util.format(
+              'Error: %s // STDOUT: %s // STDERR: %s', error, stdout, stderr);
+            reject(errorMessage);
+          } else {
+            var jsonFormatted = stdout.split('=>').join(':'); // rudimentary
+            var members = JSON.parse(jsonFormatted).result
+                .replace('[', '').replace(']', '').split(/[\s,]+/);
+            var sorted = _.sortBy(members, function(m) { return m; });
+            fulfill(sorted);
+          }
+        }
+      );
+    });
+  });
+};
