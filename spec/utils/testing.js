@@ -66,9 +66,9 @@ exports.getM = function(k) {
   return function(client) { return client.getWithMetadata(k); }
 };
 
-exports.getV = function(k) {
-  return function(client) { return client.getVersioned(k); }
-};
+//exports.getV = function(k) {
+//  return function(client) { return client.getVersioned(k); }
+//};
 
 exports.putIfAbsent = function(k, v, opts) {
   return function(client) { return client.putIfAbsent(k, v, opts); }
@@ -328,17 +328,12 @@ function removeListener(client, listenerId, removeAfterEvent, done) {
     return client.removeListener(listenerId);
 }
 
-function assertListenerVersioned(key, value, version, listenerId, done) {
+function assertListenerVersioned(key, value, version) {
   return function(client) {
-    return Promise.all([client.getVersioned(key), client.getWithMetadata(key)])
-      .then(function(results) {
-        var getV = results[0];
-        var getM = results[1];
-        expect(getV.value).toBe(value);
+    return client.getWithMetadata(key)
+      .then(function(getM) {
         expect(getM.value).toBe(value);
-        expectToBeBuffer(getV.version, version);
         expectToBeBuffer(getM.version, version);
-        return [client, listenerId];
       })
   }
 }
@@ -393,18 +388,6 @@ exports.findKeyForServers = function(client, addrs) {
 exports.getAll = function(keys) {
   return function(client) {
     return client.getAll(keys);
-  }
-};
-
-exports.getBulk = function(count) {
-  return function(client) {
-    return client.getBulk(count);
-  }
-};
-
-exports.getBulkKeys = function(count) {
-  return function(client) {
-    return client.getBulkKeys(count);
   }
 };
 

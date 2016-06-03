@@ -71,7 +71,7 @@ describe('Infinispan local client working with expiry operations', function() {
     var pairs = [{key: 'idle-multi1', value: 'v1'}, {key: 'idle-multi2', value: 'v2'}];
     client
         .then(t.assert(t.put('idle-replace', 'v0')))
-        .then(t.assert(t.conditional(t.replaceV, t.getV, 'idle-replace', 'v0', 'v1', {maxIdle: '100ms'}), t.toBeTruthy))
+        .then(t.assert(t.conditional(t.replaceV, t.getM, 'idle-replace', 'v0', 'v1', {maxIdle: '100ms'}), t.toBeTruthy))
         .then(t.assert(t.get('idle-replace'), t.toBe('v1')))
         .then(waitIdleTimeExpire('idle-replace'))
         .then(t.assert(t.putAll(pairs, {maxIdle: '100000μs'}), t.toBeUndefined))
@@ -84,7 +84,7 @@ describe('Infinispan local client working with expiry operations', function() {
     var pairs = [{key: 'idle-multi1', value: 'v1'}, {key: 'idle-multi2', value: 'v2'}];
     client1
       .then(t.assert(t.put('idle-replace', 'v0')))
-      .then(t.assert(t.conditional(t.replaceV, t.getV, 'idle-replace', 'v0', 'v1', {maxIdle: '100ms'}), t.toBeTruthy))
+      .then(t.assert(t.conditional(t.replaceV, t.getM, 'idle-replace', 'v0', 'v1', {maxIdle: '100ms'}), t.toBeTruthy))
       .then(t.assert(t.get('idle-replace'), t.toBe('v1')))
       .then(function(client) {
         return client2

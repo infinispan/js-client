@@ -33,7 +33,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.replace('cond', 'v1'), t.toBeTruthy))
     .then(t.assert(t.replace('other', 'v1'), t.toBeFalsy))
     .then(t.assert(t.get('cond'), t.toBe('v1')))
-    .then(t.assert(t.conditional(t.replaceV, t.getV, 'cond', 'v1', 'v2'), t.toBeTruthy))
+    .then(t.assert(t.conditional(t.replaceV, t.getM, 'cond', 'v1', 'v2'), t.toBeTruthy))
     .then(t.assert(t.get('cond'), t.toBe('v2')))
     .then(t.assert(t.notReplaceWithVersion('_'), t.toBeFalsy)) // key not found
     .then(t.assert(t.notReplaceWithVersion('cond'), t.toBeFalsy)) // key found but invalid version
@@ -41,9 +41,9 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.notRemoveWithVersion('_'), t.toBeFalsy))
     .then(t.assert(t.notRemoveWithVersion('cond'), t.toBeFalsy))
     .then(t.assert(t.get('cond'), t.toBe('v2')))
-    .then(t.assert(t.conditional(t.removeWithVersion, t.getV, 'cond', 'v2'), t.toBeTruthy))
+    .then(t.assert(t.conditional(t.removeWithVersion, t.getM, 'cond', 'v2'), t.toBeTruthy))
     .then(t.assert(t.get('cond'), t.toBeUndefined))
-    .then(t.assert(t.getV('cond'), t.toBeUndefined))
+    .then(t.assert(t.getM('cond'), t.toBeUndefined))
     .catch(t.failed(done))
     .finally(done);
   });
@@ -56,12 +56,12 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.put('prev', 'v2', t.prev()), t.toBe('v1')))
     .then(t.assert(t.replace('prev', 'v3', t.prev()), t.toBe('v2')))
     .then(t.assert(t.replace('_', 'v3', t.prev()), t.toBeUndefined))
-    .then(t.assert(t.conditional(t.replaceV, t.getV, 'prev', 'v3', 'v4', t.prev()), t.toBe('v3')))
+    .then(t.assert(t.conditional(t.replaceV, t.getM, 'prev', 'v3', 'v4', t.prev()), t.toBe('v3')))
     .then(t.assert(t.notReplaceWithVersion('_', t.prev()), t.toBeUndefined)) // key not found
     .then(t.assert(t.notReplaceWithVersion('prev', t.prev()), t.toBe('v4'))) // key found but invalid version
     .then(t.assert(t.notRemoveWithVersion('_', t.prev()), t.toBeUndefined)) // key not found
     .then(t.assert(t.notRemoveWithVersion('prev', t.prev()), t.toBe('v4'))) // key found but invalid version
-    .then(t.assert(t.conditional(t.removeWithVersion, t.getV, 'prev', 'v4', t.prev()), t.toBe('v4')))
+    .then(t.assert(t.conditional(t.removeWithVersion, t.getM, 'prev', 'v4', t.prev()), t.toBe('v4')))
     .catch(t.failed(done))
     .finally(done);
   });
@@ -73,10 +73,6 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.size(), t.toBe(3)))
       .then(t.assert(t.getAll(keys), t.toEqualPairs([{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
       .then(t.assert(t.getAll(['_']), t.toEqual([])))
-      .then(t.assert(t.getBulk(), t.toEqualPairs(pairs)))
-      .then(t.assert(t.getBulk(3), t.toEqualPairs(pairs)))
-      .then(t.assert(t.getBulkKeys(), t.toEqualPairs(['multi1', 'multi2', 'multi3'])))
-      .then(t.assert(t.getBulkKeys(3), t.toEqualPairs(['multi1', 'multi2', 'multi3'])))
       .catch(t.failed(done))
       .finally(done);
   });
