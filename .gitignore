@@ -13,3 +13,6 @@ node_modules
 
 # Archive files
 *.tgz
+
+# JSDoc output
+out

@@ -43,6 +43,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.get('cond'), t.toBe('v2')))
     .then(t.assert(t.conditional(t.removeWithVersion, t.getV, 'cond', 'v2'), t.toBeTruthy))
     .then(t.assert(t.get('cond'), t.toBeUndefined))
+    .then(t.assert(t.getV('cond'), t.toBeUndefined))
     .catch(t.failed(done))
     .finally(done);
   });
@@ -112,6 +113,7 @@ describe('Infinispan local client', function() {
   it('can get key/value pairs with their immortal metadata', function(done) {
     var immortal = { created : -1, lifespan: -1, lastUsed: -1, maxIdle: -1 };
     client
+      .then(t.assert(t.getM('meta'), t.toBeUndefined))
       .then(t.assert(t.put('meta', 'v0')))
       .then(t.assert(t.getM('meta'), t.toContain(f.merge({ value: 'v0' }, immortal))))
       .then(t.assert(t.conditional(t.replaceV, t.getM, 'meta', 'v0', 'v1'), t.toBeTruthy))

@@ -269,6 +269,11 @@ exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
 exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };
 exports.toBeFalsy = function(actual) { expect(actual).toBeFalsy(); };
 
+exports.toBeUndefinedVersioned = function(actual) {
+  expect(actual.value).toBeUndefined();
+  expectToBeBuffer(actual.version, new Buffer());
+};
+
 exports.vNumSize = function(num) {
   var limits = [7,14,21,28,35,42,49,53];
   for (var i = 0; i < limits.length; i++) {
