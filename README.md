@@ -17,7 +17,7 @@ construction via `{cacheName: 'myCache'}` option. In the absence of any cache
 name options, the client will interact with the default cache. 
 * Full CRUD operation support, e.g. `put`, `get`, `remove`, `containsKey`...etc.
 * Compare-And-Swap operation support, e.g. `putIfAbsent`, 
-`getWithVersion`/`getWithMetadata`, `replace`, `replaceWithVersion`, 
+`getWithMetadata`, `replace`, `replaceWithVersion`, 
 `removeWithVersion`..etc.
 * Expiration with absolute lifespan or relative maximum idle time
 is supported. This expiration parameters as passed as optional parameters
@@ -26,7 +26,7 @@ to create/update methods and they support multiple time units, e.g.
 * Update and remove operations can optionally return previous values 
 by passing in `{previous: true}` option.
 * Bulk store/retrieve/delete operations are supported, e.g. `putAll`, `getAll`, 
-`getBulk`, `getBulkKeys`, `clear`...etc.
+`clear`...etc.
 * Cache contents can be iterated over using the `iterator` method.
 * Cache size can be determined using the `size` method.
 * Remote cache listeners can be plugged using the `addListener` method, which
@@ -135,26 +135,26 @@ connected.then(function (client) {
   var showReplace = clientReplace.then(
       function(success) { console.log('replace(cond)=' + success); });
 
-  var clientGetVersionedForReplace = showReplace.then(
-      function() { return client.getVersioned('cond'); });
+  var clientGetMetaForReplace = showReplace.then(
+      function() { return client.getWithMetadata('cond'); });
 
-  var clientReplaceWithVersion = clientGetVersionedForReplace.then(
-      function(versioned) {
-        console.log('getVersioned(cond)=' + JSON.stringify(versioned));
-        return client.replaceWithVersion('cond', 'v2', versioned.version);
+  var clientReplaceWithVersion = clientGetMetaForReplace.then(
+      function(entry) {
+        console.log('getWithMetadata(cond)=' + JSON.stringify(entry));
+        return client.replaceWithVersion('cond', 'v2', entry.version);
       }
   );
 
   var showReplaceWithVersion = clientReplaceWithVersion.then(
       function(success) { console.log('replaceWithVersion(cond)=' + success); });
 
-  var clientGetVersionedForRemove = showReplaceWithVersion.then(
-      function() { return client.getVersioned('cond'); });
+  var clientGetMetaForRemove = showReplaceWithVersion.then(
+      function() { return client.getWithMetadata('cond'); });
 
-  var clientRemoveWithVersion = clientGetVersionedForRemove.then(
-      function(versioned) {
-        console.log('getVersioned(cond)=' + JSON.stringify(versioned));
-        return client.removeWithVersion('cond', versioned.version);
+  var clientRemoveWithVersion = clientGetMetaForRemove.then(
+      function(entry) {
+        console.log('getWithMetadata(cond)=' + JSON.stringify(entry));
+        return client.removeWithVersion('cond', entry.version);
       }
   );
 
@@ -518,3 +518,11 @@ Or:
     node --debug-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js
 
 And then start a remote Node.js debugger from IDE on port 5858.
+
+# Generating API documentation
+
+The client contains JSDoc formatted API docs which can be generated via:
+
+    npm install jsdoc
+    ./node_modules/.bin/jsdoc lib/*.js
+    open out/index.html
