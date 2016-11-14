@@ -18,7 +18,7 @@ describe('Infinispan cluster client', function() {
 
   it('can get cluster topology from a server node', function(done) { client
       .then(t.assert(t.getMembers(), t.toContain(
-          [{host: '127.0.0.1', port: 11322}, {host: '127.0.0.1', port: 11422}])))
+          [{host: '127.0.0.1', port: 11322}, {host: '127.0.0.1', port: 11332}])))
       .catch(t.failed(done)).finally(done);
   });
 

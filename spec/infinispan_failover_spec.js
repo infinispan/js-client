@@ -21,16 +21,16 @@ describe('Infinispan cluster client', function() {
   });
 
   it('can failover when nodes crash', function(done) {
-    var cluster4 = {port: 11622, host: '127.0.0.1'};
-    var cluster5 = {port: 11722, host: '127.0.0.1'};
-    var cluster6 = {port: 11822, host: '127.0.0.1'};
+    var cluster4 = {port: 11352, host: '127.0.0.1'};
+    var cluster5 = {port: 11362, host: '127.0.0.1'};
+    var cluster6 = {port: 11372, host: '127.0.0.1'};
 
-    launchClusterNode('node4', 400);
-    launchClusterNode('node5', 500);
-    launchClusterNode('node6', 600);
+    launchClusterNode('node4', 130); // 11352
+    launchClusterNode('node5', 140); // 11362
+    launchClusterNode('node6', 150); // 11372
 
     setTimeout(function() {
-      t.getClusterMembers(10590)
+      t.getClusterMembers(10140)
         .then(function(ms) { t.toContainAll(['node4', 'node5', 'node6'])(ms); })
         .then(function() { return t.client(cluster4); })
         .then(t.assert(t.getMembers(), t.toContain([cluster4, cluster5, cluster6])))

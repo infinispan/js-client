@@ -15,20 +15,21 @@ var protocols = require('../../lib/protocols');
 
 exports.local = {port: 11222, host: '127.0.0.1'};
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
-exports.cluster2 = {port: 11422, host: '127.0.0.1'};
-exports.cluster3 = {port: 11522, host: '127.0.0.1'};
+exports.cluster2 = {port: 11332, host: '127.0.0.1'};
+exports.cluster3 = {port: 11342, host: '127.0.0.1'};
 exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
+exports.ssl = {port: 11422, host: 'localhost'};
 
 var HOME='/opt/infinispan-server';
 var ISPN_CLI = util.format('%s/bin/%s', HOME, 'ispn-cli.sh');
 var JDG_CLI = util.format('%s/bin/%s', HOME, 'cli.sh');
 var CLIS = [ISPN_CLI, JDG_CLI];
 
-var CLUSTER_CLI_PORTS = [10090, 10190, 10290];
+var CLUSTER_CLI_PORTS = [10090, 10100, 10110];
 
 var logger = u.logger('testing');
 
-exports.client = function(args, cacheName, hotrodProtocolVersion) {
+exports.client = function(args, opts) {
   try {
     log4js.configure('spec/utils/test-log4js.json');
   } catch (error) {
@@ -36,20 +37,14 @@ exports.client = function(args, cacheName, hotrodProtocolVersion) {
     log4js.configure('utils/test-log4js.json');
   }
 
-  var options = [];
-  if (f.existy(cacheName)) {
-    options.cacheName = cacheName;
-  }
-
-  if (f.existy(hotrodProtocolVersion)) {
-    options.version = hotrodProtocolVersion;
-  } else {
+  if (!f.existy(opts) || !f.existy(opts.version)) {
     var version = exports.getHotrodProtocolVersion();
     if (f.existy(version)) {
-      options.version = version;
+      opts.version = version;
     }
   }
-  return ispn.client(args, options);
+
+  return ispn.client(args, opts);
 };
 
 exports.protocol = function() { return protocols.version25(); };
@@ -543,4 +538,13 @@ exports.getClusterMembers = function(mgmtPort) {
       );
     });
   });
+};
+
+exports.sslOpts = function(trustCert) {
+  return {
+    ssl: {
+      enabled: true,
+      trustCerts: [trustCert]
+    }
+  }
 };
