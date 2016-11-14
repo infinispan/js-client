@@ -13,6 +13,8 @@ type NodeName = Text
 ispnHome = "/opt/infinispan-server"
 ispnSh = "/infinispan-server/bin/standalone.sh"
 clusteredStandaloneSh = "/infinispan-server/bin/standalone.sh -c clustered.xml"
+sslNoSh = "/infinispan-server/bin/standalone.sh -c standalone-hotrod-ssl-no_client_auth.xml"
+portOpts = "-Djboss.socket.binding.port-offset="%d%""
 clusterOpts = "-Djboss.node.name="%s%" \
     \-Djboss.socket.binding.port-offset="%d%" \
     \-Djgroups.join_timeout=1000"
@@ -23,6 +25,9 @@ mkTmpDir s = using (mktempdir "/tmp" s)
 
 cpR :: Text -> Turtle.FilePath -> Text
 cpR src dst = format ("cp -r "%s%" "%fp%"") src dst
+
+cpD :: Text -> Turtle.FilePath -> Text
+cpD src dst = format ("cp "%s%" "%fp%"") src dst
 
 addUser :: Turtle.FilePath -> Text
 addUser path = format (addUserSh) path
@@ -36,6 +41,9 @@ asyncExec = using . fork . exec
 startServer :: Turtle.FilePath -> Shell (Async ExitCode)
 startServer h = asyncExec $ (format fp h) <> ispnSh
 
+startPortOffsetServer :: Turtle.FilePath -> PortOffset -> Shell (Async ExitCode)
+startPortOffsetServer h p = asyncExec $ (format fp h) <> sslNoSh <> " " <> (format portOpts p)
+
 startClusterServer :: Turtle.FilePath -> Text -> Shell (Async ExitCode)
 startClusterServer h ps = asyncExec $ (format fp h) <> clusteredStandaloneSh <> " " <> ps
 
@@ -45,6 +53,16 @@ launchLocalNode = do
     _   <- exec (cpR ispnHome dir)
     _   <- exec (addUser dir)
     startServer dir
+
+launchSslNoClientAuthNode :: PortOffset -> Shell (Async ExitCode)
+launchSslNoClientAuthNode p = do
+    _ <- (sleep 2.0)
+    dir <- mkTmpDir "ssl-no"
+    _   <- exec (cpR ispnHome dir)
+    _   <- exec (cpD "spec/configs/standalone-hotrod-ssl-no_client_auth.xml" (dir <> "infinispan-server/standalone/configuration"))
+    _   <- exec (cpD "spec/ssl/keystore_server.jks" (dir <> "infinispan-server/standalone/configuration"))
+    _   <- exec (addUser dir)
+    startPortOffsetServer dir p
 
 mkClusterOpts :: NodeName -> PortOffset -> Text
 mkClusterOpts n p = format (clusterOpts) n p
@@ -59,11 +77,14 @@ launchClusterNode n p = do
 
 main = sh (do
     local      <- launchLocalNode
-    cluster1   <- launchClusterNode "node1" 100
-    cluster2   <- launchClusterNode "node2" 200
-    cluster3   <- launchClusterNode "node3" 300
+    cluster1   <- launchClusterNode "node1" 100 -- 11322
+    cluster2   <- launchClusterNode "node2" 110 -- 11332
+    cluster3   <- launchClusterNode "node3" 120 -- 11342
+    sslNo      <- launchSslNoClientAuthNode 200
     -- TODO: Check that cluster forms
     _ <- liftIO (wait local)
     _ <- liftIO (wait cluster1)
     _ <- liftIO (wait cluster2)
-    liftIO (wait cluster3))
+    _ <- liftIO (wait cluster3)
+    liftIO (wait sslNo)
+    )
