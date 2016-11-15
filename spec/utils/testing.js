@@ -18,7 +18,10 @@ exports.cluster1 = {port: 11322, host: '127.0.0.1'};
 exports.cluster2 = {port: 11332, host: '127.0.0.1'};
 exports.cluster3 = {port: 11342, host: '127.0.0.1'};
 exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
-exports.ssl = {port: 11422, host: 'localhost'};
+exports.sslTrust = {port: 11422, host: 'localhost'};
+// ^ Signed by CA for localhost, can't be 127.0.0.1
+exports.sslAuth = {port: 11432, host: 'localhost'};
+// ^ Signed by CA for localhost, can't be 127.0.0.1
 
 var HOME='/opt/infinispan-server';
 var ISPN_CLI = util.format('%s/bin/%s', HOME, 'ispn-cli.sh');
@@ -538,13 +541,4 @@ exports.getClusterMembers = function(mgmtPort) {
       );
     });
   });
-};
-
-exports.sslOpts = function(trustCert) {
-  return {
-    ssl: {
-      enabled: true,
-      trustCerts: [trustCert]
-    }
-  }
 };

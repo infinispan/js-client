@@ -12,8 +12,10 @@ type NodeName = Text
 -- TODO: Get Infinispan Home from environment variable, e.g. ISPN_HOME or JBOSS_HOME
 ispnHome = "/opt/infinispan-server"
 ispnSh = "/infinispan-server/bin/standalone.sh"
+configDir = "infinispan-server/standalone/configuration"
 clusteredStandaloneSh = "/infinispan-server/bin/standalone.sh -c clustered.xml"
-sslNoSh = "/infinispan-server/bin/standalone.sh -c standalone-hotrod-ssl-no_client_auth.xml"
+sslTrust = "/infinispan-server/bin/standalone.sh -c standalone-hotrod-ssl-trust.xml"
+sslAuth = "/infinispan-server/bin/standalone.sh -c ../../docs/examples/configs/standalone-hotrod-ssl.xml"
 portOpts = "-Djboss.socket.binding.port-offset="%d%""
 clusterOpts = "-Djboss.node.name="%s%" \
     \-Djboss.socket.binding.port-offset="%d%" \
@@ -41,8 +43,8 @@ asyncExec = using . fork . exec
 startServer :: Turtle.FilePath -> Shell (Async ExitCode)
 startServer h = asyncExec $ (format fp h) <> ispnSh
 
-startPortOffsetServer :: Turtle.FilePath -> PortOffset -> Shell (Async ExitCode)
-startPortOffsetServer h p = asyncExec $ (format fp h) <> sslNoSh <> " " <> (format portOpts p)
+startPortOffsetServer :: Turtle.FilePath -> Text -> PortOffset -> Shell (Async ExitCode)
+startPortOffsetServer h shCmd p = asyncExec $ (format fp h) <> shCmd <> " " <> (format portOpts p)
 
 startClusterServer :: Turtle.FilePath -> Text -> Shell (Async ExitCode)
 startClusterServer h ps = asyncExec $ (format fp h) <> clusteredStandaloneSh <> " " <> ps
@@ -53,16 +55,6 @@ launchLocalNode = do
     _   <- exec (cpR ispnHome dir)
     _   <- exec (addUser dir)
     startServer dir
-
-launchSslNoClientAuthNode :: PortOffset -> Shell (Async ExitCode)
-launchSslNoClientAuthNode p = do
-    _ <- (sleep 2.0)
-    dir <- mkTmpDir "ssl-no"
-    _   <- exec (cpR ispnHome dir)
-    _   <- exec (cpD "spec/configs/standalone-hotrod-ssl-no_client_auth.xml" (dir <> "infinispan-server/standalone/configuration"))
-    _   <- exec (cpD "spec/ssl/keystore_server.jks" (dir <> "infinispan-server/standalone/configuration"))
-    _   <- exec (addUser dir)
-    startPortOffsetServer dir p
 
 mkClusterOpts :: NodeName -> PortOffset -> Text
 mkClusterOpts n p = format (clusterOpts) n p
@@ -75,16 +67,38 @@ launchClusterNode n p = do
     _   <- exec (addUser dir)
     startClusterServer dir (mkClusterOpts n p)
 
+launchSslTrustNode :: PortOffset -> Shell (Async ExitCode)
+launchSslTrustNode p = do
+    _ <- (sleep 2.0)
+    dir <- mkTmpDir "ssl-trust"
+    _   <- exec (cpR ispnHome dir)
+    _   <- exec (cpD "spec/configs/standalone-hotrod-ssl-trust.xml" (dir <> configDir))
+    _   <- exec (cpD "spec/ssl/trust/server/keystore_server.jks" (dir <> configDir))
+    _   <- exec (addUser dir)
+    startPortOffsetServer dir sslTrust p
+
+launchSslAuthNode :: PortOffset -> Shell (Async ExitCode)
+launchSslAuthNode p = do
+    _ <- (sleep 2.0)
+    dir <- mkTmpDir "ssl-auth"
+    _   <- exec (cpR ispnHome dir)
+    _   <- exec (cpD "spec/ssl/auth/server/keystore_server.jks" (dir <> configDir))
+    _   <- exec (cpD "spec/ssl/auth/server/truststore_server.jks" (dir <> configDir))
+    _   <- exec (addUser dir)
+    startPortOffsetServer dir sslAuth p
+
 main = sh (do
     local      <- launchLocalNode
     cluster1   <- launchClusterNode "node1" 100 -- 11322
     cluster2   <- launchClusterNode "node2" 110 -- 11332
     cluster3   <- launchClusterNode "node3" 120 -- 11342
-    sslNo      <- launchSslNoClientAuthNode 200
+    sslTrust   <- launchSslTrustNode 200
+    sslAuth    <- launchSslAuthNode 210
     -- TODO: Check that cluster forms
     _ <- liftIO (wait local)
     _ <- liftIO (wait cluster1)
     _ <- liftIO (wait cluster2)
     _ <- liftIO (wait cluster3)
-    liftIO (wait sslNo)
+    _ <- liftIO (wait sslTrust)
+    liftIO (wait sslAuth)
     )
