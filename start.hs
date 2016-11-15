@@ -14,8 +14,7 @@ ispnHome = "/opt/infinispan-server"
 ispnSh = "/infinispan-server/bin/standalone.sh"
 configDir = "infinispan-server/standalone/configuration"
 clusteredStandaloneSh = "/infinispan-server/bin/standalone.sh -c clustered.xml"
-sslTrust = "/infinispan-server/bin/standalone.sh -c standalone-hotrod-ssl-trust.xml"
-sslAuth = "/infinispan-server/bin/standalone.sh -c ../../docs/examples/configs/standalone-hotrod-ssl.xml"
+sslSh = "/infinispan-server/bin/standalone.sh -c standalone-hotrod-ssl.xml"
 portOpts = "-Djboss.socket.binding.port-offset="%d%""
 clusterOpts = "-Djboss.node.name="%s%" \
     \-Djboss.socket.binding.port-offset="%d%" \
@@ -67,38 +66,27 @@ launchClusterNode n p = do
     _   <- exec (addUser dir)
     startClusterServer dir (mkClusterOpts n p)
 
-launchSslTrustNode :: PortOffset -> Shell (Async ExitCode)
-launchSslTrustNode p = do
-    _ <- (sleep 2.0)
-    dir <- mkTmpDir "ssl-trust"
-    _   <- exec (cpR ispnHome dir)
-    _   <- exec (cpD "spec/configs/standalone-hotrod-ssl-trust.xml" (dir <> configDir))
-    _   <- exec (cpD "spec/ssl/trust/server/keystore_server.jks" (dir <> configDir))
-    _   <- exec (addUser dir)
-    startPortOffsetServer dir sslTrust p
-
-launchSslAuthNode :: PortOffset -> Shell (Async ExitCode)
-launchSslAuthNode p = do
+launchSslNode :: PortOffset -> Shell (Async ExitCode)
+launchSslNode p = do
     _ <- (sleep 2.0)
     dir <- mkTmpDir "ssl-auth"
     _   <- exec (cpR ispnHome dir)
+    _   <- exec (cpD "spec/configs/standalone-hotrod-ssl.xml" (dir <> configDir))
     _   <- exec (cpD "spec/ssl/auth/server/keystore_server.jks" (dir <> configDir))
     _   <- exec (cpD "spec/ssl/auth/server/truststore_server.jks" (dir <> configDir))
     _   <- exec (addUser dir)
-    startPortOffsetServer dir sslAuth p
+    startPortOffsetServer dir sslSh p
 
 main = sh (do
     local      <- launchLocalNode
     cluster1   <- launchClusterNode "node1" 100 -- 11322
     cluster2   <- launchClusterNode "node2" 110 -- 11332
     cluster3   <- launchClusterNode "node3" 120 -- 11342
-    sslTrust   <- launchSslTrustNode 200
-    sslAuth    <- launchSslAuthNode 210
+    ssl        <- launchSslNode 200
     -- TODO: Check that cluster forms
     _ <- liftIO (wait local)
     _ <- liftIO (wait cluster1)
     _ <- liftIO (wait cluster2)
     _ <- liftIO (wait cluster3)
-    _ <- liftIO (wait sslTrust)
-    liftIO (wait sslAuth)
+    liftIO (wait ssl)
     )

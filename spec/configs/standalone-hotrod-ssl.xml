@@ -145,10 +145,13 @@
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:infinispan:server:endpoint:9.0">
-            <hotrod-connector socket-binding="hotrod" cache-container="local">
+            <hotrod-connector name="ssl-trust" socket-binding="hotrod-trust" cache-container="local">
                 <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
-                <!--<encryption security-realm="ApplicationRealm" require-ssl-client-auth="true"/>-->
                 <encryption security-realm="ApplicationRealm" require-ssl-client-auth="false"/>
+            </hotrod-connector>
+            <hotrod-connector name="ssl-auth" socket-binding="hotrod-auth" cache-container="local">
+                <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
+                <encryption security-realm="ApplicationRealm" require-ssl-client-auth="true"/>
             </hotrod-connector>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:io:1.1">
@@ -246,7 +249,8 @@
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
-        <socket-binding name="hotrod" port="11222"/>
+        <socket-binding name="hotrod-trust" port="11222"/>
+        <socket-binding name="hotrod-auth" port="11232"/>
         <socket-binding name="hotrod-internal" port="11223"/>
         <socket-binding name="memcached" port="11211"/>
         <socket-binding name="rest" port="8080"/>
