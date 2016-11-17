@@ -16,3 +16,6 @@ node_modules
 
 # JSDoc output
 out
+
+# OSX files
+.DS_Store
