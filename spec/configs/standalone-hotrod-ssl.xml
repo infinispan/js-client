@@ -42,6 +42,20 @@
                     </ssl>
                 </server-identities>
             </security-realm>
+            <security-realm name="TrustedRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="keystore_trusted_server.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
+                    </ssl>
+                </server-identities>
+            </security-realm>
+            <security-realm name="UntrustedRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="keystore_untrusted_server.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
+                    </ssl>
+                </server-identities>
+            </security-realm>
         </security-realms>
         <audit-log>
             <formatters>
@@ -153,6 +167,13 @@
                 <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
                 <encryption security-realm="ApplicationRealm" require-ssl-client-auth="true"/>
             </hotrod-connector>
+            <hotrod-connector name="ssl-sni" socket-binding="hotrod-sni" cache-container="local">
+                <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
+                <encryption security-realm="UntrustedRealm" require-ssl-client-auth="false">
+                    <sni host-name="trusted.acme" security-realm="TrustedRealm"/>
+                    <sni host-name="untrusted.acme" security-realm="ApplicationRealm"/>
+                </encryption>
+            </hotrod-connector>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:io:1.1">
             <worker name="default"/>
@@ -251,6 +272,7 @@
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
         <socket-binding name="hotrod-trust" port="11222"/>
         <socket-binding name="hotrod-auth" port="11232"/>
+        <socket-binding name="hotrod-sni" port="11242"/>
         <socket-binding name="hotrod-internal" port="11223"/>
         <socket-binding name="memcached" port="11211"/>
         <socket-binding name="rest" port="8080"/>
