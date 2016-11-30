@@ -487,6 +487,80 @@ connected.then(function (client) {
 });
 ```
 
+## Working with Sites
+
+Multiple Infinispan Server clusters can be deployed in such way that each cluster belongs to a different site.
+Such deployments are done to enable data to be backed up from one cluster to another, potentially in a different geographical location.
+This Javascript client implementation not only can failover between failures in nodes within a cluster, but if the entire cluster fails to respond, it can failover to a different cluster.
+If the failover succeeds, the client will remain connected to the alternative cluster until this becomes unavailable, in which case it’ll try any other clusters defined, and ultimately, it’ll try the original server settings.
+To be able to failover between clusters, first and foremost Infinispan Servers have to be [configured with cross-site replication](http://infinispan.org/docs/stable/user_guide/user_guide.html#CrossSiteReplication).
+Next, the client has to provide alternative `clusters` configuration with at least one host/port pair details for each of the clusters configured.
+For example:
+
+```Javascript
+var connected = infinispan.client({port: 11322, host: '127.0.0.1'},
+  {
+    clusters: [
+      {
+        name: 'site-a',
+        servers: [{port: 1234, host: 'hostA1'}]
+      },
+      {
+        name: 'site-b',
+        servers: [{port: 2345, host: 'hostB1'}, {port: 3456, host: 'hostB2'}]
+      }
+    ]
+  });
+```
+
+### Manual Cluster Switch
+
+As well as supporting automatic site cluster failover, Javascript clients can also switch between site clusters manually by calling `switchToCluster(clusterName)` and `switchToDefaultCluster()`.
+Using `switchToCluster(clusterName)``, users can force a client to switch to one of the clusters pre-defined in the client configuration. To switch to the initial servers defined in the client configuration, call `switchToDefaultCluster()`.
+For example:
+
+```Javascript
+var connected = infinispan.client({port: 11322, host: '127.0.0.1'},
+  {
+    clusters: [
+      {
+        name: 'site-a',
+        servers: [{port: 1234, host: 'hostA1'}]
+      },
+      {
+        name: 'site-b',
+        servers: [{port: 2345, host: 'hostB1'}, {port: 3456, host: 'hostB2'}]
+      }
+    ]
+  });
+
+connected.then(function (client) {
+
+  var switchToB = client.getTopologyInfo().switchToCluster('site-b');
+
+  switchToB.then(function(switchSucceed) {
+
+    if (switchSucceed) {
+      ...
+    }
+
+    ...
+
+    var switchToDefault = client.getTopologyInfo().switchToDefaultCluster();
+
+    switchToDefault.then(function(switchSucceed) {
+
+      if (switchSucceed) {
+        ...
+      }
+
+    })
+
+  })
+
+});
+```
+
 # Testing
 
 Before executing any tests, Infinispan Server instances need to be started 
@@ -503,9 +577,13 @@ executed via:
 
     $ ./start.hs
 
-Finally, to run tests continuously execute the following:
+To run tests continuously execute the following:
 
-    $ ./node_modules/.bin/jasmine-node spec --autotest --watch lib
+    $ ./node_modules/.bin/jasmine-node spec --autotest --watch lib --captureExceptions
+
+To run individual tests, execute the following:
+
+    $ node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
 
 # Debugging
 
