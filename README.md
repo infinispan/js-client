@@ -431,6 +431,88 @@ connected.then(function (client) {
 });
 ```
 
+## Encryption
+
+The client supports encryption via SSL/TLS with optional TLS/SNI support ([Server Name Indication](https://en.wikipedia.org/wiki/Server_Name_Indication)).
+To set this up, it is necessary to create a [Java KeyStore (JKS)](https://en.wikipedia.org/wiki/Keystore) using the `keytool` application which is part of the JDK.
+The keystore needs to contains the keys and certificates necessary for the Infinispan Server to authorize connections.
+More information on how to configure the Infinispan Server for encryption, along with TLS/SNI, can be found [here](http://infinispan.org/docs/dev/server_guide/server_guide.html#hot_rod_encryption_ssl).
+
+In the most basic set up, the Javascript client can be configured with the location of the trusted certificates so that the client connection is authorized by the server.
+This assumes that the server has been configured with the correct certificates as stated above.
+With that in mind, the client can be configured in the following way:
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+  {
+    ssl: {
+      enabled: true,
+      trustCerts: ['my-root-ca.crt.pem']
+    }
+  }
+);
+```
+
+Alternatively, the client can also read trusted certificates from `PKCS#12` or `PFX` format key stores:
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+  {
+    ssl: {
+      enabled: true,
+      cryptoStore: {
+        path: 'my-truststore.p12',
+        passphrase: 'secret'
+      }
+    }
+  }
+);
+```
+
+The client can also be configured with encrypted authentication.
+To do that, it's necessary to provide the location of the private key, the passphrase and certificate key of the client:
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+  {
+    ssl: {
+      enabled: true,
+      trustCerts: ['my-root-ca.crt.pem'],
+      clientAuth: {
+        key: 'privkey.pem',
+        passphrase: 'secret',
+        cert: 'cert.pem'
+      }
+    }
+  }
+);
+```
+
+Optionally, the client can indicate which hostname it is attempting to connect to at the start of the TLS/SNI handshaking process:
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+  {
+    ssl: {
+      enabled: true,
+      trustCerts: ['my-root-ca.crt.pem']
+      sniHostName: 'example.com'
+    }
+  }
+);
+```
+
+If no `sniHostName` is provided, the underlying Node.js TLS/SNI implementation sends `localhost` as SNI parameter.
+This is important to note because if the server's default realm does not match `localhost`, you'll encounter errors such as `Hostname/IP doesn't match certificate's altnames`.
+
+Another gotcha with the Node.js TLS/SSL implementation is that by default it does not allow self-signed certificates.
+If using self-signed certificates, you'll encounter errors such as `DEPTH_ZERO_SELF_SIGNED_CERT` or `SSL certificate problem: Invalid certificate chain`.
+To avoid problems like this in testing scenarios, one possible solution is to create your own certificate authority, which is used to sign all keys.
+An example on how to do this can be found in the `make-root-ca-and-certificates.sh` script found in the root of this repository.
+This script contains all the commands necessary to create your own CA, sign certificates, create private keys, and even create Java KeyStore files for the server.
+A more detailed example of the contents of this script can be found in [this repository](https://github.com/Daplie/nodejs-self-signed-certificate-example).
+Another possibility is to get certificates from free, open certificate authorities such as [Let's Encrypt](https://letsencrypt.org).
+
 ## Working with Clusters
 
 All previous examples are focused on how the API behaves when working with a 
