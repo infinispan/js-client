@@ -106,6 +106,15 @@ describe('Infinispan local client', function() {
       .catch(t.failed(done))
       .finally(done);
   });
+  it('can put -> get -> remove a key/value pair on a named cache with disabled ssl', function(done) {
+    t.client(t.local, {cacheName: 'namedCache', ssl: {enabled: false}})
+        .then(t.assert(t.put('key', 'value')))
+        .then(t.assert(t.get('key'), t.toBe('value')))
+        .then(t.assert(t.remove('key'), t.toBeTruthy))
+        .then(t.disconnect())
+        .catch(t.failed(done))
+        .finally(done);
+  });
   it('can get key/value pairs with their immortal metadata', function(done) {
     var immortal = { created : -1, lifespan: -1, lastUsed: -1, maxIdle: -1 };
     client
