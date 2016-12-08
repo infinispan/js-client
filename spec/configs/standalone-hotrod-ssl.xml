@@ -49,6 +49,13 @@
                     </ssl>
                 </server-identities>
             </security-realm>
+            <security-realm name="TrustedRealm1">
+                <server-identities>
+                    <ssl>
+                        <keystore path="keystore_trusted1.acme_server.jks" relative-to="jboss.server.config.dir" keystore-password="secret1"/>
+                    </ssl>
+                </server-identities>
+            </security-realm>
             <security-realm name="UntrustedRealm">
                 <server-identities>
                     <ssl>
@@ -171,6 +178,7 @@
                 <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
                 <encryption security-realm="UntrustedRealm" require-ssl-client-auth="false">
                     <sni host-name="trusted.acme" security-realm="TrustedRealm"/>
+                    <sni host-name="trusted1.acme" security-realm="TrustedRealm1"/>
                     <sni host-name="untrusted.acme" security-realm="ApplicationRealm"/>
                 </encryption>
             </hotrod-connector>

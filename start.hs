@@ -75,6 +75,7 @@ launchSslNode p = do
     _   <- exec (cpD "spec/ssl/auth/server/keystore_server.jks" (dir <> configDir))
     _   <- exec (cpD "spec/ssl/auth/server/truststore_server.jks" (dir <> configDir))
     _   <- exec (cpD "spec/ssl/sni/trusted/server/keystore_trusted_server.jks" (dir <> configDir))
+    _   <- exec (cpD "spec/ssl/sni/trusted/server/keystore_trusted1.acme_server.jks" (dir <> configDir))
     _   <- exec (cpD "spec/ssl/sni/untrusted/server/keystore_untrusted_server.jks" (dir <> configDir))
     _   <- exec (addUser dir)
     startPortOffsetServer dir sslSh p
