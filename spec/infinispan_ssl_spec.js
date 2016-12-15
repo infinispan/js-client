@@ -4,23 +4,20 @@ var t = require('./utils/testing'); // Testing dependency
 
 describe('Infinispan TLS/SSL client', function() {
 
-  // All invocations needs to be directed to localhost instead of 127.0.0.1
-  // because Node.js uses `localhost` as default server name if none provided.
-
   it('can operate on data via trusted encrypted transport',
-     testSsl('trust', 11422, sslTrust())
+     testSsl('trust', t.sslTrust, sslTrust())
   );
 
   it('can operate on data via crypto store trusted encrypted transport',
-     testSsl('trust-cryptostore', 11422, sslTrustCryptoStore())
+     testSsl('trust-cryptostore', t.sslTrust, sslTrustCryptoStore())
   );
 
   it('can operate on data via authenticated encrypted transport',
-     testSsl('auth', 11432, sslAuth())
+     testSsl('auth', t.sslAuth, sslAuth())
   );
 
   it('can operate on data via SNI trusted encrypted transport',
-     testSsl('sni-trusted', 11442, sslSniTrusted())
+     testSsl('sni-trusted', t.sslSni, sslSniTrusted())
   );
 
   it('fails to operate if default server name (SNI) does not match default server realm',
@@ -39,11 +36,11 @@ describe('Infinispan TLS/SSL client', function() {
      testError('No path defined for crypto store', sslStoreNoPath())
   );
 
-  function testSsl(infix, port, sslOpts) {
+  function testSsl(infix, addr, sslOpts) {
     var k = util.format('ssl-%s-key', infix);
     var v = util.format('ssl-%s-value', infix);
     return function(done) {
-      t.client({port: port, host: 'localhost'}, sslOpts)
+      t.client(addr, sslOpts)
         .then(t.assert(t.put(k, v)))
         .then(t.assert(t.get(k), t.toBe(v)))
         .then(t.disconnect())
@@ -118,7 +115,7 @@ describe('Infinispan TLS/SSL client', function() {
 
   function testError(err, sslOpts) {
     return function(done) {
-      t.client({port: 11442, host: 'localhost'}, sslOpts)
+      t.client(t.sslSni, sslOpts)
         .then(shouldFail())
         .catch(expectError(err))
         .finally(done);
