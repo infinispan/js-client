@@ -651,13 +651,12 @@ has been created in the root directory to start all the expected server
 instances. Before executing this script, the following installation steps 
 are required:
 
-* Install [Haskell Tool Stack](http://docs.haskellstack.org/en/stable/README)
 * Install an Infinispan Server instance in `/opt/infinispan-server` folder.
 
 Once these steps have been executed, the script to start the servers can be 
 executed via:
 
-    $ ./start.hs
+    $ ./run-domain.sh
 
 To run tests continuously execute the following:
 
@@ -678,6 +677,20 @@ Or:
     node --debug-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js
 
 And then start a remote Node.js debugger from IDE on port 5858.
+
+# Tests, servers and ports
+
+Here's some more detailed information on which tests interact with which servers and on which ports.
+On top of that, you can find information on which tests are always running as opposed to those that are started (and stopped) by the tests themselves.
+
+| Test          | Server Profile  | Ports (Auto/Manual)               |
+| ------------- |:---------------:| -------------------------------- :|
+| local spec    | local           | 11222 (A)                         |
+| expiry spec   | local           | 11222 (A)                         |
+| cluster spec  | clustered       | 11322 (A), 11332 (A), 11342 (A)   |
+| failover spec | clustered       | 11422 (A), 11432 (M), 11442 (M)   |
+| ssl spec      | local           | 11232 (A), 12242 (A), 12252 (A)   |
+| xsite spec    | earth, moon     | 11522 (earth, M), 11522 (moon, M) |
 
 # Generating API documentation
 

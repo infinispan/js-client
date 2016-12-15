@@ -4,8 +4,8 @@ var _ = require('underscore');
 
 var log4js = require('log4js');
 var Promise = require('promise');
-var exec = Promise.denodeify(require('child_process').exec);
 var readFile = Promise.denodeify(require('fs').readFile);
+var httpRequest = require('request');
 var util = require('util');
 
 var f = require('../../lib/functional');
@@ -14,17 +14,29 @@ var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
 exports.local = {port: 11222, host: '127.0.0.1'};
+
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
 exports.cluster2 = {port: 11332, host: '127.0.0.1'};
 exports.cluster3 = {port: 11342, host: '127.0.0.1'};
 exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
 
-var HOME='/opt/infinispan-server';
-var ISPN_CLI = util.format('%s/bin/%s', HOME, 'ispn-cli.sh');
-var JDG_CLI = util.format('%s/bin/%s', HOME, 'cli.sh');
-var CLIS = [ISPN_CLI, JDG_CLI];
+exports.failover1 = {port: 11422, host: '127.0.0.1'};
+exports.failover2 = {port: 11432, host: '127.0.0.1'};
+exports.failover3 = {port: 11442, host: '127.0.0.1'};
 
-var CLUSTER_CLI_PORTS = [10090, 10100, 10110];
+// All ssl invocations needs to be directed to localhost instead of 127.0.0.1
+// because Node.js uses `localhost` as default server name if none provided.
+exports.sslTrust = {port: 11232, host: 'localhost'};
+exports.sslAuth = {port: 11242, host: 'localhost'};
+exports.sslSni = {port: 11252, host: 'localhost'};
+
+exports.xsiteCacheName = 'xsiteCache';
+exports.earth1 = {port: 11522, host: '127.0.0.1'};
+exports.moon1 = {port: 11532, host: '127.0.0.1'};
+
+var CLUSTER_NODES = ['server-one', 'server-two', 'server-three'];
+
+var MAX_WAIT = 7500;
 
 var logger = u.logger('testing');
 
@@ -59,10 +71,6 @@ exports.get = function(k) {
 exports.getM = function(k) {
   return function(client) { return client.getWithMetadata(k); }
 };
-
-//exports.getV = function(k) {
-//  return function(client) { return client.getVersioned(k); }
-//};
 
 exports.putIfAbsent = function(k, v, opts) {
   return function(client) { return client.putIfAbsent(k, v, opts); }
@@ -100,7 +108,7 @@ exports.putAll = function(pairs, opts) {
   return function(client) { return client.putAll(pairs, opts); }
 };
 
-exports.size = function(k) {
+exports.size = function() {
   return function(client) { return client.size(); }
 };
 
@@ -209,40 +217,24 @@ exports.assertStats = function(fun, statsFun) {
 };
 
 exports.resetStats = function(client) {
-  // TODO: Switch to withCli
-  var cli = findCli();
-  if (f.existy(cli)) {
-    var resets = _.map(CLUSTER_CLI_PORTS, function(port) {
-      return exec(
-        cli + ' --controller=127.0.0.1:' + port +
-        ' --connect --command=/subsystem=datagrid-infinispan' +
-        '/cache-container=clustered/distributed-cache=default:reset-statistics')
-    });
-    return Promise.all(resets).then(function() { return client; });
-  }
+  var resets = _.map(CLUSTER_NODES, function(nodeName) {
+    var op = {
+      operation: 'reset-statistics',
+      address: [
+        { host : 'master'},
+        { server : nodeName},
+        { subsystem : 'datagrid-infinispan'},
+        { 'cache-container' : 'clustered' },
+        { 'distributed-cache' : 'default' }
+      ]
+    };
 
-  return Promise.reject('Unable to locate any of the CLI scripts: ' + CLIS);
+    return invokeDmrHttp(op);
+  });
+  return Promise.all(resets).then(function() { return client; });
 };
 
-function findCli() {
-  var fs = require('fs');
-  return _.foldl(CLIS, function(found, cli) {
-    if (f.existy(found))
-      return found;
-
-    return fs.existsSync(cli) ? cli : undefined;
-  }, undefined);
-}
-
-function withCli(fun) {
-  var cli = findCli();
-  if (f.existy(cli))
-    return fun(cli);
-
-  return Promise.reject('Unable to locate any of the CLI scripts: ' + CLIS);
-}
-
-exports.clusterSize = function() { return CLUSTER_CLI_PORTS.length; };
+exports.clusterSize = function() { return exports.cluster.length; };
 
 exports.toBe = function(value) {
   return function(actual) { expect(actual).toBe(value); }
@@ -512,29 +504,155 @@ exports.getHotrodProtocolVersion = function() {
   return version;
 };
 
-exports.getClusterMembers = function(mgmtPort) {
-  return withCli(function(cli) {
-    return new Promise(function (fulfill, reject) {
-      var port = f.existy(mgmtPort) ? mgmtPort : _.last(CLUSTER_CLI_PORTS);
-      var nodeExec = require('child_process').exec;
-      nodeExec(
-        cli + ' --controller=127.0.0.1:' + port +
-        ' --connect "--command=/subsystem=datagrid-infinispan' +
-        '/cache-container=clustered:read-attribute(name=members)"',
-        function (error, stdout, stderr) {
-          if (f.existy(error)) {
-            var errorMessage = util.format(
-              'Error: %s // STDOUT: %s // STDERR: %s', error, stdout, stderr);
-            reject(errorMessage);
-          } else {
-            var jsonFormatted = stdout.split('=>').join(':'); // rudimentary
-            var members = JSON.parse(jsonFormatted).result
-                .replace('[', '').replace(']', '').split(/[\s,]+/);
-            var sorted = _.sortBy(members, function(m) { return m; });
-            fulfill(sorted);
-          }
-        }
-      );
+exports.startAndWaitView = function(nodeName, expectNumMembers) {
+  return function() {
+    var op = {
+      operation: 'start',
+      address: [
+        { host : 'master'},
+        { 'server-config' : nodeName}
+      ]
+    };
+
+    return invokeDmrHttp(op)
+      .then(function() { return waitUntilView(expectNumMembers, nodeName); });
+  }
+};
+
+exports.stopClusterNode = function(nodeName, waitStop) {
+  return function() {
+    var op = {
+      operation: 'stop',
+      address: [
+        { host : 'master'},
+        { 'server-config' : nodeName}
+      ]
+    };
+
+    if (waitStop) {
+      return invokeDmrHttp(op).then(function() {
+        return waitUntilStopped(nodeName);
+      });
+    }
+
+    return invokeDmrHttp(op);
+  }
+};
+
+function waitUntilStopped(nodeName) {
+  return waitUntil(
+    function(resp) { expect(resp.result).toEqual('DISABLED'); },
+    function(resp) { return _.isEqual(resp.result, 'DISABLED') },
+    getServerStatus(nodeName)
+  );
+}
+
+function getServerStatus(nodeName) {
+  return function() {
+    var op = {
+      operation : 'read-attribute',
+      name : 'status',
+      address : [
+        { host : 'master' },
+        { 'server-config' : nodeName }
+      ]
+    };
+    return invokeDmrHttp(op);
+  }
+}
+
+exports.stopAndWaitView = function(nodeStop, expectNumMembers, nodeView) {
+  return function() {
+    return exports.stopClusterNode(nodeStop, false)()
+      .then(function() { return waitUntilView(expectNumMembers, nodeView); });
+  }
+};
+
+function waitUntilView(expectNumMembers, nodeName) {
+  return waitUntil(
+    function(members) { expect(members.length).toEqual(expectNumMembers); },
+    function(members) { return _.isEqual(expectNumMembers, members.length); },
+    getClusterMembers(nodeName)
+  );
+}
+
+function waitUntil(expectF, cond, op) {
+  var now = new Date().getTime();
+
+  function done(actual) {
+    return cond(actual)
+      && new Date().getTime() < now + MAX_WAIT;
+  }
+
+  function loop(promise) {
+    exports.sleepFor(100); // brief sleep
+
+    // Simple recursive loop until condition has been met
+    return promise
+      .then(function(response) {
+        return !done(response)
+          ? loop(op())
+          : response;
+      })
+      .catch(function() {
+        return loop(op());
+      });
+  }
+
+  return loop(op())
+    .then(function(actual) {
+      expectF(actual);
+    });
+}
+
+exports.sleepFor = function(sleepDuration) {
+  var now = new Date().getTime();
+  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
+};
+
+function getClusterMembers(nodeName) {
+  return function() {
+    var op = {
+      operation : 'read-attribute',
+      name : 'members',
+      address : [
+        { host : 'master' },
+        { server : nodeName },
+        { subsystem : 'datagrid-infinispan' },
+        { 'cache-container' : 'clustered' }
+      ]
+    };
+
+    return invokeDmrHttp(op)
+      .then(function(response) {
+        var members = response.result
+          .replace('[', '').replace(']', '').split(/[\s,]+/);
+        return _.sortBy(members, function (m) { return m; });
+      });
+  }
+}
+
+function invokeDmrHttp(op) {
+  return new Promise(function(fulfil, reject) {
+    httpRequest({
+      method: 'POST',
+      url: 'http://localhost:9990/management',
+      auth: {
+        user: 'admin',
+        pass: 'mypassword',
+        sendImmediately: false
+      },
+      headers: {
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify(op)
+    }, function(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        fulfil(JSON.parse(body));
+      } else {
+        reject(util.format('Error (%s), body (%s), response(%s)',
+          error, body, JSON.stringify(response)));
+      }
     });
   });
-};
+}

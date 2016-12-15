@@ -221,7 +221,7 @@ describe('Infinispan local client', function() {
   });
   it('can retrieve topology information', function(done) { client
     .then(t.assert(t.getTopologyId(), t.toBe(0)))
-    .then(t.assert(t.getMembers(), t.toEqual([{host: '127.0.0.1', port: 11222}])))
+    .then(t.assert(t.getMembers(), t.toEqual([t.local])))
     .catch(t.failed(done)).finally(done);
   });
   it('can execute a script remotely to store and retrieve data',
