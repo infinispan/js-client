@@ -28,11 +28,13 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if default server name (SNI) does not match default server realm',
-     testError("Hostname/IP doesn't match certificate's altnames", sslSniDefault())
+     testError(expectContainsError("Hostname/IP doesn't match certificate's altnames"),
+               sslSniDefault())
   );
 
   it('fails to operate if server name (SNI) and trusted certificate are incorrect',
-     testError('CERT_SIGNATURE_FAILURE', sslSniUntrusted())
+     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'certificate signature failure']),
+               sslSniUntrusted())
   );
 
   it('fails to operate if server name (SNI) is not provided, but certificate is trusted',
@@ -44,11 +46,13 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if no passphrase provided for crypto store',
-     testError('No passphrase defined for crypto store', sslStoreNoPassphrase())
+     testError(expectError('No passphrase defined for crypto store'),
+               sslStoreNoPassphrase())
   );
 
   it('fails to operate if no path provided for crypto store',
-     testError('No path defined for crypto store', sslStoreNoPath())
+     testError(expectError('No path defined for crypto store'),
+               sslStoreNoPath())
   );
 
   it('fails to operate if no encrypted transport is provided',
@@ -171,11 +175,11 @@ describe('Infinispan TLS/SSL client', function() {
     }
   }
 
-  function testError(err, sslOpts) {
+  function testError(errF, sslOpts) {
     return function(done) {
       t.client({port: 11442, host: 'localhost'}, sslOpts)
         .then(shouldFail())
-        .catch(expectError(err))
+        .catch(errF)
         .finally(done);
     }
   }
@@ -184,7 +188,7 @@ describe('Infinispan TLS/SSL client', function() {
     return function(client) {
       var disconnect = client.disconnect();
       return disconnect.finally(function() {
-        throw Error("Expected operation to fail");
+        throw Error('Expected operation to fail');
       });
     }
   }
@@ -192,6 +196,18 @@ describe('Infinispan TLS/SSL client', function() {
   function expectError(msg) {
     return function(err) {
       expect(err.message).toBe(msg);
+    }
+  }
+
+  function expectContainsError(msg) {
+    return function(err) {
+      toContainAnyOf([msg], err);
+    }
+  }
+
+  function expectAnyExactErrors(msgs) {
+    return function(err) {
+      toBeAnyOf(msgs, err);
     }
   }
 
@@ -293,4 +309,21 @@ describe('Infinispan TLS/SSL client', function() {
       }
     }
   }
+
+  function toBeAnyOf(expecteds, actual) {
+    for (var i = 0, l = expecteds.length; i < l; i++) {
+      if (actual === expecteds[i])
+        return;
+    }
+    throw Error(actual + ' is not any of: ' + expecteds);
+  }
+
+  function toContainAnyOf(expecteds, actual) {
+    for (var i = 0, l = expecteds.length; i < l; i++) {
+      if (expecteds[i].includes(actual))
+        return;
+    }
+    throw Error(actual + ' does not contain any of: ' + expecteds);
+  }
+
 });
