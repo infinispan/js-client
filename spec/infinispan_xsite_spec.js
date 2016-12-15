@@ -5,7 +5,6 @@ var Promise = require('promise');
 var exec = Promise.denodeify(require('child_process').exec);
 var util = require('util');
 
-var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
 var u = require('../lib/utils');
 var tests = require('./tests'); // Shared tests
@@ -149,16 +148,13 @@ function launchSite(siteName, offset, mcast) {
 
 function killClusterNode(nodeName) {
   return function() {
-    logger.debugf('Kill node: %s', nodeName);
-    return exec("pkill -9 -f '.*java.*" + nodeName + " .*'")
+    return t.pkill(util.format('.*java.*%s .*', nodeName));
   }
 }
 
 function killAll() {
-  logger.debugf('Kill site-a');
-  return exec("pkill -9 -f '.*java.*node-site-a .*'")
+  return t.pkill('.*java.*node-site-a .*')
     .finally(function() {
-      logger.debugf('Kill site-b');
-      return exec("pkill -9 -f '.*java.*node-site-b .*'");
+      return t.pkill('.*java.*node-site-b .*');
     });
 }
