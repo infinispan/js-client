@@ -161,7 +161,7 @@ function waitLifespanExpire(key) {
 
 function waitForExpiryEvent(key) {
   return function(client) {
-    sleepFor(200); // sleep required, waitFor() does not work with event
+    t.sleepFor(200); // sleep required, waitFor() does not work with event
     client.containsKey(key).done(function(success) {
       expect(success).toBeFalsy();
     });
@@ -169,15 +169,10 @@ function waitForExpiryEvent(key) {
   }
 }
 
-function sleepFor(sleepDuration){
-  var now = new Date().getTime();
-  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
-}
-
 function waitIdleTimeExpire(key) {
   return function(client) {
     var contains = true;
-    sleepFor(200); // sleep required
+    t.sleepFor(200); // sleep required
     waitsFor(function() {
       client.containsKey(key).done(function(success) {
         contains = success;
