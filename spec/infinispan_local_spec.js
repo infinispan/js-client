@@ -186,8 +186,12 @@ describe('Infinispan local client', function() {
 
   if (process.env.protocol == null || process.env.protocol == '2.5') {
 
-    it('can iterate over entries',
-       tests.iterateEntries('local', client)
+    it('can iterate over entries, one entry at the time',
+       tests.iterateEntries('local', 1, client)
+    );
+
+    it('can iterate over entries, more than one entry at the time',
+      tests.iterateEntries('local', 3, client)
     );
 
     it('can iterate over entries getting their expirable metadata', function (done) {
@@ -196,8 +200,8 @@ describe('Infinispan local client', function() {
         return f.merge(pair, {done: false, lifespan: 86400, maxIdle: 3600});
       });
       client
+          .then(t.assert(t.clear()))
           .then(t.assert(t.putAll(pairs, {lifespan: '1d', maxIdle: '1h'}), t.toBeUndefined))
-          .then(t.parIterator(1, expected, {metadata: true})) // Iterate all data, 1 element at time, parallel
           .then(t.seqIterator(3, expected, {metadata: true})) // Iterate all data, 3 elements at time, sequential
           .catch(t.failed(done))
           .finally(done);
