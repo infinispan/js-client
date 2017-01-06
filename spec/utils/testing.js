@@ -538,3 +538,11 @@ exports.getClusterMembers = function(mgmtPort) {
     });
   });
 };
+
+exports.pkill = function(pattern) {
+  logger.debugf('Kill: %s', pattern);
+  return exec(util.format("pkill -9 -f '%s'", pattern))
+    .catch(function (err) {
+      logger.debugf('Ignoring `pkill` error: ' + err);
+    })
+};
