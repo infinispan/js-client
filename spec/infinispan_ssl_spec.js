@@ -128,7 +128,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/trusted/client/trusted-root-ca.crt.pem'],
+        trustCerts: ['spec/ssl/sni/trusted/client/trusted.acme-root-ca.crt.pem'],
         sniHostName: 'trusted.acme'
       }
     }
@@ -138,8 +138,8 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/trusted/client/trusted1.acme-root-ca.crt.pem'],
-        sniHostName: 'trusted1.acme'
+        trustCerts: ['spec/ssl/sni/trusted/client/trusted.sirius-root-ca.crt.pem'],
+        sniHostName: 'trusted.sirius'
       }
     }
   }
@@ -157,7 +157,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/trusted/client/trusted-root-ca.crt.pem']
+        trustCerts: ['spec/ssl/sni/trusted/client/trusted.acme-root-ca.crt.pem']
       }
     }
   }
