@@ -407,24 +407,6 @@ exports.expectIteratorDone = function(it) {
   }
 };
 
-exports.parIterator = function(batchSize, expected, opts) {
-  return function(client) {
-    return client.iterator(batchSize, opts).then(function(it) {
-      var promises = _.map(_.range(expected.length), function() {
-        return it.next().then(function(entry) { return entry; })
-      });
-      return Promise.all(promises)
-          .then(function(actual) {
-            exports.toContainAllEntries(expected)(actual);
-          })
-          .then(exports.expectIteratorDone(it))
-          .then(exports.expectIteratorDone(it)) // Second time should not go remote
-          .then(function() { return it.close(); }) // Close iterator
-          .then(function() { return client; });
-    })
-  }
-};
-
 exports.seqIterator = function(batchSize, expected, opts) {
   return function(client) {
     return client.iterator(batchSize, opts).then(function(it) {
