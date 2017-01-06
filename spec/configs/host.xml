@@ -35,17 +35,17 @@
                 <!-- JS MOD :: END -->
             </security-realm>
             <!-- JS MOD :: START :: add trusted and untrusted realms -->
-            <security-realm name="TrustedRealm">
+            <security-realm name="TrustedAcmeRealm">
                 <server-identities>
                     <ssl>
-                        <keystore path="keystore_trusted_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
+                        <keystore path="keystore_trusted.acme_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
                     </ssl>
                 </server-identities>
             </security-realm>
-            <security-realm name="TrustedRealm1">
+            <security-realm name="TrustedSiriusRealm">
                 <server-identities>
                     <ssl>
-                        <keystore path="keystore_trusted1.acme_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret1"/>
+                        <keystore path="keystore_trusted.sirius_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret1"/>
                     </ssl>
                 </server-identities>
             </security-realm>

@@ -36,8 +36,8 @@ echo "Domain configuration files copied to temporary server."
 
 cp spec/ssl/auth/server/keystore_server.jks $SERVER_TMP/domain/configuration
 cp spec/ssl/auth/server/truststore_server.jks $SERVER_TMP/domain/configuration
-cp spec/ssl/sni/trusted/server/keystore_trusted_server.jks $SERVER_TMP/domain/configuration
-cp spec/ssl/sni/trusted/server/keystore_trusted1.acme_server.jks $SERVER_TMP/domain/configuration
+cp spec/ssl/sni/trusted/server/keystore_trusted.acme_server.jks $SERVER_TMP/domain/configuration
+cp spec/ssl/sni/trusted/server/keystore_trusted.sirius_server.jks $SERVER_TMP/domain/configuration
 cp spec/ssl/sni/untrusted/server/keystore_untrusted_server.jks $SERVER_TMP/domain/configuration
 echo "Security key and trust stores copied to temporary server."
 

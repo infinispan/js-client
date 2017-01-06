@@ -62,7 +62,7 @@ cat ${ROOT}/certs/server/cert.pem ${ROOT}/certs/server/chain.pem > ${ROOT}/certs
 # Convert full chain to P12 file
 openssl pkcs12 \
   -export \
-  -passout pass:secret \
+  -passout pass:secret1 \
   -inkey ${ROOT}/certs/server/privkey.pem \
   -in ${ROOT}/certs/server/fullchain.pem \
   -name test \
@@ -73,5 +73,5 @@ keytool -importkeystore \
   -srckeystore ${ROOT}/certs/java/fullchain.p12 \
   -srcstoretype pkcs12 \
   -destkeystore ${ROOT}/certs/java/keystore_${FQDN}_server.jks \
-  -srcstorepass "secret" \
-  -deststorepass "secret"
+  -srcstorepass "secret1" \
+  -deststorepass "secret1s"
