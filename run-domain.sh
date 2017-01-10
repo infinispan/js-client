@@ -21,7 +21,7 @@ function waitForClusters()
 
 
 rm -drf $TMPDIR/infinispan-js-domain*
-SERVER_TMP=`mktemp -d -t infinispan-js-domain`
+SERVER_TMP=`mktemp -d -t 'infinispan-js-domain' || mktemp -d 2>/dev/null`
 echo "Created temporary directory: $SERVER_TMP"
 
 
