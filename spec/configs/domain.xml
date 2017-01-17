@@ -72,6 +72,9 @@
                 <logger category="com.arjuna">
                     <level name="WARN"/>
                 </logger>
+                <logger category="org.infinispan">
+                    <level name="TRACE"/>
+                </logger>
                 <logger category="org.jboss.as.config">
                     <level name="DEBUG"/>
                 </logger>
@@ -390,15 +393,6 @@
                             <write-behind modification-queue-size="1024" thread-pool-size="1"/>
                         </string-keyed-jdbc-store>
                     </distributed-cache-configuration>
-                    <distributed-cache-configuration name="persistent-jdbc-binary-keyed" mode="SYNC" owners="2" start="EAGER">
-                        <binary-keyed-jdbc-store datasource="java:jboss/datasources/ExampleDS" fetch-state="true" preload="true" purge="false" shared="false" passivation="false">
-                            <binary-keyed-table prefix="ISPN">
-                                <id-column name="id" type="VARCHAR"/>
-                                <data-column name="datum" type="BINARY"/>
-                                <timestamp-column name="version" type="BIGINT"/>
-                            </binary-keyed-table>
-                        </binary-keyed-jdbc-store>
-                    </distributed-cache-configuration>
                     <distributed-cache name="default" mode="SYNC" segments="20" owners="2" remote-timeout="30000" start="EAGER">
                         <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
                         <transaction mode="NONE"/>
@@ -695,15 +689,6 @@
                             </string-keyed-table>
                             <write-behind modification-queue-size="1024" thread-pool-size="1"/>
                         </string-keyed-jdbc-store>
-                    </distributed-cache-configuration>
-                    <distributed-cache-configuration name="persistent-jdbc-binary-keyed" mode="SYNC" owners="2" start="EAGER">
-                        <binary-keyed-jdbc-store datasource="java:jboss/datasources/ExampleDS" fetch-state="true" preload="true" purge="false" shared="false" passivation="false">
-                            <binary-keyed-table prefix="ISPN">
-                                <id-column name="id" type="VARCHAR"/>
-                                <data-column name="datum" type="BINARY"/>
-                                <timestamp-column name="version" type="BIGINT"/>
-                            </binary-keyed-table>
-                        </binary-keyed-jdbc-store>
                     </distributed-cache-configuration>
                     <distributed-cache name="default" mode="SYNC" segments="20" owners="2" remote-timeout="30000" start="EAGER">
                         <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
@@ -1009,15 +994,6 @@
                             </string-keyed-table>
                             <write-behind modification-queue-size="1024" thread-pool-size="1"/>
                         </string-keyed-jdbc-store>
-                    </distributed-cache-configuration>
-                    <distributed-cache-configuration name="persistent-jdbc-binary-keyed" mode="SYNC" owners="2" start="EAGER">
-                        <binary-keyed-jdbc-store datasource="java:jboss/datasources/ExampleDS" fetch-state="true" preload="true" purge="false" shared="false" passivation="false">
-                            <binary-keyed-table prefix="ISPN">
-                                <id-column name="id" type="VARCHAR"/>
-                                <data-column name="datum" type="BINARY"/>
-                                <timestamp-column name="version" type="BIGINT"/>
-                            </binary-keyed-table>
-                        </binary-keyed-jdbc-store>
                     </distributed-cache-configuration>
                     <distributed-cache name="default" mode="SYNC" segments="20" owners="2" remote-timeout="30000" start="EAGER">
                         <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
