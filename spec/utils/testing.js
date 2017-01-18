@@ -365,7 +365,7 @@ exports.findKeyForServers = function(client, addrs) {
   } while (!_.isEqual(addrs, owners) && attempts >= 0);
 
   if (attempts < 0)
-    throw new Error("Could not find any key owned by: " + addrs);
+    throw new Error("Could not find any key owned by: " + u.showArrayAddress(addrs));
 
   logger.debugf("Generated key=%s hashing to %s", key, u.showArrayAddress(addrs));
   return key;
