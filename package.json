@@ -1,6 +1,6 @@
 {
   "name": "infinispan",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Infinispan Javascript client",
   "main": "index",
   "directories": {
