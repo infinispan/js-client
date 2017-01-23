@@ -36,6 +36,7 @@ function callback as parameter.
 executed using the `execute` operation. Executing a script remotely 
 optionally takes per-invocation parameters.
 * Server-side statistics can be retrieved using the `stats` operation.
+* Clients can connect using encryption with the server via SSL/TLS with optional TLS/SNI support.
 * Clients can talk to clusters of Infinispan Server instances, using 
 Consistent-Hash based algorithms to route key-based operations.
 * Multi-key or key-less operations are routed in round-robin fashion.
@@ -43,6 +44,9 @@ Consistent-Hash based algorithms to route key-based operations.
 that node the rest of the cluster topology can be discovered. As nodes are 
 added or destroyed, clients get notified of changes in the cluster topology
 dynamically.
+* Clients can talk to multiple clusters that are separated into different site clusters.
+The client is normally connected to one of the sites, but if its members fail to respond, it will automatically switch to an alternative site to which it can connect.
+* Clients have methods, such as `switchToCluster(clusterName)` and `switchToDefaultCluster` that allows users to manually change to which site cluster to connect.
 * Finally, clients can stop communication with the server(s) using the 
 `disconnect` method.
 
@@ -58,6 +62,12 @@ supported starting with Infinispan 8.2.x.
 To talk to Infinispan Server versions 8.0.x or 8.1.x, `infinispan` should be
 instructed to use Hot Rod protocol version `2.2`. To do so, `infinispan` must 
 be constructed with `{version: '2.2'}` optional argument.
+
+# API docs
+
+API documentation for the client can be found 
+[here](http://docs.jboss.org/infinispan/hotrod-clients/javascript/1.0/apidocs/module-infinispan.html),
+where you can find detailed information of the APIs exposed. 
 
 # Usage
 
