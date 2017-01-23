@@ -693,14 +693,14 @@ And then start a remote Node.js debugger from IDE on port 5858.
 Here's some more detailed information on which tests interact with which servers and on which ports.
 On top of that, you can find information on which tests are always running as opposed to those that are started (and stopped) by the tests themselves.
 
-| Test          | Server Profile  | Ports (Auto/Manual)               |
-| ------------- |:---------------:| -------------------------------- :|
-| local spec    | local           | 11222 (A)                         |
-| expiry spec   | local           | 11222 (A)                         |
-| cluster spec  | clustered       | 11322 (A), 11332 (A), 11342 (A)   |
-| failover spec | clustered       | 11422 (A), 11432 (M), 11442 (M)   |
-| ssl spec      | local           | 11232 (A), 12242 (A), 12252 (A)   |
-| xsite spec    | earth, moon     | 11522 (earth, M), 11522 (moon, M) |
+| Test          | Server Profile  | Ports (Auto/Manual)                     |
+| :------------ | :-------------: | :-------------------------------------- |
+| local spec    | local           | `11222` (A)                             |
+| expiry spec   | local           | `11222` (A)                             |
+| cluster spec  | clustered       | `11322` (A), `11332` (A), `11342` (A)   |
+| failover spec | clustered       | `11422` (A), `11432` (M), `11442` (M)   |
+| ssl spec      | local           | `11232` (A), `12242` (A), `12252` (A)   |
+| xsite spec    | earth, moon     | `11522` (earth, M), `11532` (moon, M)   |
 
 # Generating API documentation
 
