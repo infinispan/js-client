@@ -5,7 +5,7 @@ var util = require('util');
 var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 
-describe('Infinispan cluster client', function() {
+describe('Infinispan clustered clients', function() {
 
   // Since Jasmine 1.3 does not have beforeAll callback, execute
   // any cleanup as first test so that it only gets executed once.
