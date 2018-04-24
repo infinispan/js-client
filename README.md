@@ -676,6 +676,14 @@ To run individual tests, execute the following:
 
     $ node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
 
+# Manual stress tests
+
+The testsuite now contains manual stress tests that take several minutes to run.
+To run these tests, execute:
+
+    $ ./node_modules/.bin/jasmine-node spec-manual --captureExceptions
+
+
 # Debugging
 
 To debug tests with IDE:

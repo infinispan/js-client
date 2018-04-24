@@ -6,8 +6,8 @@ var codec = require('../lib/codec');
 
 var t = require('./utils/testing'); // Testing dependency
 
-var singleExpiryDecode = f.actions([codec.decodeUByte(), codec.decodeVLong()], codec.allDecoded);
-var constantExpiryDecode = f.actions([codec.decodeUByte()], codec.allDecoded);
+var singleExpiryDecode = f.actions([codec.decodeUByte(), codec.decodeVLong()], codec.allDecoded(2));
+var constantExpiryDecode = f.actions([codec.decodeUByte()], codec.allDecoded(1));
 
 function lifespan(unit) { return unit << 4 | 0x07; }
 function maxIdle(unit) { return 0x70 | unit; }

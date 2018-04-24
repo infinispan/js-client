@@ -1,4 +1,4 @@
-'use strict';
+//'use strict';
 
 var _ = require('underscore');
 var f = require('../lib/functional');
@@ -197,7 +197,7 @@ describe('Basic encode/decode', function() {
     var encoders = _.map(numbers, function (num) { return codec.encodeUByte(num); });
     var decoders = _.map(numbers, function (num) { return codec.decodeUByte(); });
     var encodeActions = f.actions(encoders, codec.bytesEncoded);
-    var decodeActions = f.actions(decoders, codec.allDecoded);
+    var decodeActions = f.actions(decoders, codec.allDecoded(10));
     var bytebuf = t.assertEncode(t.newByteBuf(1), encodeActions, 10);
     expect(decodeActions({buf: bytebuf.buf, offset: 0})).toEqual(numbers);
   });
@@ -240,7 +240,7 @@ function assert(expected, size, encoder, decoder, bufferSize) {
 function encodeDecode(size, encoder, decoder, bufferSize) {
   var enc = f.actions(_.isArray(encoder) ? encoder : [encoder], codec.bytesEncoded);
   var bytebuf = t.assertEncode(t.newByteBuf(bufferSize), enc, size);
-  var dec = f.actions(_.isArray(decoder) ? decoder : [decoder], codec.allDecoded);
+  var dec = f.actions(_.isArray(decoder) ? decoder : [decoder], codec.allDecoded(decoder.length));
   return dec({buf: bytebuf.buf, offset: 0});
 }
 
