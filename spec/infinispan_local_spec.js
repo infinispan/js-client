@@ -165,9 +165,9 @@ describe('Infinispan local client', function() {
   });
   it('can listen for create/modified/remove events in same listener', function(done) { client
       .then(t.onMany(
-          [{event: 'create', listener: t.expectEvent('listen-same', done, false, 'v0')},
-           {event: 'modify', listener: t.expectEvent('listen-same', done, false, 'v1')},
-           {event: 'remove', listener: t.expectEvent('listen-same', done, true)}
+          [{event: 'create', listener: t.expectEventKeyOnly('listen-same')},
+           {event: 'modify', listener: t.expectEventKeyOnly('listen-same')},
+           {event: 'remove', listener: t.expectEventKeyOnly('listen-same', done)}
           ]))
       .then(t.assert(t.putIfAbsent('listen-same', 'v0'), t.toBeTruthy))
       .then(t.assert(t.replace('listen-same', 'v1'), t.toBeTruthy))
