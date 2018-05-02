@@ -305,6 +305,21 @@ exports.expectEvent = function(key, done, removeAfterEvent, value) {
   }
 };
 
+exports.expectEventKeyOnly = function(key, done) {
+  return function(client) {
+    if (f.existy(done)) {
+      return function (eventKey, listenerId) {
+        expect(eventKey).toBe(key);
+        removeListener(client, listenerId, true, done);
+      }
+    } else {
+      return function(eventKey) {
+        expect(eventKey).toBe(key);
+      }
+    }
+  }
+};
+
 function removeListener(client, listenerId, removeAfterEvent, done) {
   if (removeAfterEvent)
     return client.removeListener(listenerId)
