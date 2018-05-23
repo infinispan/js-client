@@ -661,20 +661,39 @@ has been created in the root directory to start all the expected server
 instances. Before executing this script, the following installation steps 
 are required:
 
-* Install an Infinispan Server instance in `/opt/infinispan-server` folder.
+Install an Infinispan Server instance in `/opt/infinispan-server` folder.
+
+Go to the root of the repo and execute:
+
+```bash
+npm install
+```
 
 Once these steps have been executed, the script to start the servers can be 
 executed via:
 
-    $ ./run-domain.sh
+```bash
+./run-domain.sh
+```
 
-To run tests continuously execute the following:
+To run the testsuite once execute:
 
-    $ ./node_modules/.bin/jasmine-node spec --autotest --watch lib --captureExceptions
+```bash
+./node_modules/.bin/jasmine-node spec --captureExceptions
+```
 
-To run individual tests, execute the following:
+To run tests continuously execute:
 
-    $ node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
+```bash
+./node_modules/.bin/jasmine-node spec --autotest --watch lib --captureExceptions
+```
+
+To run individual tests execute:
+
+```bash
+node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
+``` 
+
 
 # Manual stress tests
 
@@ -682,6 +701,22 @@ The testsuite now contains manual stress tests that take several minutes to run.
 To run these tests, execute:
 
     $ ./node_modules/.bin/jasmine-node spec-manual --captureExceptions
+
+
+# Memory profiling
+
+The source code comes with some programs that allow the client's memory consumption to be profiled.
+Those programs rely on having access to the global garbage collector.
+So, to run them you must pass `--expose-gc` command line parameter.
+Example:
+
+```bash
+node --expose-gc memory-profiling/infinispan_memory_many_get.js
+```
+
+So of programs might only report the memory usage before/after.
+Others might generate heap dumps which can be visualized using Google Chrome.
+Within Chrome, the Developer Tools UI contains a `Memory` tab where heap dumps can be loaded.
 
 
 # Debugging
