@@ -162,10 +162,10 @@
                 </hotrod-connector>
                 <hotrod-connector name="ssl-sni" socket-binding="hotrod-sni" cache-container="local">
                     <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
-                    <encryption security-realm="UntrustedRealm" require-ssl-client-auth="false">
-                        <sni host-name="trusted.acme" security-realm="TrustedAcmeRealm"/>
-                        <sni host-name="trusted.sirius" security-realm="TrustedSiriusRealm"/>
-                        <sni host-name="untrusted.acme" security-realm="ApplicationRealm"/>
+                    <encryption security-realm="UntrustRealm" require-ssl-client-auth="false">
+                        <sni host-name="trust1" security-realm="Trust1Realm"/>
+                        <sni host-name="trust2" security-realm="Trust2Realm"/>
+                        <sni host-name="untrust" security-realm="ApplicationRealm"/>
                     </encryption>
                 </hotrod-connector>
                 <!-- JS MOD :: END -->

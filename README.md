@@ -669,8 +669,7 @@ Go to the root of the repo and execute:
 npm install
 ```
 
-Once these steps have been executed, the script to start the servers can be 
-executed via:
+Next, start the Infinispan Servers as defined in the domain configuration via:
 
 ```bash
 ./run-domain.sh
