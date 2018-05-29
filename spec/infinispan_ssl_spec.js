@@ -93,7 +93,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/trust/client/my-root-ca.crt.pem']
+        trustCerts: ['out/ssl/ca/ca.pem']
       }
     }
   }
@@ -103,7 +103,7 @@ describe('Infinispan TLS/SSL client', function() {
       ssl: {
         enabled: true,
         cryptoStore: {
-          path: 'spec/ssl/trust/p12/truststore_client.p12',
+          path: 'out/ssl/client/client.p12',
           passphrase: 'secret'
         }
       }
@@ -114,11 +114,11 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/auth/client/my-root-ca.crt.pem'],
+        trustCerts: ['out/ssl/ca/ca.pem'],
         clientAuth: {
-          key: 'spec/ssl/auth/client/privkey.pem',
+          key: 'out/ssl/client/client.pk',
           passphrase: 'secret',
-          cert: 'spec/ssl/auth/client/cert.pem'
+          cert: 'out/ssl/client/client.pem'
         }
       }
     }
@@ -128,8 +128,8 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/trusted/client/trusted.acme-root-ca.crt.pem'],
-        sniHostName: 'trusted.acme'
+        trustCerts: ['out/ssl/ca/ca.pem'],
+        sniHostName: 'trust1'
       }
     }
   }
@@ -138,8 +138,8 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/trusted/client/trusted.sirius-root-ca.crt.pem'],
-        sniHostName: 'trusted.sirius'
+        trustCerts: ['out/ssl/ca/ca.pem'],
+        sniHostName: 'trust2'
       }
     }
   }
@@ -148,7 +148,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/untrusted/client/untrusted-root-ca.crt.pem']
+        trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem']
       }
     }
   }
@@ -157,7 +157,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/trusted/client/trusted.acme-root-ca.crt.pem']
+        trustCerts: ['out/ssl/ca/ca.pem']
       }
     }
   }
@@ -166,8 +166,8 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/sni/untrusted/client/untrusted-root-ca.crt.pem'],
-        sniHostName: "untrusted.acme"
+        trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem'],
+        sniHostName: "untrust"
       }
     }
   }
@@ -213,7 +213,7 @@ describe('Infinispan TLS/SSL client', function() {
       ssl: {
         enabled: true,
         cryptoStore: {
-          path: 'spec/ssl/trust/p12/truststore_client.p12'
+          path: 'out/ssl/client/client.p12'
         }
       }
     }
@@ -240,7 +240,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        sniHostName: "untrusted.acme"
+        sniHostName: "untrust"
       }
     }
   }
@@ -249,10 +249,10 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/auth/client/my-root-ca.crt.pem'],
+        trustCerts: ['out/ssl/ca/ca.pem'],
         clientAuth: {
           passphrase: 'secret',
-          cert: 'spec/ssl/auth/client/cert.pem'
+          cert: 'out/ssl/client/client.pem'
         }
       }
     }
@@ -262,10 +262,10 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/auth/client/my-root-ca.crt.pem'],
+        trustCerts: ['out/ssl/ca/ca.pem'],
         clientAuth: {
-          key: 'spec/ssl/auth/client/privkey.pem',
-          cert: 'spec/ssl/auth/client/cert.pem'
+          key: 'out/ssl/client/client.pk',
+          cert: 'out/ssl/client/client.pem'
         }
       }
     }
@@ -275,9 +275,9 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/auth/client/my-root-ca.crt.pem'],
+        trustCerts: ['out/ssl/ca/ca.pem'],
         clientAuth: {
-          key: 'spec/ssl/auth/client/privkey.pem',
+          key: 'out/ssl/client/client.pk',
           passphrase: 'secret'
         }
       }
@@ -288,7 +288,7 @@ describe('Infinispan TLS/SSL client', function() {
     return {
       ssl: {
         enabled: true,
-        trustCerts: ['spec/ssl/auth/client/my-root-ca.crt.pem'],
+        trustCerts: ['out/ssl/ca/ca.pem'],
         clientAuth: {}
       }
     }
@@ -299,9 +299,9 @@ describe('Infinispan TLS/SSL client', function() {
       ssl: {
         enabled: true,
         clientAuth: {
-          key: 'spec/ssl/auth/client/privkey.pem',
+          key: 'out/ssl/client/client.pk',
           passphrase: 'secret',
-          cert: 'spec/ssl/auth/client/cert.pem'
+          cert: 'out/ssl/client/client.pem'
         }
       }
     }

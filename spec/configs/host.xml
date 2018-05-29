@@ -20,39 +20,39 @@
                     <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
                     <properties path="application-users.properties" relative-to="jboss.domain.config.dir"/>
                     <!-- JS MOD :: START :: add truststore -->
-                    <truststore path="truststore_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
+                    <truststore path="ca.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
                     <!-- JS MOD :: END -->
                 </authentication>
                 <authorization>
                     <properties path="application-roles.properties" relative-to="jboss.domain.config.dir"/>
                 </authorization>
-                <!-- JS MOD :: START :: add server identities -->
+                <!-- JS MOD :: START :: add server identities (required if using truststore) -->
                 <server-identities>
                     <ssl>
-                        <keystore path="keystore_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
+                        <keystore path="server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
                     </ssl>
                 </server-identities>
                 <!-- JS MOD :: END -->
             </security-realm>
             <!-- JS MOD :: START :: add trusted and untrusted realms -->
-            <security-realm name="TrustedAcmeRealm">
+            <security-realm name="Trust1Realm">
                 <server-identities>
                     <ssl>
-                        <keystore path="keystore_trusted.acme_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
+                        <keystore path="trust1.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
                     </ssl>
                 </server-identities>
             </security-realm>
-            <security-realm name="TrustedSiriusRealm">
+            <security-realm name="Trust2Realm">
                 <server-identities>
                     <ssl>
-                        <keystore path="keystore_trusted.sirius_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret1"/>
+                        <keystore path="trust2.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
                     </ssl>
                 </server-identities>
             </security-realm>
-            <security-realm name="UntrustedRealm">
+            <security-realm name="UntrustRealm">
                 <server-identities>
                     <ssl>
-                        <keystore path="keystore_untrusted_server.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
+                        <keystore path="untrust.jks" relative-to="jboss.domain.config.dir" keystore-password="secret"/>
                     </ssl>
                 </server-identities>
             </security-realm>
@@ -112,6 +112,7 @@
             <permgen size="256m" max-size="256m"/>
             <jvm-options>
                 <option value="-server"/>
+                <!--<option value="-Djavax.net.debug=ssl,handshake"/>-->
             </jvm-options>
         </jvm>
     </jvms>

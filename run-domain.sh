@@ -33,12 +33,14 @@ cp spec/configs/domain.xml $SERVER_TMP/domain/configuration
 cp spec/configs/host.xml $SERVER_TMP/domain/configuration
 echo "Domain configuration files copied to temporary server."
 
+./make-ssl.sh
+echo "Generate TLS/SSL certificates"
 
-cp spec/ssl/auth/server/keystore_server.jks $SERVER_TMP/domain/configuration
-cp spec/ssl/auth/server/truststore_server.jks $SERVER_TMP/domain/configuration
-cp spec/ssl/sni/trusted/server/keystore_trusted.acme_server.jks $SERVER_TMP/domain/configuration
-cp spec/ssl/sni/trusted/server/keystore_trusted.sirius_server.jks $SERVER_TMP/domain/configuration
-cp spec/ssl/sni/untrusted/server/keystore_untrusted_server.jks $SERVER_TMP/domain/configuration
+cp out/ssl/ca/ca.jks $SERVER_TMP/domain/configuration
+cp out/ssl/server/server.jks $SERVER_TMP/domain/configuration
+cp out/ssl/sni-trust1/trust1.jks $SERVER_TMP/domain/configuration
+cp out/ssl/sni-trust2/trust2.jks $SERVER_TMP/domain/configuration
+cp out/ssl/sni-untrust/untrust.jks $SERVER_TMP/domain/configuration
 echo "Security key and trust stores copied to temporary server."
 
 
