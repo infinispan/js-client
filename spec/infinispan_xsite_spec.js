@@ -5,14 +5,20 @@ var util = require('util');
 
 var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
+var u = require('../lib/utils');
+
+var logger = u.logger('xsite-test');
 
 describe('Infinispan xsite cluster client', function() {
 
   // Since Jasmine 1.3 does not have beforeAll callback, execute
   // any cleanup as first test so that it only gets executed once.
   it('start sites', function(done) {
+    logger.debugf("Start server-earth-one asynchronously");
     var earth1 = t.startAndWaitView('server-earth-one', 1);
+    logger.debugf("Start server-moon-one asynchronously");
     var moon1 = t.startAndWaitView('server-moon-one', 1);
+    logger.debugf("Wait for both servers to start");
     Promise.all([earth1(), moon1()]).catch(t.failed(done)).finally(done);
   }, 15000);
 

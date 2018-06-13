@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
 set -e
-trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+if [[ $1 = "--ci" ]]; then
+  echo "Launch script finished"
+else
+  trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+fi
 
 
-SERVER_HOME=/opt/infinispan-server
+SERVER_VERSION="9.3.0.CR1"
+SERVER_HOME=server/infinispan-server-$SERVER_VERSION
 CLUSTER_SIZE_MAIN="/host=master/server=server-three/subsystem=datagrid-infinispan/cache-container=clustered:read-attribute(name=cluster-size)"
-
+ZIP_ROOT="http://downloads.jboss.org/infinispan"
 
 function waitForClusters()
 {
@@ -19,14 +25,25 @@ function waitForClusters()
   done
 }
 
+if [ ! -f server/infinispan-server-$SERVER_VERSION.zip ]; then
+    cd server
+    wget $ZIP_ROOT/$SERVER_VERSION/infinispan-server-$SERVER_VERSION.zip
+    unzip infinispan-server-$SERVER_VERSION.zip
+    cd ..
+fi
 
-rm -drf $TMPDIR/infinispan-js-domain*
-SERVER_TMP=`mktemp -d -t 'infinispan-js-domain' || mktemp -d 2>/dev/null`
-echo "Created temporary directory: $SERVER_TMP"
 
+if [[ $1 = "--ci" ]]; then
+    SERVER_TMP=server/infinispan-server-$SERVER_VERSION
+    echo "Use server in directory: $SERVER_TMP"
+else
+    rm -drf $TMPDIR/infinispan-js-domain*
+    SERVER_TMP=`mktemp -d -t 'infinispan-js-domain.XXX' || mktemp -d 2>/dev/null`
+    echo "Created temporary directory: $SERVER_TMP"
 
-cp -r $SERVER_HOME/* $SERVER_TMP
-echo "Server copied to temporary directory."
+    cp -r server/infinispan-server-$SERVER_VERSION/* $SERVER_TMP
+    echo "Server copied to temporary directory."
+fi
 
 
 cp spec/configs/domain.xml $SERVER_TMP/domain/configuration
@@ -48,15 +65,23 @@ $SERVER_TMP/bin/add-user.sh -u admin -p 'mypassword'
 echo "Admin user added."
 
 
-$SERVER_TMP/bin/domain.sh &
+if [[ $1 = "--ci" ]]; then
+  nohup $SERVER_TMP/bin/domain.sh &
+else
+  $SERVER_TMP/bin/domain.sh &
+fi
 
 
 waitForClusters
 echo "Infinispan test domain started."
 
 
-# Wait until script stopped
-while :
-do
-  sleep 5
-done
+if [[ $1 = "--ci" ]]; then
+  echo "Launch script finished"
+else
+  # Wait until script stopped
+  while :
+  do
+    sleep 5
+  done
+fi
