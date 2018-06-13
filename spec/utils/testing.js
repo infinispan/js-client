@@ -566,9 +566,24 @@ exports.stopAndWaitView = function(nodeStop, expectNumMembers, nodeView) {
 };
 
 function waitUntilView(expectNumMembers, nodeName) {
+  logger.debugf("Wait until view of %d nodes in '%s'", expectNumMembers, nodeName);
   return waitUntil(
-    function(members) { expect(members.length).toEqual(expectNumMembers); },
-    function(members) { return _.isEqual(expectNumMembers, members.length); },
+    function(members) {
+      logger.debugf(
+          "Final check, check the expect %d nodes and got %d",
+          expectNumMembers, members.length
+      );
+      expect(members.length).toEqual(expectNumMembers);
+      logger.debugf("Check passed");
+    },
+    function(members) {
+      var success = _.isEqual(expectNumMembers, members.length);
+      logger.debugf(
+          "Expected %d nodes, got %d, success=%s",
+          expectNumMembers, members.length, success
+      );
+      return success;
+    },
     getClusterMembers(nodeName)
   );
 }
@@ -577,8 +592,11 @@ function waitUntil(expectF, cond, op) {
   var now = new Date().getTime();
 
   function done(actual) {
-    return cond(actual)
-      && new Date().getTime() < now + MAX_WAIT;
+    var expired = new Date().getTime() < now + MAX_WAIT;
+    logger.debugf(
+        "Expired waiting for condition? %s", expired
+    );
+    return cond(actual) && !expired;
   }
 
   function loop(promise) {
@@ -587,7 +605,10 @@ function waitUntil(expectF, cond, op) {
     // Simple recursive loop until condition has been met
     return promise
       .then(function(response) {
-        return !done(response)
+        var isDone = done(response);
+        logger.debugf("Is waiting done for condition? %s", isDone);
+
+        return !isDone
           ? loop(op())
           : response;
       })
@@ -622,8 +643,12 @@ function getClusterMembers(nodeName) {
 
     return invokeDmrHttp(op)
       .then(function(response) {
+        logger.debugf("Server '%s' replied with cluster members: %s", nodeName, response.result);
+
         var members = response.result
           .replace('[', '').replace(']', '').split(/[\s,]+/);
+
+        logger.debugf("Members are: %s", members);
         return _.sortBy(members, function (m) { return m; });
       });
   }

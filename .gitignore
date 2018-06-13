@@ -19,3 +19,9 @@ out
 
 # OSX files
 .DS_Store
+
+# server zip
+infinispan-server-*
+
+# nohup
+nohup.out
