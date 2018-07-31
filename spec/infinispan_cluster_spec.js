@@ -71,6 +71,13 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done)).finally(done);
   });
 
+  it('can get ignore topology updates with client configuration', function(done) {
+    t.client(t.cluster1, {topologyUpdates: false})
+      .then(t.assert(t.getMembers(), t.toEqual([t.cluster1])))
+      .then(t.disconnect())
+      .catch(t.failed(done)).finally(done);
+  });
+
   function toEqualJson(value) {
     return function(actual) {
       expect(JSON.parse(actual)).toEqual(value);
