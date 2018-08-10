@@ -15,6 +15,12 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Install release package') {
             steps {
                 nodejs(nodeJSInstallationName: 'Node 0.10') {
