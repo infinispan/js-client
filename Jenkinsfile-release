@@ -17,7 +17,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
                 sh "git checkout ${branch}"
                 sh "git remote -v"
             }
