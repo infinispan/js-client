@@ -18,7 +18,7 @@ pipeline {
         stage('Install release package') {
             steps {
                 nodejs(nodeJSInstallationName: 'Node 0.10') {
-                    sh 'npm install npm-release'
+                    sh 'npm install npm-release -g'
                 }
             }
         }
