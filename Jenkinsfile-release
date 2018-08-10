@@ -19,6 +19,7 @@ pipeline {
             steps {
                 checkout scm
                 sh "git checkout ${branch}"
+                sh "git remote -v"
             }
         }
 
