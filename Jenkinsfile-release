@@ -40,12 +40,17 @@ pipeline {
 
         stage('Generate JS API docs and upload') {
             steps {
-                sh './node_modules/.bin/jsdoc lib/*.js'
-                sh 'mv out apidocs'
-                sh 'mkdir 1.0'
-                sh 'mv apidocs 1.0'
-                sh 'rsync -rv --protocol=28 1.0 infinispan@filemgmt.jboss.org:/docs_htdocs/infinispan/hotrod-clients/javascript'
-                sh 'mv 1.0 out'
+                nodejs(nodeJSInstallationName: 'Node 8.11') {
+                    sh 'rm -drf node_modules/'
+                    sh 'npm config ls'
+                    sh 'npm install'
+                    sh './node_modules/.bin/jsdoc lib/*.js'
+                    sh 'mv out apidocs'
+                    sh 'mkdir 1.0'
+                    sh 'mv apidocs 1.0'
+                    sh 'rsync -rv --protocol=28 1.0 infinispan@filemgmt.jboss.org:/docs_htdocs/infinispan/hotrod-clients/javascript'
+                    sh 'mv 1.0 out'
+                }
             }
         }
 
