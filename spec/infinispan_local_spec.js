@@ -71,7 +71,7 @@ describe('Infinispan local client', function() {
     client
       .then(t.assert(t.putAll(pairs), t.toBeUndefined))
       .then(t.assert(t.size(), t.toBe(3)))
-      .then(t.assert(t.getAll(keys), t.toEqualPairs([{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
+      .then(t.assert(t.getAll(keys), t.toEqualPairs('key', [{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
       .then(t.assert(t.getAll(['_']), t.toEqual([])))
       .catch(t.failed(done))
       .finally(done);
@@ -184,7 +184,7 @@ describe('Infinispan local client', function() {
       .catch(t.failed(done));
   });
 
-  if (process.env.protocol == null || process.env.protocol == '2.5') {
+  if (process.env.protocol == null || process.env.protocol >= '2.5') {
 
     it('can iterate over entries, one entry at the time',
        tests.iterateEntries('local', 1, client)
@@ -202,7 +202,7 @@ describe('Infinispan local client', function() {
       client
           .then(t.assert(t.clear()))
           .then(t.assert(t.putAll(pairs, {lifespan: '1d', maxIdle: '1h'}), t.toBeUndefined))
-          .then(t.seqIterator(3, expected, {metadata: true})) // Iterate all data, 3 elements at time, sequential
+          .then(t.seqIterator('key', 3, expected, {metadata: true})) // Iterate all data, 3 elements at time, sequential
           .catch(t.failed(done))
           .finally(done);
     });

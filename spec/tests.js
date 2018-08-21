@@ -21,7 +21,7 @@ exports.execPutGet = function(path, prefix, client, expectFun) {
     client
       .then(t.assert(t.clear()))
       .then(t.assert(t.putAll(pairs), t.toBeUndefined))
-      .then(t.seqIterator(batchSize, pairs))
+      .then(t.seqIterator('key', batchSize, pairs))
       .catch(t.failed(done))
       .finally(done);
   }
