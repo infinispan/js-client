@@ -44,19 +44,19 @@ describe('Signed number encode/decode', function() {
 
 describe('String encode/decode', function() {
   it('can encode a String', function() {
-    assert('one', strSize('one'), codec.encodeString('one'), codec.decodeObject());
+    assert('one', strSize('one'), codec.encodeString('one'), codec.decodeString());
   });
   it('can encode an undefined String with 0 length', function() {
     assert(0, 1, codec.encodeString(undefined), codec.decodeUByte());
   });
   it('can encode a String that fits exactly within buffer', function() {
     var str = t.randomStr(31);
-    assert(str, 32, codec.encodeString(str), codec.decodeObject(), 32);
+    assert(str, 32, codec.encodeString(str), codec.decodeString(), 32);
   });
   it('can encode a String that needs expanding to include length', function() {
     // Length of String needs to be bigger than 8 bytes for expansion at String
     var str = t.randomStr(32);
-    assert(str, 33, codec.encodeString(str), codec.decodeObject(), 32);
+    assert(str, 33, codec.encodeString(str), codec.decodeString(), 32);
   });
 });
 
@@ -74,8 +74,8 @@ describe('Bytes encode/decode', function() {
   it('can encode Object + Bytes + Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(strSize('one') + 8 + strSize('one'),
-        [codec.encodeObject('one'), codec.encodeBytes(bytes), codec.encodeObject('two')],
-        [codec.decodeObject(), codec.decodeFixedBytes(8), codec.decodeObject()]);
+        [codec.encodeString('one'), codec.encodeBytes(bytes), codec.encodeString('two')],
+        [codec.decodeString(), codec.decodeFixedBytes(8), codec.decodeString()]);
     expect(actual[0]).toBe('one');
     t.expectToBeBuffer(actual[1], bytes);
     expect(actual[2]).toBe('two');
@@ -83,16 +83,16 @@ describe('Bytes encode/decode', function() {
   it('can encode a chain of Bytes => Object', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8 + strSize('one'),
-        [codec.encodeBytes(bytes), codec.encodeObject('one')],
-        [codec.decodeFixedBytes(8), codec.decodeObject()]);
+        [codec.encodeBytes(bytes), codec.encodeString('one')],
+        [codec.decodeFixedBytes(8), codec.decodeString()]);
     t.expectToBeBuffer(actual[0], bytes);
     expect(actual[1]).toBe('one');
   });
   it('can encode a chain of Object => Bytes', function() {
     var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8 + strSize('one'),
-        [codec.encodeObject('one'), codec.encodeBytes(bytes)],
-        [codec.decodeObject(), codec.decodeFixedBytes(8)]);
+        [codec.encodeString('one'), codec.encodeBytes(bytes)],
+        [codec.decodeString(), codec.decodeFixedBytes(8)]);
     expect(actual[0]).toBe('one');
     t.expectToBeBuffer(actual[1], bytes);
   });
@@ -101,21 +101,15 @@ describe('Bytes encode/decode', function() {
 describe('Object encode/decode', function() {
   it('can resize buffer when encoding a String', function() {
     assert('one two three four five six', strSize('one two three four five six'),
-           codec.encodeObject('one two three four five six'), codec.decodeObject(), 1);
+           codec.encodeString('one two three four five six'), codec.decodeString(), 1);
   });
   it('can encode a String', function() {
-    assert('one', strSize('one'), codec.encodeObject('one'), codec.decodeObject());
+    assert('one', strSize('one'), codec.encodeString('one'), codec.decodeString());
   });
   it('can encode multiple Strings', function() {
     assert(['one', 'two'], strSize('one') + strSize('two'),
-           [codec.encodeObject('one'), codec.encodeObject('two')],
-           [codec.decodeObject(), codec.decodeObject()]);
-  });
-  it('can encode a Buffer that fits exactly within buffer', function() {
-    assertBuffer(t.randomStr(31), 32, 32);
-  });
-  it('can encode a Buffer that needs expanding to include length', function() {
-    assertBuffer(t.randomStr(32), 33, 32);
+           [codec.encodeString('one'), codec.encodeString('two')],
+           [codec.decodeString(), codec.decodeString()]);
   });
 });
 
@@ -227,17 +221,4 @@ function encodeDecode(size, encoder, decoder, bufferSize) {
   var bytebuf = t.assertEncode(t.newByteBuf(bufferSize), enc, size);
   var dec = f.actions(_.isArray(decoder) ? decoder : [decoder], codec.allDecoded(decoder.length));
   return dec({buf: bytebuf.buf, offset: 0});
-}
-
-function assertBuffer(str, size, bufferSize) {
-  var enc = codec.encodeObject(new Buffer(str));
-  var dec = codec.decodeString();
-  var ret = encodeDecode(size, enc, dec, bufferSize);
-  expect(ret).toEqual([str]);
-}
-
-function toUTF8Bytes(str) {
-  var buf = new Buffer(Buffer.byteLength(str));
-  buf.write(str);
-  return buf;
 }

@@ -34,6 +34,13 @@ exports.xsiteCacheName = 'xsiteCache';
 exports.earth1 = {port: 11522, host: '127.0.0.1'};
 exports.moon1 = {port: 11532, host: '127.0.0.1'};
 
+exports.json = {
+  dataFormat: {
+    keyType: 'application/json'
+    , valueType: 'application/json'
+  }
+};
+
 var CLUSTER_NODES = ['server-one', 'server-two', 'server-three'];
 
 var MAX_WAIT = 7500;
@@ -58,7 +65,9 @@ exports.client = function(args, opts) {
   return ispn.client(args, opts);
 };
 
-exports.protocol = function() { return protocols.version25(); };
+exports.protocol25 = function() { return protocols.version25(); };
+
+exports.protocol28 = function(clientOpts) { return protocols.version28(clientOpts); };
 
 exports.put = function(k, v, opts) {
   return function(client) { return client.put(k, v, opts); }
@@ -91,7 +100,7 @@ exports.containsKey = function(k) {
 exports.conditional = function(writeFun, getFun, k, old, v, opts) {
   return function(client) {
     return getFun(k)(client).then(function(versioned) {
-      expect(versioned.value).toBe(old);
+      expect(versioned.value).toEqual(old);
       expect(versioned.version).toBeDefined();
       return writeFun(k, versioned.version, v, opts)(client);
     });
@@ -241,7 +250,22 @@ exports.toBe = function(value) {
 };
 
 exports.toEqual = function(value) {
-  return function(actual) { expect(actual).toEqual(value); }
+  return function(actual) {
+    var laundered = JSON.stringify({value: 'native-value'});
+    var relaundered = JSON.parse(laundered);
+
+    // logger.tracef('Match actual=%s and expected=%s? %s'
+    //     , u.str(relaundered)
+    //     , u.str({value: 'native-value'})
+    //     , _.isMatch(relaundered, {value: 'native-value'})
+    // );
+
+    var match = _.isMatch(actual, value);
+    logger.tracef('Match actual=%s and expected=%s? %s'
+        , u.str(actual), u.str(value), match
+    );
+    expect(actual).toEqual(value);
+  }
 };
 
 exports.toContain = function(value) {
@@ -286,7 +310,7 @@ exports.expectEvent = function(key, done, removeAfterEvent, value) {
   return function(client) {
     if (f.existy(value)) {
       return function(eventKey, eventVersion, listenerId) {
-        expect(eventKey).toBe(key);
+        expect(eventKey).toEqual(key);
         assertListenerVersioned(key, value, eventVersion)(client)
           .then(function() {
             removeListener(client, listenerId, removeAfterEvent, done);
@@ -298,7 +322,7 @@ exports.expectEvent = function(key, done, removeAfterEvent, value) {
       }
     } else {
       return function(eventKey, listenerId) {
-        expect(eventKey).toBe(key);
+        expect(eventKey).toEqual(key);
         removeListener(client, listenerId, removeAfterEvent, done);
       }
     }
@@ -333,7 +357,7 @@ function assertListenerVersioned(key, value, version) {
   return function(client) {
     return client.getWithMetadata(key)
       .then(function(getM) {
-        expect(getM.value).toBe(value);
+        expect(getM.value).toEqual(value);
         expectToBeBuffer(getM.version, version);
       })
   }
@@ -422,7 +446,7 @@ exports.expectIteratorDone = function(it) {
   }
 };
 
-exports.seqIterator = function(batchSize, expected, opts) {
+exports.seqIterator = function(sortByF, batchSize, expected, opts) {
   return function(client) {
     return client.iterator(batchSize, opts).then(function(it) {
       var p = _.foldl(_.range(expected.length),
@@ -436,32 +460,22 @@ exports.seqIterator = function(batchSize, expected, opts) {
           }, Promise.resolve([]));
 
       return p
-          .then(function(array) { exports.toContainAllEntries(expected)(array); })
+          .then(function(array) { exports.toContainAllEntries(expected)(sortByF, array); })
           .then(function() { return it.close(); }) // Close iterator
           .then(function() { return client; });
     })
   }
 };
 
-exports.toEqual = function(value) {
+exports.toEqualPairs = function(sortByF, value) {
   return function(actual) {
-    expect(actual).toEqual(value);
-  }
-};
-
-exports.toEqualPairs = function(value) {
-  return function(actual) {
-    if (_.isObject(actual[0])) {
-      expect(_.sortBy(actual, 'key')).toEqual(value);
-    } else {
-      expect(actual.sort()).toEqual(value);
-    }
+    expect(_.sortBy(actual, sortByF)).toEqual(value);
   }
 };
 
 exports.toContainAllEntries = function(expected) {
-  return function(actual) {
-    var sorted = _.sortBy(actual, 'key');
+  return function(sortByF, actual) {
+    var sorted = _.sortBy(actual, sortByF);
     return exports.toContainAll(expected)(sorted);
   }
 };

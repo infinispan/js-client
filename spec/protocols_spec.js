@@ -19,7 +19,7 @@ function object(name) {
 }
 
 describe('Protocols', function() {
-  var p = t.protocol();
+  var p = t.protocol25();
 
   it('can encode/decode lifespan', function() {
     encodeDecodeUnits('lifespan', lifespan);
@@ -31,6 +31,28 @@ describe('Protocols', function() {
     t.expectToThrow(function () {
       t.client(t.local, {version: '1.1'});
     }, 'Unknown protocol version: 1.1', done);
+  });
+  it('can handle different protocols at the same time', function() {
+    var p1 = t.protocol28({
+      dataFormat : {
+        keyType: 'text/plain',
+        valueType: 'text/plain'
+      }
+    });
+    var p2 = t.protocol28({
+      dataFormat : {
+        keyType: 'application/json',
+        valueType: 'application/json'
+      }
+    });
+
+    expect(p1.clientOpts.dataFormat.keyType).toEqual('text/plain');
+    expect(p1.getKeyMediaType()).toEqual('text/plain');
+    expect(p1.getValueMediaType()).toEqual('text/plain');
+
+    expect(p2.clientOpts.dataFormat.keyType).toEqual('application/json');
+    expect(p2.getKeyMediaType()).toEqual('application/json');
+    expect(p2.getValueMediaType()).toEqual('application/json');
   });
 
   function encodeDecodeUnits(name, converter) {

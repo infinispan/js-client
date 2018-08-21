@@ -9,7 +9,7 @@ else
 fi
 
 
-SERVER_VERSION="9.3.0.CR1"
+SERVER_VERSION="9.4.0-SNAPSHOT"
 SERVER_HOME=server/infinispan-server-$SERVER_VERSION
 CLUSTER_SIZE_MAIN="/host=master/server=server-three/subsystem=datagrid-infinispan/cache-container=clustered:read-attribute(name=cluster-size)"
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
