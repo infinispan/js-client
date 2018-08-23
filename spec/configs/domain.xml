@@ -711,11 +711,8 @@
                 <hotrod-connector socket-binding="hotrod" cache-container="clustered">
                     <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
                 </hotrod-connector>
-                <memcached-connector socket-binding="memcached" cache-container="clustered"/>
-                <rest-connector socket-binding="rest" cache-container="clustered">
-                    <authentication security-realm="ApplicationRealm" auth-method="BASIC"/>
-                </rest-connector>
-                <websocket-connector socket-binding="websocket" cache-container="clustered"/>
+                <!-- JS MOD :: START :: remove memcached, rest and websocket connectors -->
+                <!-- JS MOD :: END -->
             </subsystem>
             <subsystem xmlns="urn:infinispan:server:jgroups:9.0">
                 <channels default="cluster">
@@ -1018,11 +1015,8 @@
                 <hotrod-connector socket-binding="hotrod" cache-container="clustered">
                     <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
                 </hotrod-connector>
-                <memcached-connector socket-binding="memcached" cache-container="clustered"/>
-                <rest-connector socket-binding="rest" cache-container="clustered">
-                    <authentication security-realm="ApplicationRealm" auth-method="BASIC"/>
-                </rest-connector>
-                <websocket-connector socket-binding="websocket" cache-container="clustered"/>
+                <!-- JS MOD :: START :: remove memcached, rest and websocket connectors -->
+                <!-- JS MOD :: END -->
             </subsystem>
             <subsystem xmlns="urn:infinispan:server:jgroups:9.0">
                 <channels default="cluster">
@@ -1197,7 +1191,8 @@
             <socket-binding name="rest" port="8080"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="websocket" port="8181"/>
+            <!-- JS MOD :: START :: remove websocket socket binding -->
+            <!-- JS MOD :: END -->
             <outbound-socket-binding name="remote-store-hotrod-server">
                 <remote-destination host="remote-host" port="11222"/>
             </outbound-socket-binding>
@@ -1219,7 +1214,8 @@
             <socket-binding name="rest" port="8080"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="websocket" port="8181"/>
+            <!-- JS MOD :: START :: remove websocket socket binding -->
+            <!-- JS MOD :: END -->
             <outbound-socket-binding name="remote-store-hotrod-server">
                 <remote-destination host="remote-host" port="11222"/>
             </outbound-socket-binding>
@@ -1245,7 +1241,8 @@
             <socket-binding name="rest" port="8080"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="websocket" port="8181"/>
+            <!-- JS MOD :: START :: remove websocket socket binding -->
+            <!-- JS MOD :: END -->
             <outbound-socket-binding name="remote-store-hotrod-server">
                 <remote-destination host="remote-host" port="11222"/>
             </outbound-socket-binding>
