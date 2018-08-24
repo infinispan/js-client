@@ -653,6 +653,57 @@ connected.then(function (client) {
 });
 ```
 
+# Supported data types
+
+Before version 0.6, Infinispan Javascript client only supported String keys and values.
+Starting at version 0.6, the client also supports native JSON objects as keys and values.
+
+The way parameters are treated, whether String or native JSON objects, is defined by client configuration.
+For backwards compatibility reasons, by default keys and values are treated as String values.
+
+So, if using native JSON objects, it is necessary to adjust the client configuration:
+
+```Javascript
+var infinispan = require('infinispan');
+
+var connected = infinispan.client(
+    {port: 11222, host: '127.0.0.1'}
+    , {
+        dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+        }
+    }
+);
+
+connected.then(function (client) {
+
+  var clientPut = client.put({k: 'key'}, {v: 'value'});
+
+  var clientGet = clientPut.then(
+      function() { return client.get({k: 'key'}); });
+
+  var showGet = clientGet.then(
+      function(value) { console.log("get({k: 'key'})=" + JSON.stringify(value)); });
+
+  return showGet.finally(
+      function() { return client.disconnect(); });
+
+}).catch(function(error) {
+
+  console.log("Got error: " + error.message);
+
+});
+```
+
+Key and value data types can be configured independently.
+Hence, it's possible to have String keys and native JSON values or viceversa.
+
+Currently all operations support native JSON objects except scripts.
+They still rely on String key/value pairs and String parameters.
+Support for native JSON objects in scripts will come at a later time. 
+
+
 # Testing
 
 Before executing any tests, Infinispan Server instances need to be started 
