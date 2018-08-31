@@ -52,7 +52,7 @@ The client is normally connected to one of the sites, but if its members fail to
 
 # Requirements
 
-`infinispan` client requires Node.js version `0.10` or higher.
+`infinispan` client requires Node.js version `8.9.4` or higher.
 
 It can only talk to Infinispan Server 8.x or higher versions. 
 

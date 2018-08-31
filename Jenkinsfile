@@ -10,21 +10,19 @@ pipeline {
     }
 
     stages {
-        stage('Docs') {
-            steps {
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
-                    sh 'rm -drf node_modules/'
-                    sh 'npm install'
-                    sh './node_modules/.bin/jsdoc lib/*.js'
-                }
-            }
-        }
         stage('Build') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 0.10') {
+                nodejs(nodeJSInstallationName: 'Node 8.9') {
                     sh 'rm -drf node_modules/'
                     sh 'npm config ls'
                     sh 'npm install'
+                }
+            }
+        }
+        stage('Docs') {
+            steps {
+                nodejs(nodeJSInstallationName: 'Node 8.9') {
+                    sh './node_modules/.bin/jsdoc lib/*.js'
                 }
             }
         }
@@ -37,7 +35,7 @@ pipeline {
             steps {
                 sh 'rm -drf tmp-tests.log'
 
-                nodejs(nodeJSInstallationName: 'Node 0.10') {
+                nodejs(nodeJSInstallationName: 'Node 8.9') {
                     sh './node_modules/.bin/jasmine-node spec --captureExceptions --forceexit'
                 }
             }

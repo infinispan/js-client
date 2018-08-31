@@ -75,7 +75,9 @@ describe('Infinispan local client working with expiry operations', function() {
         .then(t.assert(t.get('idle-replace'), t.toBe('v1')))
         .then(waitIdleTimeExpire('idle-replace'))
         .then(t.assert(t.putAll(pairs, {maxIdle: '100000μs'}), t.toBeUndefined))
+        .then(t.assert(t.containsKey('idle-multi1'), t.toBeTruthy))
         .then(t.assert(t.containsKey('idle-multi2'), t.toBeTruthy))
+        .then(waitIdleTimeExpire('idle-multi1'))
         .then(waitIdleTimeExpire('idle-multi2'))
         .catch(t.failed(done))
         .finally(done);
