@@ -8,4 +8,5 @@ rm -drf tmp-tests.log
   spec/infinispan_local_spec.js \
   spec/infinispan_json_spec.js \
   spec/infinispan_ssl_spec.js \
+  spec/protocols_spec.js \
   --captureExceptions

@@ -33,13 +33,13 @@ describe('Protocols', function() {
     }, 'Unknown protocol version: 1.1', done);
   });
   it('can handle different protocols at the same time', function() {
-    var p1 = t.protocol28({
+    var p1 = t.protocol29({
       dataFormat : {
         keyType: 'text/plain',
         valueType: 'text/plain'
       }
     });
-    var p2 = t.protocol28({
+    var p2 = t.protocol29({
       dataFormat : {
         keyType: 'application/json',
         valueType: 'application/json'
