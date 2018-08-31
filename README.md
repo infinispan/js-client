@@ -56,12 +56,15 @@ The client is normally connected to one of the sites, but if its members fail to
 
 It can only talk to Infinispan Server 8.x or higher versions. 
 
-By default, Infinispan clients talk Hot Rod protocol version `2.5` which is 
-supported starting with Infinispan 8.2.x. 
+By default, Infinispan clients talk Hot Rod protocol version `2.8` which is 
+supported starting with Infinispan server 9.4.x.
 
-To talk to Infinispan Server versions 8.0.x or 8.1.x, `infinispan` should be
-instructed to use Hot Rod protocol version `2.2`. To do so, `infinispan` must 
-be constructed with `{version: '2.2'}` optional argument.
+Please find below information on how to use the client with older Infinispan server versions:
+
+*  For versions between `8.2.x` and `9.3.x`, use Hot Rod protocol version `2.5`. 
+To do so, construct the client with `{version: '2.5'}` optional argument.
+*  For versions `8.0.x` and `8.1.x`, use Hot Rod protocol version `2.2`. 
+To do so, construct the client with `{version: '2.2'}` optional argument.
 
 # API docs
 
