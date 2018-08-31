@@ -24,7 +24,10 @@ pipeline {
 
         stage('Install release package') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 0.10') {
+                nodejs(nodeJSInstallationName: 'Node 8.9') {
+                    sh 'rm -drf node_modules/'
+                    sh 'npm config ls'
+                    sh 'npm install'
                     sh 'npm install npm-release -g'
                 }
             }
@@ -32,7 +35,7 @@ pipeline {
 
         stage('Release') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 0.10') {
+                nodejs(nodeJSInstallationName: 'Node 8.9') {
                     sh "npm-release ${version}"
                 }
             }
@@ -40,10 +43,7 @@ pipeline {
 
         stage('Generate JS API docs and upload') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
-                    sh 'rm -drf node_modules/'
-                    sh 'npm config ls'
-                    sh 'npm install'
+                nodejs(nodeJSInstallationName: 'Node 8.9') {
                     sh './node_modules/.bin/jsdoc lib/*.js'
                     sh 'mv out apidocs'
                     sh 'mkdir 1.0'
