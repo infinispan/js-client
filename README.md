@@ -244,7 +244,6 @@ connected.then(function (client) {
 
 ```Javascript
 var infinispan = require('infinispan');
-var Promise = require('promise');
 
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'});
 
@@ -346,7 +345,6 @@ connected.then(function (client) {
 
 ```Javascript
 var infinispan = require('infinispan');
-var Promise = require('promise');
 
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'});
 
@@ -414,7 +412,6 @@ following code:
 
 ```Javascript
 var infinispan = require('infinispan');
-var Promise = require('promise');
 var readFile = Promise.denodeify(require('fs').readFile);
 
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'});
@@ -771,173 +768,6 @@ So of programs might only report the memory usage before/after.
 Others might generate heap dumps which can be visualized using Google Chrome.
 Within Chrome, the Developer Tools UI contains a `Memory` tab where heap dumps can be loaded.
 
-
-## Avoiding Promise leaks
-
-The Node.js client represents results of the asynchronous operations are represented using [Promise](https://www.promisejs.org) instances.
-Users should be careful about situations when many `Promise` instances are created.
-In the example below, a user stores some data and then generates many retrievals and when all of those complete, the results are printed:
-
-```javascript
-var _ = require('underscore');
-var infinispan = require('infinispan');
-var Promise = require('promise');
-
-var heapdump = require('heapdump');
-
-var connected = infinispan.client({port: 11222, host: '127.0.0.1'},{cacheName: 'namedCache'});
-console.log("Connected to JDG server");
-connected.then(function (client) {
-  var sessionA = "Key";
-  var clientPut = client.put(sessionA, "test");
-  var clientTemp = clientPut;
-  return clientTemp.then(function() {
-
-      var initialHeapUsed = process.memoryUsage().heapUsed;
-      console.log("process.memoryUsage().heapUsed: " + initialHeapUsed);
-      heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
-      var temp = [];
-
-      var numOps = 10000; // 500000
-
-      _.map(_.range(numOps), function(i) {
-        temp.push(client.get(sessionA).then(function(value) {
-          console.log("value " + value);
-        }));
-      });
-      
-      var promesas = Promise.all(temp);
-      var completed = promesas.then(function() {
-        console.log("Promises completed");
-      });
-
-      temp = null;
-      promesas = null;
-
-      return completed.then(function() {
-        global.gc();
-        console.log("process.memoryUsage().heapUsed (begin): " + initialHeapUsed);
-        console.log("process.memoryUsage().heapUsed: "+process.memoryUsage().heapUsed);
-
-        global.gc();
-        console.log("process.memoryUsage().heapUsed: "+process.memoryUsage().heapUsed);
-
-        heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
-
-        return client.disconnect();
-      });
-
-    });
-}).catch(function(err) {
-  console.log("connect error", err);
-});
-``` 
-
-Running this code will result in an increased memory consumption when it finishes:
-
-```bash
-node --expose-gc test.js
-...
-process.memoryUsage().heapUsed (begin): 5620856
-process.memoryUsage().heapUsed: 14368456
-process.memoryUsage().heapUsed: 14274008
-```
-
-The reason this is happening is because the `promise` library imported at the top does not free up the promises until a independent new `Promise` has been created.
-There are several ways to work around this:
-
-### a) Use Node.js platform promises
-
-If using a recent Node.js version, promises are already included in the platform so there's no need to add `var Promise = require('promise')`.
-If you remove that line and run it with a recent Node.js version, e.g. `8.11`, you get:
-
-```bash
-$ node --version
-v8.11.1
-$ node --expose-gc test.js
-...
-process.memoryUsage().heapUsed (begin): 6379448
-process.memoryUsage().heapUsed: 6749056
-process.memoryUsage().heapUsed: 6614560
-``` 
-
-### b) Generate one extra promise 
-
-If using an older version (Node.js 0.10 is the oldest supported version), you can generate a new `Promise` after the collection of promises has been handled, e.g.
-
-```javascript
-var _ = require('underscore');
-var infinispan = require('infinispan');
-var Promise = require('promise');
-
-var heapdump = require('heapdump');
-
-var connected = infinispan.client({port: 11222, host: '127.0.0.1'},{cacheName: 'namedCache'});
-console.log("Connected to JDG server");
-connected.then(function (client) {
-  var sessionA = "Key";
-  var clientPut=client.put(sessionA, "test");
-  var clientTemp = clientPut;
-  return clientTemp.then(function() {
-
-    var initialHeapUsed = process.memoryUsage().heapUsed;
-    console.log("process.memoryUsage().heapUsed: " + initialHeapUsed);
-    heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
-    var temp = [];
-
-    var numOps = 10000; // 500000
-
-    _.map(_.range(numOps), function(i) {
-      temp.push(client.get(sessionA).then(function(value) {
-        console.log("value " + value);
-      }));
-    });
-
-    var promesas = Promise.all(temp);
-    var completed = promesas.then(function() {
-      console.log("Promises completed");
-    });
-
-    temp = null;
-    promesas = null;
-
-    var getAfterAll = completed.then(function() {
-      return client.get(sessionA);
-    });
-
-    var logGet = getAfterAll.then(function(value) {
-      console.log("[get after all] value: " + value);
-    })
-
-    return logGet.then(function() {
-      global.gc();
-      console.log("process.memoryUsage().heapUsed (begin): " + initialHeapUsed);
-      console.log("process.memoryUsage().heapUsed: "+process.memoryUsage().heapUsed);
-
-      global.gc();
-      console.log("process.memoryUsage().heapUsed: "+process.memoryUsage().heapUsed);
-
-      heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
-
-      return client.disconnect();
-    });
-  });
-}).catch(function(err) {
-  console.log("connect error", err);
-});
-```
-
-Output:
-
-```bash
-$ node --version
-v0.10.48
-$ node --expose-gc test.js
-...
-process.memoryUsage().heapUsed (begin): 5735864
-process.memoryUsage().heapUsed: 4054352
-process.memoryUsage().heapUsed: 4050064
-```
 
 # Debugging
 

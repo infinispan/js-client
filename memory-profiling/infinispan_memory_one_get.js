@@ -1,6 +1,5 @@
 var _ = require('underscore');
 var infinispan = require('../lib/infinispan');
-var Promise = require('promise');
 
 var heapdump = require('heapdump');
 
