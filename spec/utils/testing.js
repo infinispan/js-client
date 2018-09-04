@@ -3,8 +3,11 @@
 var _ = require('underscore');
 
 var log4js = require('log4js');
-var Promise = require('promise');
-var readFile = Promise.denodeify(require('fs').readFile);
+
+var promiseFinally = require('promise.prototype.finally');
+promiseFinally.shim(); // will be a no-op if not needed
+
+var readFile = require('fs').readFile;
 var httpRequest = require('request');
 var util = require('util');
 
@@ -176,7 +179,7 @@ exports.exec = function(scriptName, params) {
 
 exports.loadAndExec = function(path, name) {
   return function(client) {
-    return Promise.all([client, readFile(path)])
+    return Promise.all([client, readFileAsync(path)])
       .then(function(vals) {
         var c = vals[0];
         var scriptName = f.existy(name) ? name : path.split('/').pop();
@@ -689,6 +692,15 @@ function invokeDmrHttp(op) {
         reject(util.format('Error (%s), body (%s), response(%s)',
           error, body, JSON.stringify(response)));
       }
+    });
+  });
+}
+
+function readFileAsync(path) {
+  return new Promise(function(resolve,reject){
+    readFile(path, function(err, data){
+      if(err !== null) return reject(err);
+      resolve(data);
     });
   });
 }

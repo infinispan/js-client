@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var Promise = require('promise');
 
 var t = require('./utils/testing'); // Testing dependency
 
@@ -150,7 +149,7 @@ function waitLifespanExpire(key) {
   return function(client) {
     var contains = true;
     waitsFor(function() {
-      client.containsKey(key).done(function(success) {
+      client.containsKey(key).then(function(success) {
         contains = success;
       });
 
@@ -164,7 +163,7 @@ function waitLifespanExpire(key) {
 function waitForExpiryEvent(key) {
   return function(client) {
     t.sleepFor(200); // sleep required, waitFor() does not work with event
-    client.containsKey(key).done(function(success) {
+    client.containsKey(key).then(function(success) {
       expect(success).toBeFalsy();
     });
     return client;
@@ -176,7 +175,7 @@ function waitIdleTimeExpire(key) {
     var contains = true;
     t.sleepFor(200); // sleep required
     waitsFor(function() {
-      client.containsKey(key).done(function(success) {
+      client.containsKey(key).then(function(success) {
         contains = success;
       });
 

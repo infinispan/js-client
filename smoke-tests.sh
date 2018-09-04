@@ -2,7 +2,9 @@
 
 rm -drf tmp-tests.log
 
-./node_modules/.bin/jasmine-node \
+node \
+  --trace-deprecation \
+  node_modules/jasmine-node/lib/jasmine-node/cli.js \
   spec/codec_spec.js \
   spec/infinispan_cluster_spec.js \
   spec/infinispan_local_spec.js \

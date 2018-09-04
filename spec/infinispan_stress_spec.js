@@ -1,9 +1,6 @@
 var _ = require('underscore');
-var Promise = require('promise');
 
-var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
-var tests = require('./tests'); // Shared tests
 
 describe('Infinispan local client under stress load', function() {
   var client = t.client(t.local);

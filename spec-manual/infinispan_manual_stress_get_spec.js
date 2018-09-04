@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var Promise = require('promise');
 
 var t = require('../spec/utils/testing'); // Testing dependency
 
@@ -18,6 +17,9 @@ describe('Infinispan local client under read stress load', function () {
       var put = cl.put(key, "test");
 
       var gets = _.map(_.range(100000), function(i) {
+        if (_.isEqual(i % 10000, 0))
+          console.log(i + ' operations...');
+
         var get = put.then(
           function() { return cl.get(key); }
         );

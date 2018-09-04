@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var Promise = require('promise');
 
 var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
