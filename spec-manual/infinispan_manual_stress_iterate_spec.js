@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var Promise = require('promise');
 
 var f = require('../lib/functional');
 var t = require('../spec/utils/testing'); // Testing dependency
@@ -20,6 +19,9 @@ describe('Infinispan local client under iterate stress load', function () {
       var numEntries = 100000;
 
       var multiInsert = _.map(_.range(numEntries), function(i) {
+        if (_.isEqual(i % 10000, 0))
+          console.log(i + ' operations...');
+
         return singleInsert.then(function () {
           cl.put("key" + i, JSON.stringify({ test: "test de prueba con un texto largo", token: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.' }))
         });

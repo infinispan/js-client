@@ -773,13 +773,13 @@ Within Chrome, the Developer Tools UI contains a `Memory` tab where heap dumps c
 
 To debug tests with IDE:
 
-    node --debug-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/codec_spec.js
+    node --inspect-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/codec_spec.js
 
 Or:
 
-    node --debug-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js
+    node --inspect-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js
 
-And then start a remote Node.js debugger from IDE on port 5858.
+And then start a remote Node.js debugger from IDE on port 9229.
 
 # Tests, servers and ports
 

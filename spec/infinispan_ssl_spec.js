@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 var util = require('util');
 
 var t = require('./utils/testing'); // Testing dependency
@@ -30,50 +32,64 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if server name (SNI) and trusted certificate are incorrect',
-     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'certificate signature failure']),
-               sslSniUntrusted())
+     testError(
+       expectAnyExactErrors(
+         ['CERT_SIGNATURE_FAILURE'
+           , 'certificate signature failure'
+           , 'self signed certificate in certificate chain'
+         ])
+       , sslSniUntrusted()
+     )
   );
 
   it('fails to operate if server name (SNI) is not provided, but certificate is trusted',
-      testError('CERT_SIGNATURE_FAILURE', sslSniDefaultWithTrustedCertificate())
+      testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+                sslSniDefaultWithTrustedCertificate())
   );
 
   it('fails to operate if server name (SNI) has no valid certificate',
-      testError('SELF_SIGNED_CERT_IN_CHAIN', sslSniWithNoCert())
+      testError(expectAnyExactErrors(['SELF_SIGNED_CERT_IN_CHAIN', 'self signed certificate in certificate chain']),
+                sslSniWithNoCert())
   );
 
   it('fails to operate if no passphrase provided for crypto store',
-     testError(expectError('No passphrase defined for crypto store'),
+     testError(expectAnyExactErrors(['No passphrase defined for crypto store']),
                sslStoreNoPassphrase())
   );
 
   it('fails to operate if no path provided for crypto store',
-     testError(expectError('No path defined for crypto store'),
+     testError(expectAnyExactErrors(['No path defined for crypto store']),
                sslStoreNoPath())
   );
 
   it('fails to operate if no encrypted transport is provided',
-      testError('SELF_SIGNED_CERT_IN_CHAIN', sslStoreNoCryptoStore())
+      testError(expectAnyExactErrors(['SELF_SIGNED_CERT_IN_CHAIN', 'self signed certificate']),
+                sslStoreNoCryptoStore())
   );
 
   it('fails to operate if key for authenticated encrypted transport is missing',
-      testError('CERT_SIGNATURE_FAILURE', sslAuthWithMissingKey())
+      testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+                sslAuthWithMissingKey())
   );
 
   it('fails to operate if passphrase for authenticated encrypted transport is missing',
-      testError('CERT_SIGNATURE_FAILURE', sslAuthWithMissingPassphrase())
+      testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+                sslAuthWithMissingPassphrase())
   );
 
   it('fails to operate if cert path for authenticated encrypted transport is missing',
-      testError('CERT_SIGNATURE_FAILURE', sslAuthWithMissingCert())
+      testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+                sslAuthWithMissingCert())
   );
 
   it('fails to operate if authenticated encrypted transport is missing',
-      testError('CERT_SIGNATURE_FAILURE', sslAuthWithMissingInfo())
+      testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+                sslAuthWithMissingInfo())
   );
 
   it('fails to operate if trusted certificate is missing for authenticated encrypted transport',
-      testError('SELF_SIGNED_CERT_IN_CHAIN', sslAuthWithMissingTrustCertificate())
+      testError(expectAnyExactErrors(['SELF_SIGNED_CERT_IN_CHAIN', 'self signed certificate']),
+                sslAuthWithMissingTrustCertificate())
   );
 
   function testSsl(infix, addr, sslOpts) {
@@ -176,7 +192,7 @@ describe('Infinispan TLS/SSL client', function() {
     return function(done) {
       t.client(t.sslSni, sslOpts)
         .then(shouldFail())
-        .catch(errF)
+        .catch(errF(done))
         .finally(done);
     }
   }
@@ -197,14 +213,18 @@ describe('Infinispan TLS/SSL client', function() {
   }
 
   function expectContainsError(msg) {
-    return function(err) {
-      toContainAnyOf([msg], err);
+    return function(done) {
+      return function(err) {
+        toContainAnyOf([msg], err, done);
+      }
     }
   }
 
   function expectAnyExactErrors(msgs) {
-    return function(err) {
-      toBeAnyOf(msgs, err);
+    return function(done) {
+      return function(err) {
+        toBeAnyOf(msgs, err, done);
+      }
     }
   }
 
@@ -307,20 +327,20 @@ describe('Infinispan TLS/SSL client', function() {
     }
   }
 
-  function toBeAnyOf(expecteds, actual) {
+  function toBeAnyOf(expecteds, actual, done) {
     for (var i = 0, l = expecteds.length; i < l; i++) {
-      if (actual === expecteds[i])
+      if (_.isEqual(actual.message, expecteds[i]))
         return;
     }
-    throw Error(actual + ' is not any of: ' + expecteds);
+    done(new Error('[' + actual.message + '] is not any of: [' + expecteds + ']'));
   }
 
-  function toContainAnyOf(expecteds, actual) {
+  function toContainAnyOf(expecteds, actual, done) {
     for (var i = 0, l = expecteds.length; i < l; i++) {
-      if (expecteds[i].includes(actual))
+      if (actual.message.includes(expecteds[i]))
         return;
     }
-    throw Error(actual + ' does not contain any of: ' + expecteds);
+    done(new Error('[' + actual.message + '] does not contain any of: [' + expecteds + ']'));
   }
 
 });

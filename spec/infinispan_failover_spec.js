@@ -1,9 +1,6 @@
 var _ = require('underscore');
-var Promise = require('promise');
-var util = require('util');
 
 var t = require('./utils/testing'); // Testing dependency
-var tests = require('./tests'); // Shared tests
 
 describe('Infinispan clustered clients', function() {
 
