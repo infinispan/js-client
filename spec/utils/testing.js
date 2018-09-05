@@ -54,6 +54,7 @@ exports.client = function(args, opts) {
   try {
     log4js.configure('spec/utils/test-log4js.json');
   } catch (error) {
+    console.log(error);
     // In case running specs from IDEs
     log4js.configure('utils/test-log4js.json');
   }
