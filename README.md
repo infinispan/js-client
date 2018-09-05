@@ -704,6 +704,40 @@ They still rely on String key/value pairs and String parameters.
 Support for native JSON objects in scripts will come at a later time. 
 
 
+# Logging
+
+The client uses [`log4js`](https://www.npmjs.com/package/log4js) for logging.
+To configure it, simply create a JSON file with the desired configuration.
+Here is an example configuration that is used when running the client's testsuite:
+
+```json
+{
+  "appenders": {
+    "test": {
+      "type": "fileSync",
+      "filename": "tmp-tests.log"
+    }
+  },
+  "categories": {
+    "default": {
+      "appenders": ["test"],
+      "level": "trace"
+    }
+  }
+}
+```
+
+You can find more examples [here](https://github.com/log4js-node/log4js-node/tree/master/examples).
+
+Once you have the file, simply invoke `log4js` to use that file and then construct the client as usual, e.g.
+
+```js
+var log4js = require('log4js');
+log4js.configure('path/to/my-log4js.json');
+
+```
+
+
 # Testing
 
 Before executing any tests, Infinispan Server instances need to be started 
