@@ -1,10 +1,14 @@
 {
-  "appenders": [
-    {
+  "appenders": {
+    "test": {
       "type": "fileSync",
-      "filename": "tmp-tests.log",
-      "level": "TRACE"
+      "filename": "tmp-tests.log"
     }
-  ]
-
+  },
+  "categories": {
+    "default": {
+      "appenders": ["test"],
+      "level": "trace"
+    }
+  }
 }
