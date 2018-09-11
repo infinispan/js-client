@@ -25,15 +25,15 @@ describe('Infinispan local client working with expiry operations', function() {
   it('removes keys when their lifespan has expired', function(done) { client
     .then(t.assert(t.put('life', 'value', {lifespan: '100ms'})))
     .then(t.assert(t.containsKey('life'), t.toBeTruthy))
-    .then(waitLifespanExpire('life'))
+    .then(waitLifespanExpire('life', 1000))
     .then(t.assert(t.putIfAbsent('life-absent', 'value', {lifespan: '100000μs'})))
     .then(t.assert(t.containsKey('life-absent'), t.toBeTruthy))
-    .then(waitLifespanExpire('life-absent'))
+    .then(waitLifespanExpire('life-absent', 1000))
     .then(t.assert(t.putIfAbsent('life-replace', 'v0')))
     .then(t.assert(t.get('life-replace'), t.toBe('v0')))
     .then(t.assert(t.replace('life-replace', 'v1', {lifespan: '100000000ns'})))
     .then(t.assert(t.get('life-replace'), t.toBe('v1')))
-    .then(waitLifespanExpire('life-replace'))
+    .then(waitLifespanExpire('life-replace', 1000))
     .catch(t.failed(done))
     .finally(done);
   });
@@ -43,7 +43,7 @@ describe('Infinispan local client working with expiry operations', function() {
       .then(function(client) {
           return client2
               .then(t.assert(t.containsKey('life'), t.toBeTruthy))
-              .then(waitLifespanExpire('life'))
+              .then(waitLifespanExpire('life', 1000))
               .then(t.assert(t.putIfAbsent('life-absent', 'value', {lifespan: '100000μs'})))
               .then(t.assert(t.containsKey('life-absent'), t.toBeTruthy))
               .then(function() {
@@ -53,7 +53,7 @@ describe('Infinispan local client working with expiry operations', function() {
       .then(function(client){
         return client3
             .then(t.assert(t.get('life-absent'), t.toBe('value')))
-            .then(waitLifespanExpire('life-absent'))
+            .then(waitLifespanExpire('life-absent', 1000))
             .then(t.assert(t.putIfAbsent('life-replace', 'v0')))
             .then(t.assert(t.get('life-replace'), t.toBe('v0')))
             .then(t.assert(t.replace('life-replace', 'v1', {lifespan: '100000000ns'})))
@@ -62,7 +62,7 @@ describe('Infinispan local client working with expiry operations', function() {
             })
       })
       .then(t.assert(t.get('life-replace'), t.toBe('v1')))
-      .then(waitLifespanExpire('life-replace'))
+      .then(waitLifespanExpire('life-replace', 1000))
       .catch(t.failed(done))
       .finally(done);
   });
@@ -72,12 +72,12 @@ describe('Infinispan local client working with expiry operations', function() {
         .then(t.assert(t.put('idle-replace', 'v0')))
         .then(t.assert(t.conditional(t.replaceV, t.getM, 'idle-replace', 'v0', 'v1', {maxIdle: '100ms'}), t.toBeTruthy))
         .then(t.assert(t.get('idle-replace'), t.toBe('v1')))
-        .then(waitIdleTimeExpire('idle-replace'))
+        .then(waitIdleTimeExpire('idle-replace', 1000))
         .then(t.assert(t.putAll(pairs, {maxIdle: '100000μs'}), t.toBeUndefined))
         .then(t.assert(t.containsKey('idle-multi1'), t.toBeTruthy))
         .then(t.assert(t.containsKey('idle-multi2'), t.toBeTruthy))
-        .then(waitIdleTimeExpire('idle-multi1'))
-        .then(waitIdleTimeExpire('idle-multi2'))
+        .then(waitIdleTimeExpire('idle-multi1', 1000))
+        .then(waitIdleTimeExpire('idle-multi2', 1000))
         .catch(t.failed(done))
         .finally(done);
   });
@@ -90,7 +90,7 @@ describe('Infinispan local client working with expiry operations', function() {
       .then(function(client) {
         return client2
             .then(t.assert(t.get('idle-replace'), t.toBe('v1')))
-            .then(waitIdleTimeExpire('idle-replace'))
+            .then(waitIdleTimeExpire('idle-replace', 1000))
             .then(t.assert(t.containsKey('idle-replace'), t.toBeFalsy))
             .then(t.assert(t.putAll(pairs, {maxIdle: '100000μs'}), t.toBeUndefined))
             .then(function() {
@@ -100,7 +100,7 @@ describe('Infinispan local client working with expiry operations', function() {
       .then(function(client) {
         return client3
             .then(t.assert(t.containsKey('idle-multi2'), t.toBeTruthy))
-            .then(waitIdleTimeExpire('idle-multi2'))
+            .then(waitIdleTimeExpire('idle-multi2', 1000))
             .then(t.assert(t.containsKey('idle-multi2'), t.toBeFalsy))
             .then(function() {
               return client;
@@ -145,7 +145,8 @@ describe('Infinispan local client working with expiry operations', function() {
 
 });
 
-function waitLifespanExpire(key) {
+// timeout in ms
+function waitLifespanExpire(key, timeout) {
   return function(client) {
     var contains = true;
     waitsFor(function() {
@@ -154,7 +155,7 @@ function waitLifespanExpire(key) {
       });
 
       return !contains;
-    }, '`' + key + '` key should be expired', 150);
+    }, '`' + key + '` key should be expired', timeout);
 
     return client;
   }
@@ -170,7 +171,8 @@ function waitForExpiryEvent(key) {
   }
 }
 
-function waitIdleTimeExpire(key) {
+// timeout in ms
+function waitIdleTimeExpire(key, timeout) {
   return function(client) {
     var contains = true;
     t.sleepFor(200); // sleep required
@@ -180,7 +182,7 @@ function waitIdleTimeExpire(key) {
       });
 
       return !contains;
-    }, '`' + key + '` key should be expired', 1);
+    }, '`' + key + '` key should be expired', timeout);
 
     return client;
   }
