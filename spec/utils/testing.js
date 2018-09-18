@@ -61,6 +61,9 @@ exports.client = function(args, opts) {
 
   if (!f.existy(opts) || !f.existy(opts.version)) {
     var version = exports.getHotrodProtocolVersion();
+    if (!f.existy(opts))
+      opts = {};
+
     if (f.existy(version)) {
       opts.version = version;
     }
