@@ -32,13 +32,17 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done)).finally(done);
   });
 
-  it('can iterate over entries in a cluster, one entry at the time',
-    tests.iterateEntries('cluster', 1, client)
-  );
+  if (process.env.protocol == null || process.env.protocol >= '2.5') {
 
-  it('can iterate over entries in a cluster, more than one entry at the time',
-    tests.iterateEntries('cluster', 3, client)
-  );
+    it('can iterate over entries in a cluster, one entry at the time',
+       tests.iterateEntries('cluster', 1, client)
+    );
+
+    it('can iterate over entries in a cluster, more than one entry at the time',
+       tests.iterateEntries('cluster', 3, client)
+    );
+
+  }
 
   it('can remove listener in cluster', function(done) { client
       .then(t.assert(t.clear()))
