@@ -206,6 +206,7 @@ describe('Infinispan local client', function() {
           .catch(t.failed(done))
           .finally(done);
     });
+
   }
 
   it('can failover to a secondary node if first node is not available', function(done) {
