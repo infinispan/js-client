@@ -256,6 +256,10 @@ exports.resetStats = function(client) {
 
 exports.clusterSize = function() { return exports.cluster.length; };
 
+exports.toString = function() {
+  return function(client) { return client.toString(); }
+};
+
 exports.toBe = function(value) {
   return function(actual) { expect(actual).toBe(value); }
 };
@@ -353,6 +357,12 @@ exports.expectEventKeyOnly = function(key, done) {
       }
     }
   }
+};
+
+exports.removeListenerFromClient = function(listenerId) {
+    return function(client) {
+        return removeListener(client, listenerId, false);
+    }
 };
 
 exports.expectCustomEvent = function(custom, done) {
