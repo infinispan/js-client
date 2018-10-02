@@ -81,6 +81,15 @@ describe('Infinispan local client', function() {
     .catch(t.failed(done))
     .finally(done);
   });
+  it('fails when non-configured cache is accessed', function(done) {
+      t.client(t.local, {cacheName: 'unknownCache'})
+          .then(function() {
+              done(new Error('Exception should be thrown while accessing not-configured cache.'));
+         }).catch(function(error) {
+              expect(error).toBe("org.infinispan.server.hotrod.CacheNotFoundException: Cache with name 'unknownCache' not found amongst the configured caches");
+              done();
+          });
+  });
   it('can put -> get a big value', function(done) {
     var value = t.randomStr(128);
     client
