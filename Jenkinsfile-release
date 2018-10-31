@@ -37,11 +37,7 @@ pipeline {
             steps {
                 nodejs(nodeJSInstallationName: 'Node 8.11') {
                     withCredentials([string(credentialsId: 'npmauthtoken', variable: 'NPM_AUTH_TOKEN')]) {
-                        sh '''
-cat < .npmrc
-//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
-EOF
-                        '''
+                        sh './set-npm-auth-token.sh'
                     }
                     sh "npm-release ${version}"
                 }
