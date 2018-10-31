@@ -1,4 +1,4 @@
 #!/bin/bash
-cat < .npmrc
+cat << EOF > .npmrc
 //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
 EOF
