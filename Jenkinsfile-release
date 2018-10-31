@@ -29,7 +29,6 @@ pipeline {
                     sh 'npm config ls'
                     sh 'npm install'
                     sh 'npm install npm-release -g'
-                    sh 'npm install npm-cli-login -g'
                 }
             }
         }
@@ -37,7 +36,13 @@ pipeline {
         stage('Release') {
             steps {
                 nodejs(nodeJSInstallationName: 'Node 8.11') {
-                    sh "NPM_USER=${npmuser} NPM_PASS=${npmpassword} npm-cli-login"
+                    withCredentials([string(credentialsId: 'npmauthtoken', variable: 'NPM_AUTH_TOKEN')]) {
+                        sh '''
+cat < .npmrc
+//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
+EOF
+                        '''
+                    }
                     sh "npm-release ${version}"
                 }
             }
