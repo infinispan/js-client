@@ -658,6 +658,8 @@ connected.then(function (client) {
 Before version 0.6, Infinispan Javascript client only supported String keys and values.
 Starting at version 0.6, the client also supports native JSON objects as keys and values.
 
+**NOTE**: This feature requires Infinispan server 9.4 or higher.
+
 The way parameters are treated, whether String or native JSON objects, is defined by client configuration.
 For backwards compatibility reasons, by default keys and values are treated as String values.
 
