@@ -341,7 +341,64 @@ connected.then(function (client) {
 });
 ```
 
+# Supported data types
+
+Before version 0.6, Infinispan Javascript client only supported String keys and values.
+Starting at version 0.6, the client also supports native JSON objects as keys and values.
+
+**NOTE**: This feature requires Infinispan server 9.4 or higher.
+
+The way parameters are treated, whether String or native JSON objects, is defined by client configuration.
+For backwards compatibility reasons, by default keys and values are treated as String values.
+
+So, if using native JSON objects, it is necessary to adjust the client configuration:
+
+```Javascript
+var infinispan = require('infinispan');
+
+var connected = infinispan.client(
+    {port: 11222, host: '127.0.0.1'}
+    , {
+        dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+        }
+    }
+);
+
+connected.then(function (client) {
+
+  var clientPut = client.put({k: 'key'}, {v: 'value'});
+
+  var clientGet = clientPut.then(
+      function() { return client.get({k: 'key'}); });
+
+  var showGet = clientGet.then(
+      function(value) { console.log("get({k: 'key'})=" + JSON.stringify(value)); });
+
+  return showGet.finally(
+      function() { return client.disconnect(); });
+
+}).catch(function(error) {
+
+  console.log("Got error: " + error.message);
+
+});
+```
+
+Key and value data types can be configured independently.
+Hence, it's possible to have String keys and native JSON values or viceversa.
+
+Currently all operations support native JSON objects except scripts.
+They still rely on String key/value pairs and String parameters.
+Support for native JSON objects in scripts will come at a later time.
+
 ## Remote events
+
+Clients can register event listeners that get invoked when data changes happen.
+Create, modified, remove and expired events are supported.
+Create and modified events emit key and version of value after event.
+Remove and expired events only emit key information.
 
 ```Javascript
 var infinispan = require('infinispan');
@@ -350,50 +407,146 @@ var connected = infinispan.client({port: 11222, host: '127.0.0.1'});
 
 connected.then(function (client) {
 
-  var clientAddListenerCreate = client.addListener(
-    'create', function(key) { console.log('[Event] Created key: ' + key); });
+    var clientAddListenerCreate = client.addListener('create', onCreate);
 
-  var clientAddListeners = clientAddListenerCreate.then(
-    function(listenerId) {
-      // Multiple callbacks can be associated with a single client-side listener.
-      // This is achieved by registering listeners with the same listener id
-      // as shown in the example below.
-      var clientAddListenerModify = client.addListener(
-        'modify', function(key) { console.log('[Event] Modified key: ' + key); },
-        {listenerId: listenerId});
+    var clientAddListeners = clientAddListenerCreate.then(
+        function(listenerId) {
+            // Multiple callbacks can be associated with a single client-side listener.
+            // This is achieved by registering listeners with the same listener id
+            // as shown in the example below.
+            var clientAddListenerModify =
+                client.addListener('modify', onModify, {listenerId: listenerId});
 
-      var clientAddListenerRemove = client.addListener(
-        'remove', function(key) { console.log('[Event] Removed key: ' + key); },
-        {listenerId: listenerId});
+            var clientAddListenerRemove =
+                client.addListener('remove', onRemove, {listenerId: listenerId});
 
-      return Promise.all([clientAddListenerModify, clientAddListenerRemove]);
-    });
+            return Promise.all([clientAddListenerModify, clientAddListenerRemove]);
+        });
 
-  var clientCreate = clientAddListeners.then(
-    function() { return client.putIfAbsent('eventful', 'v0'); });
+    var clientCreate = clientAddListeners.then(
+        function() { return client.putIfAbsent('eventful', 'v0'); });
 
-  var clientModify = clientCreate.then(
-    function() { return client.replace('eventful', 'v1'); });
+    var clientModify = clientCreate.then(
+        function() { return client.replace('eventful', 'v1'); });
 
-  var clientRemove = clientModify.then(
-    function() { return client.remove('eventful'); });
+    var clientRemove = clientModify.then(
+        function() { return client.remove('eventful'); });
 
-  var clientRemoveListener =
+    var clientRemoveListener =
         Promise.all([clientAddListenerCreate, clientRemove]).then(
-          function(values) {
-            var listenerId = values[0];
-            return client.removeListener(listenerId);
-          });
+            function(values) {
+                var listenerId = values[0];
+                return client.removeListener(listenerId);
+            });
 
-  return clientRemoveListener.finally(
-    function() { return client.disconnect(); });
+    return clientRemoveListener.finally(
+        function() { return client.disconnect(); });
 
 }).catch(function(error) {
 
-  console.log("Got error: " + error.message);
+    console.log("Got error: " + error.message);
 
 });
+
+function onCreate(key, version) {
+    console.log('[Event] Created key: ' + key +
+        ' with version: ' + JSON.stringify(version));
+}
+
+function onModify(key, version) {
+    console.log('[Event] Modified key: ' + key +
+        ', version after update: ' + JSON.stringify(version));
+}
+
+function onRemove(key) {
+    console.log('[Event] Removed key: ' + key);
+}
 ```
+
+Starting with client version `0.7` and Infinispan `9.4.x` server,
+it's possible to tailor events to add or remove information from each event.
+
+For example, a user might want to find out the value associated with the key after an event.
+If the value was sent back along with the key within the event, unnecessary round trips to fetch the value would be avoided.
+This can be achieved configuring the listener with a remote event converter.
+
+Infinispan servers come with a converter called `key-value-with-previous-converter-factory` which can be used for this purpose:
+
+```Javascript
+var infinispan = require('infinispan');
+
+var connected = infinispan.client(
+    {port: 11222, host: '127.0.0.1'}
+    , {
+        dataFormat : {
+            keyType: 'application/json',
+            valueType: 'application/json'
+        }
+    }
+);
+
+connected.then(function (client) {
+
+    var opts = {
+        converterFactory : {
+            name: "key-value-with-previous-converter-factory"
+        }
+    };
+
+    var clientAddListenerCreate = client.addListener('create', logEvent("Created"), opts);
+
+    var clientAddListeners = clientAddListenerCreate.then(
+        function(listenerId) {
+            // Multiple callbacks can be associated with a single client-side listener.
+            // This is achieved by registering listeners with the same listener id
+            // as shown in the example below.
+            var clientAddListenerModify =
+                client.addListener('modify', logEvent("Modified"), {opts, listenerId: listenerId});
+
+            var clientAddListenerRemove =
+                client.addListener('remove', logEvent("Removed"), {opts, listenerId: listenerId});
+
+            return Promise.all([clientAddListenerModify, clientAddListenerRemove]);
+        });
+
+    var clientCreate = clientAddListeners.then(
+        function() { return client.putIfAbsent('converted', 'v0'); });
+
+    var clientModify = clientCreate.then(
+        function() { return client.replace('converted', 'v1'); });
+
+    var clientRemove = clientModify.then(
+        function() { return client.remove('converted'); });
+
+    var clientRemoveListener =
+        Promise.all([clientAddListenerCreate, clientRemove]).then(
+            function(values) {
+                var listenerId = values[0];
+                return client.removeListener(listenerId);
+            });
+
+    return clientRemoveListener.finally(
+        function() { return client.disconnect(); });
+
+}).catch(function(error) {
+
+    console.log("Got error: " + error.message);
+
+});
+
+function logEvent(prefix) {
+    return function(event) {
+        console.log(prefix + " key: " + event.key);
+        console.log(prefix + " value: " + event.value);
+        console.log(prefix + " previous value: " + event.prev);
+    }
+}
+```
+
+You can also create and deploy your own converters into Infinispan server instances.
+See the
+[event filter and conversion](http://infinispan.org/docs/stable/user_guide/user_guide.html#event_filtering_and_conversion)
+section on the Infinispan user guide for more information.
 
 ## Script Execution
 
@@ -652,59 +805,6 @@ connected.then(function (client) {
 
 });
 ```
-
-# Supported data types
-
-Before version 0.6, Infinispan Javascript client only supported String keys and values.
-Starting at version 0.6, the client also supports native JSON objects as keys and values.
-
-**NOTE**: This feature requires Infinispan server 9.4 or higher.
-
-The way parameters are treated, whether String or native JSON objects, is defined by client configuration.
-For backwards compatibility reasons, by default keys and values are treated as String values.
-
-So, if using native JSON objects, it is necessary to adjust the client configuration:
-
-```Javascript
-var infinispan = require('infinispan');
-
-var connected = infinispan.client(
-    {port: 11222, host: '127.0.0.1'}
-    , {
-        dataFormat : {
-            keyType: 'application/json',
-            valueType: 'application/json'
-        }
-    }
-);
-
-connected.then(function (client) {
-
-  var clientPut = client.put({k: 'key'}, {v: 'value'});
-
-  var clientGet = clientPut.then(
-      function() { return client.get({k: 'key'}); });
-
-  var showGet = clientGet.then(
-      function(value) { console.log("get({k: 'key'})=" + JSON.stringify(value)); });
-
-  return showGet.finally(
-      function() { return client.disconnect(); });
-
-}).catch(function(error) {
-
-  console.log("Got error: " + error.message);
-
-});
-```
-
-Key and value data types can be configured independently.
-Hence, it's possible to have String keys and native JSON values or viceversa.
-
-Currently all operations support native JSON objects except scripts.
-They still rely on String key/value pairs and String parameters.
-Support for native JSON objects in scripts will come at a later time. 
-
 
 # Logging
 

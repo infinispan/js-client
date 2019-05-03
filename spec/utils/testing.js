@@ -351,6 +351,15 @@ exports.expectEventKeyOnly = function(key, done) {
   }
 };
 
+exports.expectCustomEvent = function(custom, done) {
+  return function(client) {
+    return function(eventCustom, listenerId) {
+      expect(eventCustom).toEqual(custom);
+      removeListener(client, listenerId, true, done);
+    }
+  }
+};
+
 function removeListener(client, listenerId, removeAfterEvent, done) {
   if (removeAfterEvent)
     return client.removeListener(listenerId)
