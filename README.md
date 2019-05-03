@@ -853,33 +853,44 @@ Install an Infinispan Server instance in `/opt/infinispan-server` folder.
 Go to the root of the repo and execute:
 
 ```bash
-npm install
+$ npm install
 ```
 
 Next, start the Infinispan Servers as defined in the domain configuration via:
 
 ```bash
-./run-domain.sh
+$ ./run-domain.sh
 ```
 
 To run the testsuite once execute:
 
 ```bash
-./node_modules/.bin/jasmine-node spec --captureExceptions
+$ ./run-testsuite.sh
 ```
 
 To run tests continuously execute:
 
 ```bash
-./node_modules/.bin/jasmine-node spec --autotest --watch lib --captureExceptions
+$ ./node_modules/.bin/jasmine-node spec --autotest --watch lib --captureExceptions
 ```
 
 To run individual tests execute:
 
 ```bash
-node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
-``` 
+$ node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
+```
 
+To help with testing, you can quickly run the smoke tests via:
+
+```bash
+$ ./smoke-tests.sh
+```
+
+Both testsuite and smoke tests can be run with older protocol versions, e.g.
+
+```bash
+$ protocol=2.5 ./smoke-tests.sh
+```
 
 # Manual stress tests
 
