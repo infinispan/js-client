@@ -184,6 +184,38 @@ describe('Infinispan local client', function() {
       .catch(t.failed(done));
   });
 
+  if (process.env.protocol == null || process.env.protocol >= '2.9') {
+
+    it('can listen for custom events for created events', function(done) {
+      var expected = 'KeyValueWithPrevious{key=listen-custom-create, value=value, prev=null}';
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('create', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent('listen-custom-create', 'value'), t.toBeTruthy))
+        .catch(t.failed(done));
+    });
+    it('can listen for custom events for modified events', function(done) {
+      var expected = 'KeyValueWithPrevious{key=listen-custom-modify, value=v1, prev=v0}';
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('modify', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent('listen-custom-modify', 'v0'), t.toBeTruthy))
+        .then(t.assert(t.replace('listen-custom-modify', 'v1'), t.toBeTruthy))
+        .catch(t.failed(done));
+    });
+    it('can listen for custom events for removed events', function(done) {
+      var expected = 'KeyValueWithPrevious{key=listen-custom-remove, value=null, prev=v1}';
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('remove', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent('listen-custom-remove', 'v0'), t.toBeTruthy))
+        .then(t.assert(t.replace('listen-custom-remove', 'v1'), t.toBeTruthy))
+        .then(t.assert(t.remove('listen-custom-remove'), t.toBeTruthy))
+        .catch(t.failed(done));
+    });
+
+  }
+
   if (process.env.protocol == null || process.env.protocol >= '2.5') {
 
     it('can iterate over entries, one entry at the time',

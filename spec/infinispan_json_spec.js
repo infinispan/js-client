@@ -93,6 +93,33 @@ describe('Infinispan JSON client', function() {
         .then(t.assert(t.remove({k: 'jlisten-remove'}), t.toBeTruthy))
         .catch(t.failed(done));
     });
+    it('can listen for custom events for created events', function(done) {
+      var expected = { _type : 'org.infinispan.commons.util.KeyValueWithPrevious', key : {"k":"jlisten-custom"}, value : {"v":"jvalue"}, prev : null };
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('create', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent({k: 'jlisten-custom'}, {v: 'jvalue'}), t.toBeTruthy))
+        .catch(t.failed(done));
+    });
+    it('can listen for custom events for modified events', function (done) {
+      var expected = { _type : 'org.infinispan.commons.util.KeyValueWithPrevious', key : {"k":"jlisten-modify"}, value : {"v":"jv1"}, prev : {"v":"jv0"} };
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('modify', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent({k: 'jlisten-modify'}, {v: 'jv0'}), t.toBeTruthy))
+        .then(t.assert(t.replace({k: 'jlisten-modify'}, {v: 'jv1'}), t.toBeTruthy))
+        .catch(t.failed(done));
+    });
+    it('can listen for custom events for removed events', function (done) {
+      var expected = { _type : 'org.infinispan.commons.util.KeyValueWithPrevious', key : {"k":"jlisten-remove"}, value : null, prev : {"v":"jv1"} };
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('remove', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent({k: 'jlisten-remove'}, {v: 'jv0'}), t.toBeTruthy))
+        .then(t.assert(t.replace({k: 'jlisten-remove'}, {v: 'jv1'}), t.toBeTruthy))
+        .then(t.assert(t.remove({k: 'jlisten-remove'}), t.toBeTruthy))
+        .catch(t.failed(done));
+    });
 
     if (process.env.protocol == null || process.env.protocol >= '2.5') {
 

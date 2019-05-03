@@ -116,6 +116,21 @@ describe('Infinispan local client working with expiry operations', function() {
     .then(waitForExpiryEvent('listen-expiry'))
     .catch(t.failed(done));
   });
+
+  if (process.env.protocol == null || process.env.protocol >= '2.9') {
+
+    it('can listen for custom expired events', function(done) {
+      var expected = "KeyValueWithPrevious{key=listen-expiry, value=value, prev=null}";
+      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      client
+        .then(t.on('expiry', t.expectCustomEvent(expected, done), opts))
+        .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
+        .then(waitForExpiryEvent('listen-expiry'))
+        .catch(t.failed(done));
+    });
+
+  }
+
   it('can listen for expired events in cluster', function(done) { client1
       .then(t.on('expiry', t.expectEvent('listen-expiry', done, true)))
       .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
