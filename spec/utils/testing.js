@@ -411,7 +411,7 @@ exports.randomStr = function(size) {
 };
 
 exports.findKeyForServers = function(client, addrs) {
-  var attempts = 1000;
+  var attempts = 10000;
   var key;
   do {
     key = exports.randomStr(8);
