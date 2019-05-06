@@ -701,7 +701,14 @@ fashion, regardless of whether they are key-based or multi-key/key-less.
 The routing and failover is transparent to the user code, so the operations
 executed against in a cluster look exactly the same as in the previous code 
 examples.
- 
+
+When a connection with a server breaks,
+incomplete operations are retried in other servers in the cluster.
+
+If a server that has a client listener registered fails or leaves the cluster,
+the client transparently migrates the listener registration to another node in the cluster.
+By doing so, the client can continue receiving events in the presence of failures or topology changes.
+
 You can run a test locally by starting multiple instances of Infinispan 
 Server like this:
 

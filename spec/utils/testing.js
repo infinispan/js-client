@@ -50,7 +50,7 @@ var MAX_WAIT = 7500;
 
 var logger = u.logger('testing');
 
-exports.client = function(args, opts) {
+exports.configureLogging = function() {
   try {
     log4js.configure('spec/utils/test-log4js.json');
   } catch (error) {
@@ -58,6 +58,10 @@ exports.client = function(args, opts) {
     // In case running specs from IDEs
     log4js.configure('utils/test-log4js.json');
   }
+};
+
+exports.client = function(args, opts) {
+  this.configureLogging();
 
   if (!f.existy(opts) || !f.existy(opts.version)) {
     var version = exports.getHotrodProtocolVersion();
@@ -379,7 +383,8 @@ function assertListenerVersioned(key, value, version) {
   }
 }
 
-exports.expectEvents = function(keys, done) {
+exports.expectEvents = function(keys, done, disconnect) {
+  logger.debugf("Expect events for keys: %s", keys);
   return function(client) {
     var remain = keys;
     return function(eventKey, eventVersion, listenerId) {
@@ -388,8 +393,15 @@ exports.expectEvents = function(keys, done) {
       });
       expect(match.length).toBe(1);
       remain = _.without(remain, eventKey);
-      if (_.isEmpty(remain))
-        removeListener(client, listenerId, true, done);
+      logger.debugf("Received event key=%s, still remaining [%s]", eventKey, remain);
+      if (_.isEmpty(remain)) {
+        var removed = removeListener(client, listenerId, true, done);
+        if (disconnect) {
+          removed.then(function() {
+            return client.disconnect();
+          });
+        }
+      }
     }
   }
 };
@@ -630,7 +642,7 @@ function waitUntil(expectF, cond, op) {
   }
 
   function loop(promise) {
-    exports.sleepFor(100); // brief sleep
+    exports.sleepFor(1000); // brief sleep
 
     // Simple recursive loop until condition has been met
     return promise
