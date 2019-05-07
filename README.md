@@ -216,7 +216,9 @@ connected.then(function (client) {
       function loop(promise, fn) {
         // Simple recursive loop over iterator's next() call
         return promise.then(fn).then(function (entry) {
-          return !entry.done ? loop(it.next(), fn) : entry.value;
+          return entry.done
+            ? it.close().then(function () { return entry.value; })
+            : loop(it.next(), fn);
         });
       }
 
