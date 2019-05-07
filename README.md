@@ -841,6 +841,87 @@ log4js.configure('path/to/my-log4js.json');
 
 ```
 
+# Async / Await
+
+Examples above can be greatly simplified taking advantage of `async` / `await` constructs,
+which are available in Node.js since version `7.10.0`.
+
+This section shows how some of the examples above can be written using `async` / `await`:
+
+## Working with single entries and statistics
+
+```Javascript
+const infinispan = require("infinispan");
+
+const log4js = require('log4js');
+log4js.configure('example-log4js.json');
+
+async function test() {
+  await new Promise((resolve, reject) => setTimeout(() => resolve(), 1000));
+  console.log('Hello, World!');
+
+  let client = await infinispan.client({port: 11222, host: '127.0.0.1'});
+  console.log(`Connected to Infinispan dashboard data`);
+
+  await client.put('key', 'value');
+
+  let value = await client.get('key');
+  console.log('get(key)=' + value);
+
+  let success = await client.remove('key');
+  console.log('remove(key)=' + success);
+
+  let stats = await client.stats();
+  console.log('Number of stores: ' + stats.stores);
+  console.log('Number of cache hits: ' + stats.hits);
+  console.log('All stats: ' + JSON.stringify(stats, null, " "));
+
+  await client.disconnect();
+}
+
+test();
+```
+
+## Working with multiple entries 
+
+```Javascript
+const infinispan = require("infinispan");
+
+const log4js = require('log4js');
+log4js.configure('example-log4js.json');
+
+async function test() {
+  let client = await infinispan.client({port: 11222, host: '127.0.0.1'});
+  console.log(`Connected to Infinispan dashboard data`);
+
+  let data = [
+    {key: 'multi1', value: 'v1'},
+    {key: 'multi2', value: 'v2'},
+    {key: 'multi3', value: 'v3'}];
+
+  await client.putAll(data);
+
+  let entries = await client.getAll(['multi2', 'multi3']);
+  console.log('getAll(multi2, multi3)=%s', JSON.stringify(entries));
+
+  let iterator = await client.iterator(1);
+
+  let entry = {done: true};
+
+  do {
+    entry = await iterator.next();
+    console.log('iterator.next()=' + JSON.stringify(entry));
+  } while (!entry.done);
+
+  await iterator.close();
+
+  await client.clear();
+
+  await client.disconnect();
+}
+
+test();
+```
 
 # Testing
 
