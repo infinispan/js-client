@@ -1032,3 +1032,8 @@ The client contains JSDoc formatted API docs which can be generated via:
     npm install jsdoc
     ./node_modules/.bin/jsdoc lib/*.js
     open out/index.html
+
+# Reporting an issue
+
+This project does not use Github issues.
+Instead, please report them via JIRA (project [HRJS](https://issues.jboss.org/projects/HRJS/summary)).
