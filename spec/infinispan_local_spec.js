@@ -163,6 +163,21 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.remove('listen-remove'), t.toBeTruthy))
       .catch(t.failed(done));
   });
+  it('fails when wrong event name is passed', function(done) {
+      var errorTookPlace = false;
+      client
+          .then(t.on('notSupportedEvent', t.expectEvent('wrongNameCreate', done, true, 'value')))
+          .catch(function(error){
+              errorTookPlace = true;
+              expect(error.message).toBe("The event 'notSupportedEvent' is not supported");
+              return done();
+          })
+          .finally(function() {
+              if (!errorTookPlace) {
+                  return done(new Error("The registration of unknown event should fail!"));
+              }
+          });
+  });
   it('can listen for create/modified/remove events in distinct listeners', function(done) { client
       .then(t.on('create', t.expectEvent('listen-distinct', done, false, 'v0')))
       .then(t.assert(t.putIfAbsent('listen-distinct', 'v0'), t.toBeTruthy))
