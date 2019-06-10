@@ -207,6 +207,34 @@ describe('Infinispan local client', function() {
           {'includeState' : true}))
       .catch(t.failed(done));
   });
+  it('fails when trying to attach to non-existent listener', function(done) {
+      var errorTookPlace = false;
+      client.then(function (client) {
+          var clientAddListenerCreate = client.addListener(
+              'create', function(key) { console.log('[Event] Created key: ' + key); });
+          var clientAddListeners = clientAddListenerCreate.then(
+              function(listenerId) {
+                  return client.addListener(
+                      'modify', function(key) { console.log('[Event] Modified key: ' + key); },
+                      {listenerId: 'blblbl'}).catch(function(error) {
+                        errorTookPlace = true;
+                        expect(error.message).toBe("No server connection for listener (listenerId=blblbl)");
+                        return done();
+                  }).finally(function() {
+                      if (!errorTookPlace) {
+                          return done(new Error("The attachment of event with unknown listenerId should fail, but has succeeded."))
+                      } else {
+                          var clientRemoveListener =
+                              Promise.all([clientAddListenerCreate, clientAddListenerModify]).then(
+                                  function(values) {
+                                      var listenerId = values[0];
+                                      return client.removeListener(listenerId);
+                                  });
+                      }
+                  });
+              });
+      }).catch(t.failed(done)).finally(done);
+  });
 
   if (process.env.protocol == null || process.env.protocol >= '2.9') {
 
