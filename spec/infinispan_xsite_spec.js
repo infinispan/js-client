@@ -22,6 +22,16 @@ describe('Infinispan xsite cluster client', function() {
     siteClients().then(function(cs) {
       expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.earth1]);
       expect(cs[1].getTopologyInfo().getMembers()).toEqual([t.moon1]);
+      cs[0].getTopologyInfo().switchToCluster('site-moon-nonExistent')
+         .then(function(result) {
+           expect(result).toBeFalsy();
+           expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.earth1]);
+        });
+      cs[0].getTopologyInfo().switchToCluster(null)
+         .then(function(result) {
+             expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.earth1]);
+             expect(result).toBeTruthy();
+         });
       return cs[0].getTopologyInfo().switchToCluster('site-moon')
         .then(function() {
           expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.moon1]);

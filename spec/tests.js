@@ -18,10 +18,12 @@ exports.execPutGet = function(path, prefix, client, expectFun) {
       {key: prefix + '-it1', value: 'v1', done: false},
       {key: prefix + '-it2', value: 'v2', done: false},
       {key: prefix + '-it3', value: 'v3', done: false}];
+
+    var emptyResult = [{done: true}, {done: true}, {done: true}];
     client
       .then(t.assert(t.clear()))
       .then(t.assert(t.putAll(pairs), t.toBeUndefined))
-      .then(t.seqIterator('key', batchSize, pairs))
+      .then(t.seqIterator('key', batchSize, (batchSize > 0 ? pairs : emptyResult)))
       .catch(t.failed(done))
       .finally(done);
   }

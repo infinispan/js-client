@@ -235,6 +235,60 @@ describe('Infinispan local client', function() {
               });
       }).catch(t.failed(done)).finally(done);
   });
+  it('can handle the case when listener fails', function(done) {
+      var idForListener;
+      var errorTookPlace = false;
+      client.then(t.on('create', function(key) {
+          console.log('[Event] Created key: ' + key);
+          throw new Error("Test error")
+      }))
+      .then(function(listenerId){
+          idForListener = listenerId;
+          return client;
+      })
+      .then(t.assert(t.putIfAbsent('exceptional-create', 'value'), t.toBeTruthy))
+      .catch(function(error){
+          expect(error.message).toBe("Test error");
+          errorTookPlace = true;
+          return done();
+      }).finally(function() {
+          t.removeListenerFromClient(idForListener);
+          if (!errorTookPlace) {
+              return done(new Error('Create event should throw an exception.'));
+          }
+      });
+  });
+  it('can fail when adding listener to disconnected client', function(done) {
+        var cli = t.client(t.local, {cacheName: 'namedCache'});
+        cli.then(function(client) {
+         client.disconnect();
+            return client;
+        }).then(function(client) {
+            client.addListener("create", function(key) {
+                console.log('[Event] Created new key1: ' + key);
+                throw new Error("This should not happen.");
+            });
+            return client;
+        }).catch(function(error){
+            console.log(error);
+            done(new Error('The rejection is done silently. No exception should be thrown.'));
+        }).finally(done);
+    });
+
+  it('can reject removeListener call if the listenerId is invalid', function(done) {
+      var errorTookPlace = false;
+      client.then(t.removeListenerFromClient('fakeId'))
+        .catch(function(error) {
+            expect(error.message).toBe("No server connection for listener (listenerId=fakeId)");
+            errorTookPlace = true;
+            return done();
+        })
+        .finally(function(){
+            if (!errorTookPlace) {
+                return done(new Error('The removeListener with fake listenerId should have thrown an exception!'));
+            }
+        });
+  });
 
   if (process.env.protocol == null || process.env.protocol >= '2.9') {
 
@@ -276,6 +330,10 @@ describe('Infinispan local client', function() {
 
     it('can iterate over entries, more than one entry at the time',
       tests.iterateEntries('local', 3, client)
+    );
+
+    it('iterate over entries when batch size is 0',
+      tests.iterateEntries('local', 0, client)
     );
 
     it('can iterate over entries getting their expirable metadata', function (done) {
