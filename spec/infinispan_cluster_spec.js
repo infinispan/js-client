@@ -9,11 +9,12 @@ describe('Infinispan cluster client', function() {
 
   // Since Jasmine 1.3 does not have beforeAll callback and stats resets is a
   // bit slow, execute it as first test so that it only gets executed once.
-  it('resets statistics', function(done) { client
+  // @TODO Uncomment and fix this method when ISPN-10777 is implemented and available in JDG server.
+  /*it('resets statistics', function(done) { client
       .then(t.resetStats)
       .then(t.assert(t.clear()))
       .catch(t.failed(done)).finally(done);
-  });
+  });*/
 
   it('can get cluster topology from a server node', function(done) { client
       .then(t.assert(t.getMembers(), t.toContain(t.cluster)))

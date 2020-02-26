@@ -25,9 +25,9 @@ var multiVNumDecode = [codec.decodeVInt(), codec.decodeVLong()];
 
 describe('Variable bytes decode', function() {
   it('can decode a variable sized byte array', function() {
-    var bytes = new Buffer([3, 49, 50, 51]);
+    var bytes = Buffer.from([3, 49, 50, 51]);
     var actual = encodeDecode(4, codec.encodeBytes(bytes), codec.decodeVariableBytes(), 1);
-    t.expectToBeBuffer(actual[0], new Buffer([49, 50, 51]));
+    t.expectToBeBuffer(actual[0], Buffer.from([49, 50, 51]));
   });
 });
 
@@ -62,17 +62,17 @@ describe('String encode/decode', function() {
 
 describe('Bytes encode/decode', function() {
   it('can resize buffer when encoding a number of Bytes', function() {
-    var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+    var bytes = Buffer.from([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeFixedBytes(8), 1);
     t.expectToBeBuffer(actual[0], bytes);
   });
   it('can encode a number of Bytes', function() {
-    var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+    var bytes = Buffer.from([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8, codec.encodeBytes(bytes), codec.decodeFixedBytes(8));
     t.expectToBeBuffer(actual[0], bytes);
   });
   it('can encode Object + Bytes + Object', function() {
-    var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+    var bytes = Buffer.from([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(strSize('one') + 8 + strSize('one'),
         [codec.encodeString('one'), codec.encodeBytes(bytes), codec.encodeString('two')],
         [codec.decodeString(), codec.decodeFixedBytes(8), codec.decodeString()]);
@@ -81,7 +81,7 @@ describe('Bytes encode/decode', function() {
     expect(actual[2]).toBe('two');
   });
   it('can encode a chain of Bytes => Object', function() {
-    var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+    var bytes = Buffer.from([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8 + strSize('one'),
         [codec.encodeBytes(bytes), codec.encodeString('one')],
         [codec.decodeFixedBytes(8), codec.decodeString()]);
@@ -89,7 +89,7 @@ describe('Bytes encode/decode', function() {
     expect(actual[1]).toBe('one');
   });
   it('can encode a chain of Object => Bytes', function() {
-    var bytes = new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+    var bytes = Buffer.from([48, 49, 50, 51, 52, 53, 54, 55]);
     var actual = encodeDecode(8 + strSize('one'),
         [codec.encodeString('one'), codec.encodeBytes(bytes)],
         [codec.decodeString(), codec.decodeFixedBytes(8)]);

@@ -5,27 +5,24 @@ var t = require('./utils/testing'); // Testing dependency
 describe('Infinispan clustered clients', function() {
   t.configureLogging();
 
-  // Since Jasmine 1.3 does not have beforeAll callback, execute
-  // any cleanup as first test so that it only gets executed once.
-  it('cleanup', function(done) {
-    var stop2 = t.stopClusterNode('server-failover-two', false);
-    var start1 = t.startAndWaitView('server-failover-one', 1);
-    Promise.all([stop2(), start1()]).catch(t.failed(done)).finally(done);
-  });
-
   it('can failover when nodes crash', function(done) {
     var keys = ['before-failover-listener', 'middle-failover-listener', 'after-failover-listener'];
-    t.client(t.failover1)
+    t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1)
+       .then(function() {
+         return t.client(t.failover1);
+       })
       .then(t.assert(t.getMembers(), t.toContain([t.failover1])))
       .then(t.assert(t.clear()))
       .then(t.on('create', t.expectEvents(keys, done, true)))
       .then(t.assert(t.putIfAbsent(keys[0], 'value'), t.toBeTruthy))
-      .then(withAll(t.startAndWaitView('server-failover-two', 2)))
+      .then(function(client) {return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2['port'], t.failoverMCastAddr, 2, client);}) //11432
       .then(expectClientView([t.failover1, t.failover2]))
       .then(t.assert(t.putIfAbsent(keys[1], 'value'), t.toBeTruthy))
-      .then(withAll(t.stopAndWaitView('server-failover-one', 1, 'server-failover-two')))
+      .then(withAll(t.stopAndWaitView(t.failover1['port'], 1, t.failover2['port'])))
       .then(expectClientView([t.failover2]))
       .then(t.assert(t.putIfAbsent(keys[2], 'value'), t.toBeTruthy))
+      .then(withAll(t.stopClusterNode(t.failover2['port'], false)))
+      .then(withAll(t.disconnect()))
       .catch(t.failed(done));
   }, 20000);
 

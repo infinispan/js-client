@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Run server') {
             steps {
-                sh './run-domain.sh --ci'
+                sh './run-server.sh --ci'
             }
         }
         stage('Test') {
@@ -70,8 +70,7 @@ pipeline {
     post {
         failure {
             sh 'cat tmp-tests.log'
-            sh 'cat server/*/domain/servers/server-earth-one/log/server.log'
-            sh 'cat server/*/domain/servers/server-moon-one/log/server.log'
+            sh 'cat server/infinispan-server/server-*/log/server.log'
         }
     }
 }

@@ -225,7 +225,7 @@ describe('Infinispan local client', function() {
                           return done(new Error("The attachment of event with unknown listenerId should fail, but has succeeded."))
                       } else {
                           var clientRemoveListener =
-                              Promise.all([clientAddListenerCreate, clientAddListenerModify]).then(
+                              Promise.all([clientAddListenerCreate]).then(
                                   function(values) {
                                       var listenerId = values[0];
                                       return client.removeListener(listenerId);

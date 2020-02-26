@@ -1,0 +1,86 @@
+<infinispan
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:infinispan:config:10.1 https://infinispan.org/schemas/infinispan-config-10.1.xsd
+                            urn:infinispan:server:10.1 https://infinispan.org/schemas/infinispan-server-10.1.xsd"
+        xmlns="urn:infinispan:config:10.1"
+        xmlns:server="urn:infinispan:server:10.1">
+
+    <cache-container name="local" default-cache="default" statistics="true">
+        <global-state/>
+        <local-cache name="default" start="EAGER">
+            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
+            <transaction mode="NONE"/>
+        </local-cache>
+        <local-cache name="memcachedCache" start="EAGER">
+            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
+            <transaction mode="NONE"/>
+        </local-cache>
+        <local-cache name="namedCache" start="EAGER"/>
+    </cache-container>
+
+    <server xmlns="urn:infinispan:server:10.0">
+        <interfaces>
+            <interface name="public">
+                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+            </interface>
+        </interfaces>
+
+        <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+            <socket-binding name="default" port="${infinispan.bind.port:11622}"/>
+            <socket-binding name="memcached" port="11221"/>
+            <socket-binding name="hotrod-sni" port="11252"/>
+        </socket-bindings>
+
+        <security>
+            <security-realms>
+                <security-realm name="ApplicationRealm">
+                    <server-identities>
+                        <ssl>
+                            <keystore path="server.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+                        </ssl>
+                    </server-identities>
+                    <properties-realm groups-attribute="Roles">
+                        <user-properties path="users.properties" relative-to="infinispan.server.config.path" plain-text="true"/>
+                        <group-properties path="groups.properties" relative-to="infinispan.server.config.path" />
+                    </properties-realm>
+                    <truststore-realm path="ca.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+                </security-realm>
+                <security-realm name="Trust1Realm">
+                    <server-identities>
+                        <ssl>
+                            <keystore path="trust1.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+                        </ssl>
+                    </server-identities>
+                </security-realm>
+                <security-realm name="Trust2Realm">
+                    <server-identities>
+                        <ssl>
+                            <keystore path="trust2.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+                        </ssl>
+                    </server-identities>
+                </security-realm>
+                <security-realm name="UntrustRealm">
+                    <server-identities>
+                        <ssl>
+                            <keystore path="untrust.jks" relative-to="infinispan.server.config.path" keystore-password="secret"/>
+                        </ssl>
+                    </server-identities>
+                </security-realm>
+            </security-realms>
+        </security>
+
+        <endpoints socket-binding="default" security-realm="ApplicationRealm">
+            <hotrod-connector name="ssl-sni" socket-binding="hotrod-sni">
+                <topology-state-transfer lock-timeout="1000" replication-timeout="5000"/>
+                <encryption security-realm="UntrustRealm" require-ssl-client-auth="false">
+                    <sni host-name="trust1" security-realm="Trust1Realm"/>
+                    <sni host-name="trust2" security-realm="Trust2Realm"/>
+                    <sni host-name="untrust" security-realm="ApplicationRealm"/>
+                </encryption>
+            </hotrod-connector>
+            <rest-connector name="rest"/>
+            <!-- Uncomment to enable the memcached connector -->
+            <!-- memcached-connector socket-binding="memcached" / -->
+        </endpoints>
+    </server>
+</infinispan>

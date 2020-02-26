@@ -80,7 +80,7 @@ in the support version information provided above. Unless indicated
 otherwise, the code samples below require an Infinispan Server instance 
 to be started. The simplest way to do so is to execute the following script:
  
-    $ [INFINISPAN_SERVER_HOME]/bin/standalone.sh
+    $ [INFINISPAN_SERVER_HOME]/bin/server.sh
 
 Please find below samples codes showing how the Infinispan Javascript client 
 can be used:
@@ -547,7 +547,7 @@ function logEvent(prefix) {
 
 You can also create and deploy your own converters into Infinispan server instances.
 See the
-[event filter and conversion](http://infinispan.org/docs/stable/user_guide/user_guide.html#event_filtering_and_conversion)
+[event filter and conversion](https://infinispan.org/docs/stable/titles/developing/developing.html#event_filtering_and_conversion)
 section on the Infinispan user guide for more information.
 
 ## Script Execution
@@ -601,7 +601,7 @@ connected.then(function (client) {
 The client supports encryption via SSL/TLS with optional TLS/SNI support ([Server Name Indication](https://en.wikipedia.org/wiki/Server_Name_Indication)).
 To set this up, it is necessary to create a [Java KeyStore (JKS)](https://en.wikipedia.org/wiki/Keystore) using the `keytool` application which is part of the JDK.
 The keystore needs to contains the keys and certificates necessary for the Infinispan Server to authorize connections.
-More information on how to configure the Infinispan Server for encryption, along with TLS/SNI, can be found [here](http://infinispan.org/docs/dev/server_guide/server_guide.html#hot_rod_encryption_ssl).
+More information on how to configure the Infinispan Server for encryption, along with TLS/SNI, can be found [here](https://infinispan.org/docs/stable/titles/server/server.html#security).
 
 In the most basic set up, the Javascript client can be configured with the location of the trusted certificates so that the client connection is authorized by the server.
 This assumes that the server has been configured with the correct certificates as stated above.
@@ -712,9 +712,9 @@ By doing so, the client can continue receiving events in the presence of failure
 You can run a test locally by starting multiple instances of Infinispan 
 Server like this:
 
-    $ ./bin/standalone.sh -c clustered.xml -Djboss.node.name=node0 -Djboss.socket.binding.port-offset=100
-    $ ./bin/standalone.sh -c clustered.xml -Djboss.node.name=node1 -Djboss.socket.binding.port-offset=200
-    $ ./bin/standalone.sh -c clustered.xml -Djboss.node.name=node2 -Djboss.socket.binding.port-offset=300
+    $ ./bin/server.sh -c infinispan.xml --node-name node0 -o 100
+    $ ./bin/server.sh -c infinispan.xml --node-name node1 -o 200
+    $ ./bin/server.sh -c infinispan.xml --node-name node2 -o 300
 
 And then using this code to verify that the topology is the expected one:
 
@@ -747,7 +747,7 @@ Multiple Infinispan Server clusters can be deployed in such way that each cluste
 Such deployments are done to enable data to be backed up from one cluster to another, potentially in a different geographical location.
 This Javascript client implementation not only can failover between failures in nodes within a cluster, but if the entire cluster fails to respond, it can failover to a different cluster.
 If the failover succeeds, the client will remain connected to the alternative cluster until this becomes unavailable, in which case it’ll try any other clusters defined, and ultimately, it’ll try the original server settings.
-To be able to failover between clusters, first and foremost Infinispan Servers have to be [configured with cross-site replication](http://infinispan.org/docs/stable/user_guide/user_guide.html#CrossSiteReplication).
+To be able to failover between clusters, first and foremost Infinispan Servers have to be [configured with cross-site replication](https://infinispan.org/docs/stable/titles/xsite/xsite.html).
 Next, the client has to provide alternative `clusters` configuration with at least one host/port pair details for each of the clusters configured.
 For example:
 
@@ -935,10 +935,7 @@ test();
 Before executing any tests, Infinispan Server instances need to be started 
 up so that testsuite can run against those. To ease this process, a script
 has been created in the root directory to start all the expected server 
-instances. Before executing this script, the following installation steps 
-are required:
-
-Install an Infinispan Server instance in `/opt/infinispan-server` folder.
+instances.
 
 Go to the root of the repo and execute:
 
@@ -946,10 +943,10 @@ Go to the root of the repo and execute:
 $ npm install
 ```
 
-Next, start the Infinispan Servers as defined in the domain configuration via:
+Next, start the Infinispan Servers via:
 
 ```bash
-$ ./run-domain.sh
+$ ./run-server.sh
 ```
 
 To run the testsuite once execute:
@@ -1028,7 +1025,7 @@ On top of that, you can find information on which tests are always running as op
 | local spec    | local           | `11222` (A)                             |
 | expiry spec   | local           | `11222` (A)                             |
 | cluster spec  | clustered       | `11322` (A), `11332` (A), `11342` (A)   |
-| failover spec | clustered       | `11422` (A), `11432` (M), `11442` (M)   |
+| failover spec | clustered       | `11422` (M), `11432` (M), `11442` (M)   |
 | ssl spec      | local           | `11232` (A), `12242` (A), `12252` (A)   |
 | xsite spec    | earth, moon     | `11522` (earth, M), `11532` (moon, M)   |
 
