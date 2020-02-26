@@ -16,6 +16,7 @@ var ispn = require('../../lib/infinispan');
 var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
+exports.serverDirName = "infinispan-server";
 exports.local = {port: 11222, host: '127.0.0.1'};
 
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
@@ -26,6 +27,8 @@ exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
 exports.failover1 = {port: 11422, host: '127.0.0.1'};
 exports.failover2 = {port: 11432, host: '127.0.0.1'};
 exports.failover3 = {port: 11442, host: '127.0.0.1'};
+exports.failoverConfig = 'infinispan-clustered.xml';
+exports.failoverMCastAddr= '234.99.64.14';
 
 // All ssl invocations needs to be directed to localhost instead of 127.0.0.1
 // because Node.js uses `localhost` as default server name if none provided.
@@ -36,6 +39,10 @@ exports.sslSni = {port: 11252, host: 'localhost'};
 exports.xsiteCacheName = 'xsiteCache';
 exports.earth1 = {port: 11522, host: '127.0.0.1'};
 exports.moon1 = {port: 11532, host: '127.0.0.1'};
+exports.earth1Config = 'infinispan-xsite-EARTH.xml';
+exports.moon1Config = 'infinispan-xsite-MOON.xml';
+exports.earth1MCastAddr = '234.99.74.14';
+exports.moon1MCastAddr = '234.99.74.24';
 
 exports.json = {
   dataFormat: {
@@ -304,7 +311,7 @@ exports.vNumSize = function(num) {
 };
 
 exports.newByteBuf = function(size) {
-  return {buf: new Buffer(f.existy(size) ? size : 128), offset: 0};
+  return {buf: Buffer.alloc(f.existy(size) ? size : 128), offset: 0};
 };
 exports.assertEncode = function(bytebuf, encode, expectedBytes) {
   expect(encode(bytebuf)).toBe(expectedBytes);
@@ -445,7 +452,7 @@ exports.getAll = function(keys) {
 };
 
 exports.invalidVersion = function() {
-  return new Buffer([48, 49, 50, 51, 52, 53, 54, 55]);
+  return Buffer.from([48, 49, 50, 51, 52, 53, 54, 55]);
 };
 
 exports.notReplaceWithVersion = function(k, opts) {
@@ -543,92 +550,108 @@ exports.getHotrodProtocolVersion = function() {
   return version;
 };
 
-exports.startAndWaitView = function(nodeName, expectNumMembers) {
+exports.stopClusterNode = function(port, waitStop) {
   return function() {
-    var op = {
-      operation: 'start',
-      address: [
-        { host : 'master'},
-        { 'server-config' : nodeName}
-      ]
-    };
-
-    return invokeDmrHttp(op)
-      .then(function() { return waitUntilView(expectNumMembers, nodeName); });
-  }
-};
-
-exports.stopClusterNode = function(nodeName, waitStop) {
-  return function() {
-    var op = {
-      operation: 'stop',
-      address: [
-        { host : 'master'},
-        { 'server-config' : nodeName}
-      ]
-    };
+    var opUrl = "/server?action=stop";
 
     if (waitStop) {
-      return invokeDmrHttp(op).then(function() {
-        return waitUntilStopped(nodeName);
+      return invokeDmrHttpGet(opUrl, port).then(function() {
+        return waitUntilStopped(port);
       });
     }
 
-    return invokeDmrHttp(op);
+    return invokeDmrHttpGet(opUrl, port);
   }
 };
 
-function waitUntilStopped(nodeName) {
+function waitUntilStopped(port) {
   return waitUntil(
-    function(resp) { expect(resp.result).toEqual('DISABLED'); },
-    function(resp) { return _.isEqual(resp.result, 'DISABLED') },
-    getServerStatus(nodeName)
+    function(resp) { expect(resp).toEqual(0); },
+    function(resp) { return _.isEqual(resp, 0) },
+    getServerStatus(port)
   );
 }
 
-function getServerStatus(nodeName) {
+function getServerStatus(port) {
   return function() {
-    var op = {
-      operation : 'read-attribute',
-      name : 'status',
-      address : [
-        { host : 'master' },
-        { 'server-config' : nodeName }
-      ]
-    };
-    return invokeDmrHttp(op);
-  }
+    return new Promise(function(fulfil, reject) {
+      var spawn = require('child_process').spawn;
+      var child = spawn('lsof', ['-t', '-i',  'TCP:' + port]);
+      var count = 0;
+
+      child.stdout.on('data', function(chunk) {
+          chunk.toString().split('\n').forEach(function(line) {
+              count++;
+          });
+      });
+
+      child.stdout.on('end', function(chunk) {
+        fulfil(count);
+      });
+    })
+  };
 }
 
 exports.stopAndWaitView = function(nodeStop, expectNumMembers, nodeView) {
   return function() {
     return exports.stopClusterNode(nodeStop, false)()
-      .then(function() { return waitUntilView(expectNumMembers, nodeView); });
+      .then(function() { return exports.waitUntilView(expectNumMembers, nodeView); });
   }
 };
 
-function waitUntilView(expectNumMembers, nodeName) {
-  logger.debugf("Wait until view of %d nodes in '%s'", expectNumMembers, nodeName);
+exports.waitUntilView = function(expectNumMembers, port) {
+  logger.debugf("Wait until view of %d nodes on '%s'", expectNumMembers, port);
   return waitUntil(
     function(members) {
       logger.debugf(
           "Final check, check the expect %d nodes and got %d",
-          expectNumMembers, members.length
+          expectNumMembers, members
       );
-      expect(members.length).toEqual(expectNumMembers);
+      expect(members).toEqual(expectNumMembers);
       logger.debugf("Check passed");
     },
     function(members) {
-      var success = _.isEqual(expectNumMembers, members.length);
+      var success = _.isEqual(expectNumMembers, members);
       logger.debugf(
           "Expected %d nodes, got %d, success=%s",
-          expectNumMembers, members.length, success
+          expectNumMembers, members, success
       );
       return success;
     },
-    getClusterMembers(nodeName)
+    getClusterMembers(port)
   );
-}
+};
+exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAddr, expectNumMembers, client) {
+    return new Promise(function (fulfill, reject) {
+        var spawn = require('child_process').spawn;
+        var path = require('path');
+
+        var serverPath = path.resolve('server/' + exports.serverDirName + "/");
+        var standaloneShPath = serverPath + '/bin/server.sh';
+        var cmd = spawn(
+            standaloneShPath,
+            ['-c', config, '-p', port, '-s',serverPath + "/" + nodeName,
+                '-Djgroups.mcast_addr=' + mcastAddr,
+                '-Dinfinispan.node.name=' + nodeName,
+                '-Djgroups.join_timeout=1000'
+            ]);
+
+        cmd.stderr.on('data', function (data) {
+            logger.debugf('Stderr [%s]: %s', nodeName, data);
+            reject(data);
+        });
+
+        cmd.on('exit', function (code) {
+            logger.debugf('Child process exited with code %d', code);
+        });
+
+        fulfill();
+    }).then(function() {
+        return exports.waitUntilView(expectNumMembers, port);
+    }).then(function() {
+        return client;
+    });
+};
 
 function waitUntil(expectF, cond, op) {
   var now = new Date().getTime();
@@ -670,37 +693,25 @@ exports.sleepFor = function(sleepDuration) {
   while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
 };
 
-function getClusterMembers(nodeName) {
+function getClusterMembers(port) {
   return function() {
-    var op = {
-      operation : 'read-attribute',
-      name : 'members',
-      address : [
-        { host : 'master' },
-        { server : nodeName },
-        { subsystem : 'datagrid-infinispan' },
-        { 'cache-container' : 'clustered' }
-      ]
-    };
+    var opUrl ="/cache-managers/clustered/";
 
-    return invokeDmrHttp(op)
+    return invokeDmrHttpGet(opUrl, port)
       .then(function(response) {
-        logger.debugf("Server '%s' replied with cluster members: %s", nodeName, response.result);
-
-        var members = response.result
-          .replace('[', '').replace(']', '').split(/[\s,]+/);
-
+        logger.debugf("Server '%s' replied with cluster members: %s", port, response.cluster_size);
+        var members = response.cluster_size;
         logger.debugf("Members are: %s", members);
-        return _.sortBy(members, function (m) { return m; });
+        return members;
       });
   }
 }
 
-function invokeDmrHttp(op) {
+function invokeDmrHttp(op, port) {
   return new Promise(function(fulfil, reject) {
     httpRequest({
       method: 'POST',
-      url: 'http://localhost:9990/management',
+      url: 'http://localhost:' + port + '/rest/v2',
       auth: {
         user: 'admin',
         pass: 'mypassword',
@@ -719,6 +730,34 @@ function invokeDmrHttp(op) {
       }
     });
   });
+}
+
+function invokeDmrHttpGet(opUrl, port) {
+    return new Promise(function(fulfil, reject) {
+        httpRequest({
+            method: 'GET',
+            url: 'http://localhost:' + port + '/rest/v2' + opUrl,
+            auth: {
+                user: 'admin',
+                pass: 'mypassword',
+                sendImmediately: false
+            },
+            headers: {
+                'Content-Type' : 'application/json'
+            }
+        }, function(error, response, body) {
+            if (!error && response.statusCode == 200) {
+              var resp = "";
+              if (body) {
+                resp = JSON.parse(body);
+              }
+              fulfil(resp);
+            } else {
+                reject(util.format('Error (%s), body (%s), response(%s)',
+                    error, body, JSON.stringify(response)));
+            }
+        });
+    });
 }
 
 function readFileAsync(path) {

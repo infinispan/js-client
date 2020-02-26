@@ -1,36 +1,29 @@
-var _ = require('underscore');
-
 var t = require('./utils/testing'); // Testing dependency
 
 describe('Infinispan clustered clients', function() {
 
-  // Since Jasmine 1.3 does not have beforeAll callback, execute
-  // any cleanup as first test so that it only gets executed once.
-  it('cleanup', function(done) {
-    var stop2 = t.stopClusterNode('server-failover-two', false);
-    var stop3 = t.stopClusterNode('server-failover-three', false);
-    var start1 = t.startAndWaitView('server-failover-one', 1);
-    Promise.all([stop2(), stop3(), start1()]).catch(t.failed(done)).finally(done);
-  });
-
   it('can failover when nodes crash', function(done) {
-    t.client(t.failover1)
-      .then(t.assert(t.getMembers(), t.toContain([t.failover1])))
-      .then(withAll(t.startAndWaitView('server-failover-two', 2)))
-      .then(expectClientView([t.failover1, t.failover2]))
-      .then(withAll(t.startAndWaitView('server-failover-three', 3)))
-      .then(expectClientView([t.failover1, t.failover2, t.failover3]))
-      .then(keyGen([t.failover2, t.failover3]))
-      .then(withAll(keyPut('failover-value')))
-      .then(withAll(keyGet(t.toBe('failover-value'))))
-      .then(withFirst(t.stopAndWaitView('server-failover-three', 2, 'server-failover-one')))
-      .then(withFirst(expectClientView([t.failover1, t.failover2])))
-      .then(withAll(keyGet(t.toBe('failover-value'))))
-      .then(withFirst(t.stopAndWaitView('server-failover-two', 1, 'server-failover-one')))
-      .then(withFirst(expectClientView([t.failover1])))
-      .then(withAll(keyGet(t.toBe('failover-value'))))
-      .then(withFirst(t.disconnect()))
-      .catch(t.failed(done)).finally(done);
+      t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1)
+          .then(function() {
+              return t.client(t.failover1);
+          })
+          .then(t.assert(t.getMembers(), t.toContain([t.failover1])))
+          .then(function(client) {return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2['port'], t.failoverMCastAddr,  2, client);}) //11432
+          .then(expectClientView([t.failover1, t.failover2]))
+          .then(function(client) { return t.launchClusterNodeAndWaitView('server-failover-three', t.failoverConfig, t.failover3['port'], t.failoverMCastAddr, 3, client); }) //11442
+          .then(expectClientView([t.failover1, t.failover2, t.failover3]))
+          .then(keyGen([t.failover2, t.failover3]))
+          .then(withAll(keyPut('failover-value')))
+          .then(withAll(keyGet(t.toBe('failover-value'))))
+          .then(withFirst(t.stopAndWaitView(t.failover3['port'], 2, t.failover1['port'])))
+          .then(withFirst(expectClientView([t.failover1, t.failover2])))
+          .then(withAll(keyGet(t.toBe('failover-value'))))
+          .then(withFirst(t.stopAndWaitView(t.failover2['port'], 1, t.failover1['port'])))
+          .then(withFirst(expectClientView([t.failover1])))
+          .then(withAll(keyGet(t.toBe('failover-value'))))
+          .then(withFirst(t.stopClusterNode(t.failover1['port'], false)))
+          .then(withFirst(t.disconnect()))
+          .catch(t.failed(done)).finally(done);
   }, 20000);
 
 });
