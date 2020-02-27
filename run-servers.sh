@@ -101,7 +101,7 @@ function startServer()
 
 
     if [[ ${isCi} = "--ci" ]]; then
-      nohup $SERVER_TMP/bin/server.sh -c ${confPath} -s ${SERVER_TMP}/${nodeName} "${portStr:-""}"  --node-name=${nodeName} ${jvmParam:-} &
+      nohup $SERVER_TMP/bin/server.sh -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-""}  --node-name=${nodeName} ${jvmParam:-} &
     else
       ${SERVER_TMP}/bin/server.sh -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-} --node-name=${nodeName} ${jvmParam:-} &
     fi
