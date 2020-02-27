@@ -28,7 +28,7 @@ pipeline {
         }
         stage('Run server') {
             steps {
-                sh './run-server.sh --ci'
+                sh './run-servers.sh --ci'
             }
         }
         stage('Test') {
