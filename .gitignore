@@ -25,3 +25,6 @@ infinispan-server-*
 
 # nohup
 nohup.out
+
+package-lock.json
+/build
