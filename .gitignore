@@ -19,7 +19,7 @@ out
 
 # OSX files
 .DS_Store
-
+saxsc
 # server zip
 infinispan-server-*
 
