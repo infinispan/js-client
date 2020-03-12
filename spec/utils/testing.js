@@ -576,7 +576,7 @@ function getServerStatus(port) {
   return function() {
     return new Promise(function(fulfil, reject) {
       var spawn = require('child_process').spawn;
-      var child = spawn('lsof', ['-t', '-i',  'TCP:' + port]);
+      var child = spawn('fuser', [port + '/tcp']);
       var count = 0;
 
       child.stdout.on('data', function(chunk) {
