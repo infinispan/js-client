@@ -6,7 +6,7 @@
         xmlns:server="urn:infinispan:server:10.0">
 
     <cache-container name="clustered" default-cache="default">
-        <transport lock-timeout="60000"/>
+        <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
         <!--<global-state/>-->
         <distributed-cache name="default" mode="SYNC" segments="20" owners="2" remote-timeout="30000" start="EAGER">
             <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
