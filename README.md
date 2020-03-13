@@ -1,88 +1,88 @@
 # Infinispan JS Client
 
 `infinispan` is an asynchronous event-driven Infinispan client for Node.js.
-The results of the asynchronous operations are represented using 
+The results of the asynchronous operations are represented using
 [Promise](https://www.promisejs.org) instances. Amongst many advantages,
 promises make it easy to transform/chain multiple asynchronous invocations
 and they improve error handling by making it easy to centralise it.
 
-The client is under heavy development but here's a summary of its 
+The client is under heavy development but here's a summary of its
 current capabilities:
 
-* `infinispan` client can be constructed with a single server address or 
+* `infinispan` client can be constructed with a single server address or
 multiple servers addresses. When passing multiple addresses, it will iterate
 until it finds a server to which it can connect to.
-* Clients can interact with a named cache whose name is passed on client 
-construction via `{cacheName: 'myCache'}` option. In the absence of any cache 
-name options, the client will interact with the default cache. 
+* Clients can interact with a named cache whose name is passed on client
+construction via `{cacheName: 'myCache'}` option. In the absence of any cache
+name options, the client will interact with the default cache.
 * Full CRUD operation support, e.g. `put`, `get`, `remove`, `containsKey`...etc.
-* Compare-And-Swap operation support, e.g. `putIfAbsent`, 
-`getWithMetadata`, `replace`, `replaceWithVersion`, 
+* Compare-And-Swap operation support, e.g. `putIfAbsent`,
+`getWithMetadata`, `replace`, `replaceWithVersion`,
 `removeWithVersion`..etc.
 * Expiration with absolute lifespan or relative maximum idle time
 is supported. This expiration parameters as passed as optional parameters
-to create/update methods and they support multiple time units, e.g. 
+to create/update methods and they support multiple time units, e.g.
 `{lifespan: '1m', maxIdle: '1d'}`.
-* Update and remove operations can optionally return previous values 
+* Update and remove operations can optionally return previous values
 by passing in `{previous: true}` option.
-* Bulk store/retrieve/delete operations are supported, e.g. `putAll`, `getAll`, 
+* Bulk store/retrieve/delete operations are supported, e.g. `putAll`, `getAll`,
 `clear`...etc.
 * Cache contents can be iterated over using the `iterator` method.
 * Cache size can be determined using the `size` method.
 * Remote cache listeners can be plugged using the `addListener` method, which
-takes the event type (`create`, `modify`, `remove` or `expiry`) and the 
+takes the event type (`create`, `modify`, `remove` or `expiry`) and the
 function callback as parameter.
 * Clients can store scripts using `addScript` and then they can be remotely
-executed using the `execute` operation. Executing a script remotely 
+executed using the `execute` operation. Executing a script remotely
 optionally takes per-invocation parameters.
 * Server-side statistics can be retrieved using the `stats` operation.
 * Clients can connect using encryption with the server via SSL/TLS with optional TLS/SNI support.
-* Clients can talk to clusters of Infinispan Server instances, using 
+* Clients can talk to clusters of Infinispan Server instances, using
 Consistent-Hash based algorithms to route key-based operations.
 * Multi-key or key-less operations are routed in round-robin fashion.
-* Clients only need to be configure with a single node's address and from 
-that node the rest of the cluster topology can be discovered. As nodes are 
+* Clients only need to be configure with a single node's address and from
+that node the rest of the cluster topology can be discovered. As nodes are
 added or destroyed, clients get notified of changes in the cluster topology
 dynamically.
 * Clients can talk to multiple clusters that are separated into different site clusters.
 The client is normally connected to one of the sites, but if its members fail to respond, it will automatically switch to an alternative site to which it can connect.
 * Clients have methods, such as `switchToCluster(clusterName)` and `switchToDefaultCluster` that allows users to manually change to which site cluster to connect.
-* Finally, clients can stop communication with the server(s) using the 
+* Finally, clients can stop communication with the server(s) using the
 `disconnect` method.
 
 # Requirements
 
 `infinispan` client requires Node.js version `8.11.4` or higher.
 
-It can only talk to Infinispan Server 8.x or higher versions. 
+It can only talk to Infinispan Server 8.x or higher versions.
 
-By default, Infinispan clients talk Hot Rod protocol version `2.9` which is 
+By default, Infinispan clients talk Hot Rod protocol version `2.9` which is
 supported starting with Infinispan server 9.4.x.
 
 Please find below information on how to use the client with older Infinispan server versions:
 
-*  For versions between `8.2.x` and `9.3.x`, use Hot Rod protocol version `2.5`. 
+*  For versions between `8.2.x` and `9.3.x`, use Hot Rod protocol version `2.5`.
 To do so, construct the client with `{version: '2.5'}` optional argument.
-*  For versions `8.0.x` and `8.1.x`, use Hot Rod protocol version `2.2`. 
+*  For versions `8.0.x` and `8.1.x`, use Hot Rod protocol version `2.2`.
 To do so, construct the client with `{version: '2.2'}` optional argument.
 
 # API docs
 
-API documentation for the client can be found 
+API documentation for the client can be found
 [here](http://docs.jboss.org/infinispan/hotrod-clients/javascript/1.0/apidocs/module-infinispan.html),
-where you can find detailed information of the APIs exposed. 
+where you can find detailed information of the APIs exposed.
 
 # Usage
 
-Before executing these code samples, Infinispan Server must be downloaded 
-from [here](http://infinispan.org/download/) and installed locally bearing 
-in the support version information provided above. Unless indicated 
-otherwise, the code samples below require an Infinispan Server instance 
+Before executing these code samples, Infinispan Server must be downloaded
+from [here](http://infinispan.org/download/) and installed locally bearing
+in the support version information provided above. Unless indicated
+otherwise, the code samples below require an Infinispan Server instance
 to be started. The simplest way to do so is to execute the following script:
- 
+
     $ [INFINISPAN_SERVER_HOME]/bin/server.sh
 
-Please find below samples codes showing how the Infinispan Javascript client 
+Please find below samples codes showing how the Infinispan Javascript client
 can be used:
 
 ## Working with single entries and statistics
@@ -548,13 +548,17 @@ function logEvent(prefix) {
 You can also create and deploy your own converters into Infinispan server instances.
 See the
 [event filter and conversion](https://infinispan.org/docs/stable/titles/developing/developing.html#event_filtering_and_conversion)
-section on the Infinispan user guide for more information.
+section in the Developers Guide for more information.
+
+Note that you must also configure encoding for cache definitions on Infinispan servers. Configure caches to use a MediaType that matches the data format for keys and values.
+
+See the [configuring MediaType](https://infinispan.org/docs/dev/titles/developing/developing.html#encoding_media_type) section in the Developers Guide for more information.
 
 ## Script Execution
 
-The client has the ability to remotely execute scripts on the server. 
+The client has the ability to remotely execute scripts on the server.
 To do so, it must first load the script in the server and then invoke it.
-So, given the following script called `sample-script.js`: 
+So, given the following script called `sample-script.js`:
 
 ```Javascript
 // mode=local,language=javascript,parameters=[k, v],datatype='text/plain; charset=utf-8'
@@ -562,7 +566,7 @@ cache.put(k, v);
 cache.get(k);
 ```
 
-The Infinispan Javascript client could load and execute it using the 
+The Infinispan Javascript client could load and execute it using the
 following code:
 
 ```Javascript
@@ -680,16 +684,16 @@ Another possibility is to get certificates from free, open certificate authoriti
 
 ## Working with Clusters
 
-All previous examples are focused on how the API behaves when working with a 
+All previous examples are focused on how the API behaves when working with a
 single Infinispan Server instance. Additionally, multiple Infinispan Servers
 can be clustered in order to provide failover for the data and scale up.
-Working with a Infinispan Server cluster is very similar to working with a 
+Working with a Infinispan Server cluster is very similar to working with a
 single instance but there's a few things to bear in mind:
 
 * No matter the size of the Infinispan Server cluster, the client only needs
 to know about a server's address in order to get information about the entire
 cluster topology.
-* For distributed caches, key-based operations are routed in the cluster 
+* For distributed caches, key-based operations are routed in the cluster
 using the same consistent hash algorithms used by the server, so that means
 that the client can locate where a particular key resides without the need
 of extra network hops.
@@ -699,7 +703,7 @@ round robin fashion.
 fashion, regardless of whether they are key-based or multi-key/key-less.
 
 The routing and failover is transparent to the user code, so the operations
-executed against in a cluster look exactly the same as in the previous code 
+executed against in a cluster look exactly the same as in the previous code
 examples.
 
 When a connection with a server breaks,
@@ -709,7 +713,7 @@ If a server that has a client listener registered fails or leaves the cluster,
 the client transparently migrates the listener registration to another node in the cluster.
 By doing so, the client can continue receiving events in the presence of failures or topology changes.
 
-You can run a test locally by starting multiple instances of Infinispan 
+You can run a test locally by starting multiple instances of Infinispan
 Server like this:
 
     $ ./bin/server.sh -c infinispan.xml --node-name node0 -o 100
@@ -889,7 +893,7 @@ async function test() {
 test();
 ```
 
-## Working with multiple entries 
+## Working with multiple entries
 
 ```Javascript
 const infinispan = require("infinispan");
@@ -932,9 +936,9 @@ test();
 
 # Testing
 
-Before executing any tests, Infinispan Server instances need to be started 
+Before executing any tests, Infinispan Server instances need to be started
 up so that testsuite can run against those. To ease this process, a script
-has been created in the root directory to start all the expected server 
+has been created in the root directory to start all the expected server
 instances.
 
 Go to the root of the repo and execute:
