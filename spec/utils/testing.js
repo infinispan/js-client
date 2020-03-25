@@ -32,9 +32,9 @@ exports.failoverMCastAddr= '234.99.64.14';
 
 // All ssl invocations needs to be directed to localhost instead of 127.0.0.1
 // because Node.js uses `localhost` as default server name if none provided.
-exports.sslTrust = {port: 11232, host: 'localhost'};
-exports.sslAuth = {port: 11242, host: 'localhost'};
-exports.sslSni = {port: 11252, host: 'localhost'};
+exports.sslTrust = {port: 11622, host: 'localhost'};
+exports.sslAuth = {port: 11632, host: 'localhost'};
+exports.sslSni = {port: 11642, host: 'localhost'};
 
 exports.xsiteCacheName = 'xsiteCache';
 exports.earth1 = {port: 11522, host: '127.0.0.1'};

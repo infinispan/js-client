@@ -9,7 +9,7 @@ else
 fi
 
 
-SERVER_VERSION="10.1.3.Final"
+SERVER_VERSION="10.1.5.Final"
 SERVER_HOME=server/infinispan-server-$SERVER_VERSION
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c localhost:11322 -f batch "
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
@@ -101,9 +101,9 @@ function startServer()
 
 
     if [[ ${isCi} = "--ci" ]]; then
-      nohup $SERVER_TMP/bin/server.sh -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-""}  --node-name=${nodeName} ${jvmParam:-} &
+      nohup $SERVER_TMP/bin/server.sh -Djavax.net.debug -Dorg.infinispan.openssl=false -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-""}  --node-name=${nodeName} ${jvmParam:-} &
     else
-      ${SERVER_TMP}/bin/server.sh -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-} --node-name=${nodeName} ${jvmParam:-} &
+      ${SERVER_TMP}/bin/server.sh -Djavax.net.debug -Dorg.infinispan.openssl=false -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-} --node-name=${nodeName} ${jvmParam:-} &
     fi
 }
 
