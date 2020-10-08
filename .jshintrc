@@ -1,6 +1,14 @@
 {
-    "globalstrict"  : true,
+    "globalstrict"  : false,
     "devel"         : true,
     "node"          : true,
-    "eqeqeq"        : true
+    "eqeqeq"        : false,
+    "laxcomma"      : true,
+    "laxbreak"      : true,
+    "-W014"         : true,
+    "-W117"         : true,
+    "-W033"         : true,
+    "-W040"         : true,
+    "-W069"         : true,
+    "-W018"         : true
 }
