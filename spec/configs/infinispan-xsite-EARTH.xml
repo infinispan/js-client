@@ -1,17 +1,124 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:10.0 http://www.infinispan.org/schemas/infinispan-config-10.0.xsd
-                            urn:infinispan:server:10.0 http://www.infinispan.org/schemas/infinispan-server-10.0.xsd
+        xsi:schemaLocation="urn:infinispan:config:12.0 https://infinispan.org/schemas/infinispan-config-12.0.xsd
+                            urn:infinispan:server:12.0 https://infinispan.org/schemas/infinispan-server-12.0.xsd
                             urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.0.xsd"
-        xmlns="urn:infinispan:config:10.0"
-        xmlns:server="urn:infinispan:server:10.0">
+        xmlns="urn:infinispan:config:12.0"
+        xmlns:server="urn:infinispan:server:12.0"
+>
 
     <jgroups>
-        <stack name="bridge" extends="tcp">
-            <MPING mcast_addr="234.99.74.34" />
+        <stack name="bridge">
+            <UDP bind_addr="${jgroups.bind.address,jgroups.udp.address:SITE_LOCAL}"
+                 bind_port="${jgroups.bind.port,jgroups.udp.port:0}"
+                 mcast_addr="${jgroups.bridge.mcast_addr:228.6.7.5}"
+                 mcast_port="${jgroups.bridge.mcast_port:46655}"
+                 ucast_send_buf_size="1m"
+                 mcast_send_buf_size="1m"
+                 ucast_recv_buf_size="20m"
+                 mcast_recv_buf_size="25m"
+                 ip_ttl="${jgroups.ip_ttl:2}"
+                 thread_naming_pattern="pl"
+                 enable_diagnostics="false"
+                 bundler_type="no-bundler"
+                 max_bundle_size="8500"
+
+                 thread_pool.min_threads="${jgroups.thread_pool.min_threads:0}"
+                 thread_pool.max_threads="${jgroups.thread_pool.max_threads:200}"
+                 thread_pool.keep_alive_time="60000"
+            />
+            <PING num_discovery_runs="3"/>
+            <MERGE3 min_interval="10000"
+                    max_interval="30000"
+            />
+            <FD_SOCK />
+            <!-- Suspect node `timeout` to `timeout + timeout_check_interval` millis after the last heartbeat -->
+            <FD_ALL timeout="10000"
+                    interval="2000"
+                    timeout_check_interval="1000"
+            />
+            <VERIFY_SUSPECT timeout="1000"/>
+            <pbcast.NAKACK2 xmit_interval="100"
+                            xmit_table_num_rows="50"
+                            xmit_table_msgs_per_row="1024"
+                            xmit_table_max_compaction_time="30000"
+                            resend_last_seqno="true"
+            />
+            <UNICAST3 xmit_interval="100"
+                      xmit_table_num_rows="50"
+                      xmit_table_msgs_per_row="1024"
+                      xmit_table_max_compaction_time="30000"
+            />
+            <pbcast.STABLE stability_delay="500"
+                           desired_avg_gossip="5000"
+                           max_bytes="1M"
+            />
+            <pbcast.GMS print_local_addr="false"
+                        join_timeout="${jgroups.join_timeout:2000}"
+            />
+            <UFC_NB max_credits="3m"
+                    min_threshold="0.40"
+            />
+            <MFC_NB max_credits="3m"
+                    min_threshold="0.40"
+            />
         </stack>
-        <stack name="xsite" extends="udp">
-            <relay.RELAY2 site="EARTH" xmlns="urn:org:jgroups"/>
+        <stack name="cluster" xmlns="urn:org:jgroups">
+            <UDP bind_addr="${jgroups.bind.address,jgroups.udp.address:SITE_LOCAL}"
+                 bind_port="${jgroups.bind.port,jgroups.udp.port:0}"
+                 mcast_addr="${jgroups.cluster.mcast_addr:228.6.7.10}"
+                 mcast_port="${jgroups.cluster.mcast_port:46655}"
+                 ucast_send_buf_size="1m"
+                 mcast_send_buf_size="1m"
+                 ucast_recv_buf_size="20m"
+                 mcast_recv_buf_size="25m"
+                 ip_ttl="${jgroups.ip_ttl:2}"
+                 thread_naming_pattern="pl"
+                 enable_diagnostics="false"
+                 bundler_type="no-bundler"
+                 max_bundle_size="8500"
+
+                 thread_pool.min_threads="${jgroups.thread_pool.min_threads:0}"
+                 thread_pool.max_threads="${jgroups.thread_pool.max_threads:200}"
+                 thread_pool.keep_alive_time="60000"
+            />
+            <PING num_discovery_runs="3"/>
+            <MERGE3 min_interval="10000"
+                    max_interval="30000"
+            />
+            <FD_SOCK />
+            <!-- Suspect node `timeout` to `timeout + timeout_check_interval` millis after the last heartbeat -->
+            <FD_ALL timeout="10000"
+                    interval="2000"
+                    timeout_check_interval="1000"
+            />
+            <VERIFY_SUSPECT timeout="1000"/>
+            <pbcast.NAKACK2 xmit_interval="100"
+                            xmit_table_num_rows="50"
+                            xmit_table_msgs_per_row="1024"
+                            xmit_table_max_compaction_time="30000"
+                            resend_last_seqno="true"
+            />
+            <UNICAST3 xmit_interval="100"
+                      xmit_table_num_rows="50"
+                      xmit_table_msgs_per_row="1024"
+                      xmit_table_max_compaction_time="30000"
+            />
+            <pbcast.STABLE stability_delay="500"
+                           desired_avg_gossip="5000"
+                           max_bytes="1M"
+            />
+            <pbcast.GMS print_local_addr="false"
+                        join_timeout="${jgroups.join_timeout:2000}"
+            />
+            <UFC_NB max_credits="3m"
+                    min_threshold="0.40"
+            />
+            <MFC_NB max_credits="3m"
+                    min_threshold="0.40"
+            />
+            <FRAG3 frag_size="8000"/>
+            <relay.RELAY2 site="EARTH"/>
             <remote-sites default-stack="bridge">
                 <remote-site name="EARTH"/>
                 <remote-site name="MOON"/>
@@ -21,17 +128,17 @@
 
 
     <cache-container name="clustered">
-        <transport cluster="${infinispan.cluster.name}" stack="xsite"/>
-        <distributed-cache name="xsiteCache" mode="SYNC" segments="20" owners="2" remote-timeout="30000" >
-            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
-            <transaction mode="NONE"/>
+        <transport cluster="cluster-earth" stack="cluster"/>
+        <distributed-cache name="xsiteCache" segments="20" remote-timeout="30000" >
+            <locking acquire-timeout="30000" concurrency-level="1000" />
             <backups>
                 <backup site="MOON" strategy="SYNC" timeout="3000"/>
             </backups>
+            <encoding media-type="text/plain"/>
         </distributed-cache>
     </cache-container>
 
-    <server xmlns="urn:infinispan:server:10.0">
+    <server xmlns="urn:infinispan:server:12.0">
         <interfaces>
             <interface name="public">
                 <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
@@ -63,8 +170,13 @@
             </security-realms>
         </security>
 
+        <!-- not secured -->
         <endpoints socket-binding="default" security-realm="default">
-            <hotrod-connector name="hotrod"/>
+            <hotrod-connector name="hotrod">
+                <authentication>
+                    <sasl mechanisms="PLAIN"/>
+                </authentication>
+            </hotrod-connector>
             <rest-connector name="rest"/>
             <!-- Uncomment to enable the memcached connector -->
             <!-- memcached-connector socket-binding="memcached" / -->

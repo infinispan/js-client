@@ -11,9 +11,11 @@ describe('Infinispan xsite cluster client', function() {
   // any cleanup as first test so that it only gets executed once.
   it('start sites', function(done) {
       logger.debugf("Starting servers for xsite replication tests.");
-      t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1)
-          .then(function(client) {return t.launchClusterNodeAndWaitView('server-moon', t.moon1Config, t.moon1['port'], t.moon1MCastAddr, 1);})
-          .catch(t.failed(done)).finally(done);
+      t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, t.client)
+          .then(function(client) {return t.launchClusterNodeAndWaitView('server-moon', t.moon1Config, t.moon1['port'], t.moon1MCastAddr, 1, client);})
+          .then(function () {
+            logger.debugf("Both moon and earth servers started");
+          }).catch(t.failed(done)).finally(done);
   }, 15000);
 
   it('can manually switch and fail over sites', function(done) {
@@ -34,14 +36,14 @@ describe('Infinispan xsite cluster client', function() {
         .then(t.stopClusterNode(t.earth1['port'], true))
         // Client connected to surviving site should find data
         .then(assertGet('xsite-key', 'xsite-value', cs[1]))
-        // Client connected to crashed site should failover
+        // // Client connected to crashed site should failover
         .then(assertGet('xsite-key', 'xsite-value', cs[0]))
-        // Double check both clients' topologies point to the same server
         .then(function() {
           expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.moon1]);
           expect(cs[1].getTopologyInfo().getMembers()).toEqual([t.moon1]);
         })
-        // Re-launch site stopped site and stop alive site
+        // // Re-launch site stopped site and stop alive site
+        .then(assertGet('xsite-key', 'xsite-value', cs[0]))
         .then(function(client) { return t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, client); })
         .then(t.stopClusterNode(t.moon1['port'], true))
         // Client connected to failed over site should come back to original site
@@ -54,7 +56,7 @@ describe('Infinispan xsite cluster client', function() {
         })
         .then(assertGet('xsite-key-2', 'xsite-value-2', cs[0]))
           //Stopping the rest of the servers to finish the test
-        .then(t.stopClusterNode(t.earth1['port'], false))
+        .then(t.stopClusterNode(t.earth1['port'], true))
         .finally(function() {
           return Promise.all(_.map(cs, function(c) { return c.disconnect(); }));
         });
@@ -76,6 +78,7 @@ function assertGet(k, expected, client) {
 function clusterSiteMoon() {
   return {
     cacheName: t.xsiteCacheName,
+    authentication: t.authOpts.authentication,
     clusters: [
       {
         name: 'server-moon',
@@ -88,6 +91,9 @@ function clusterSiteMoon() {
 function siteClients() {
   return Promise.all([
     t.client(t.earth1, clusterSiteMoon()),
-    t.client(t.moon1, {cacheName: t.xsiteCacheName})
+    t.client(t.moon1, {cacheName:
+      t.xsiteCacheName,
+      authentication: t.authOpts.authentication
+    })
   ]);
 }

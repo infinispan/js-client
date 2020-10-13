@@ -17,6 +17,16 @@ var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
 exports.serverDirName = "infinispan-server";
+
+exports.authOpts = {
+  authentication: {
+    enabled: true,
+    saslMechanism: 'PLAIN',
+    userName: 'admin',
+    password: 'pass'
+  }
+};
+
 exports.local = {port: 11222, host: '127.0.0.1'};
 
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
@@ -32,9 +42,7 @@ exports.failoverMCastAddr= '234.99.64.14';
 
 // All ssl invocations needs to be directed to localhost instead of 127.0.0.1
 // because Node.js uses `localhost` as default server name if none provided.
-exports.sslTrust = {port: 11232, host: 'localhost'};
-exports.sslAuth = {port: 11232, host: 'localhost'};
-exports.sslSni = {port: 11232, host: 'localhost'};
+exports.ssl = {port: 11232, host: 'localhost'};
 
 exports.xsiteCacheName = 'xsiteCache';
 exports.earth1 = {port: 11522, host: '127.0.0.1'};
@@ -48,7 +56,9 @@ exports.json = {
   dataFormat: {
     keyType: 'application/json'
     , valueType: 'application/json'
-  }
+  },
+  authentication: exports.authOpts.authentication,
+  cacheName: 'jsonCache'
 };
 
 var CLUSTER_NODES = ['server-one', 'server-two', 'server-three'];
@@ -186,6 +196,12 @@ exports.onMany = function(eventListeners) {
   };
 };
 
+exports.authMech = function() {
+  return function(client) {
+    return client.authMechList();
+  }
+};
+
 exports.exec = function(scriptName, params) {
   return function(client) {
     return client.execute(scriptName, params);
@@ -293,6 +309,7 @@ exports.toContain = function(value) {
   }
 };
 
+exports.toBeDefined = function(actual) { expect(actual).toBeDefined() };
 exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
 exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };
 exports.toBeFalsy = function(actual) { expect(actual).toBeFalsy(); };
@@ -555,12 +572,15 @@ exports.stopClusterNode = function(port, waitStop) {
     var opUrl = "/server?action=stop";
 
     if (waitStop) {
-      return invokeDmrHttpGet(opUrl, port).then(function() {
+      return invokeDmrHttpGet('POST', opUrl, port).then(function() {
         return waitUntilStopped(port);
+      }).catch(function (err) {
+        console.log('Error stopping ' +  err);
+        return Promise.resolve('unable to stop server in port ' + port);
       });
     }
 
-    return invokeDmrHttpGet(opUrl, port);
+    return invokeDmrHttpGet('POST', opUrl, port);
   }
 };
 
@@ -666,7 +686,6 @@ function waitUntil(expectF, cond, op) {
 
   function loop(promise) {
     exports.sleepFor(1000); // brief sleep
-
     // Simple recursive loop until condition has been met
     return promise
       .then(function(response) {
@@ -694,10 +713,11 @@ exports.sleepFor = function(sleepDuration) {
 };
 
 function getClusterMembers(port) {
+
   return function() {
     var opUrl ="/cache-managers/clustered/";
 
-    return invokeDmrHttpGet(opUrl, port)
+    return invokeDmrHttpGet('GET', opUrl, port)
       .then(function(response) {
         logger.debugf("Server '%s' replied with cluster members: %s", port, response.cluster_size);
         var members = response.cluster_size;
@@ -714,7 +734,7 @@ function invokeDmrHttp(op, port) {
       url: 'http://localhost:' + port + '/rest/v2',
       auth: {
         user: 'admin',
-        pass: 'mypassword',
+        pass: 'pass',
         sendImmediately: false
       },
       headers: {
@@ -732,21 +752,21 @@ function invokeDmrHttp(op, port) {
   });
 }
 
-function invokeDmrHttpGet(opUrl, port) {
+function invokeDmrHttpGet(method, opUrl, port) {
     return new Promise(function(fulfil, reject) {
         httpRequest({
-            method: 'GET',
+            method: method,
             url: 'http://localhost:' + port + '/rest/v2' + opUrl,
             auth: {
                 user: 'admin',
-                pass: 'mypassword',
+                pass: 'pass',
                 sendImmediately: false
             },
             headers: {
                 'Content-Type' : 'application/json'
             }
         }, function(error, response, body) {
-            if (!error && response.statusCode == 200) {
+            if (!error && response.statusCode >= 200 && response.statusCode <= 204) {
               var resp = "";
               if (body) {
                 resp = JSON.parse(body);

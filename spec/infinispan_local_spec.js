@@ -5,16 +5,15 @@ var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 
 describe('Infinispan local client', function() {
-  var client = t.client(t.local);
-
+  var client = t.client(t.local, t.authOpts);
   beforeEach(function(done) { client
       .then(t.assert(t.clear()))
       .catch(t.failed(done)).finally(done);
   });
 
-  it('can put -> get -> remove a key/value pair', function(done) { client
-    .then(t.assert(t.size(), t.toBe(0)))
-    .then(t.assert(t.put('key', 'value')))
+  it('can put -> get -> remove a key/value pair', function(done) {
+    client.then(t.assert(t.size(), t.toBe(0)))
+        .then(t.assert(t.put('key', 'value')))
     .then(t.assert(t.size(), t.toBe(1)))
     .then(t.assert(t.get('key'), t.toBe('value')))
     .then(t.assert(t.containsKey('key'), t.toBeTruthy))
@@ -26,6 +25,7 @@ describe('Infinispan local client', function() {
     .catch(t.failed(done))
     .finally(done);
   });
+
   it('can use conditional operations on a key/value pair', function(done) { client
     .then(t.assert(t.putIfAbsent('cond', 'v0'), t.toBeTruthy))
     .then(t.assert(t.putIfAbsent('cond', 'v1'), t.toBeFalsy))
@@ -107,7 +107,7 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can put -> get -> remove a key/value pair on a named cache', function(done) {
-    t.client(t.local, {cacheName: 'namedCache'})
+    t.client(t.local, {cacheName: 'namedCache', authentication: t.authOpts.authentication})
       .then(t.assert(t.put('key', 'value')))
       .then(t.assert(t.get('key'), t.toBe('value')))
       .then(t.assert(t.remove('key'), t.toBeTruthy))
@@ -116,7 +116,9 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can put -> get -> remove a key/value pair on a named cache with disabled ssl', function(done) {
-    t.client(t.local, {cacheName: 'namedCache', ssl: {enabled: false}})
+    t.client(t.local, {cacheName: 'namedCache',
+      authentication: t.authOpts.authentication,
+      security: {ssl: {enabled: false}}})
         .then(t.assert(t.put('key', 'value')))
         .then(t.assert(t.get('key'), t.toBe('value')))
         .then(t.assert(t.remove('key'), t.toBeTruthy))
@@ -357,5 +359,4 @@ describe('Infinispan local client', function() {
       .catch(t.failed(done))
       .finally(done);
   });
-
 });

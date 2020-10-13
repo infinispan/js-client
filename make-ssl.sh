@@ -24,8 +24,8 @@ create_keystore() {
       -alias $alias \
       -dname $dname \
       -keystore $dir/$keystore \
-      -keypass $PASS \
       -storepass $PASS \
+      -keypass $PASS \
       -keyalg RSA \
       -keysize 2048 \
       -storetype JKS
@@ -45,6 +45,7 @@ create_sign_request() {
       -dname $dname \
       -keystore $dir/$keystore \
       -storepass $PASS \
+      -keypass $PASS \
       -file $dir/$csr
 }
 
@@ -64,6 +65,7 @@ sign_certificate() {
       -alias $ca_alias \
       -keystore $ca_dir/$ca_keystore \
       -storepass $PASS \
+      -keypass $PASS \
       -infile $dir/$csr \
       -outfile $dir/$cer
 }
@@ -99,6 +101,7 @@ import_certificate() {
       -alias $alias \
       -keystore $dir/$keystore \
       -storepass $PASS \
+      -keypass $PASS \
       -file $dir/$cer
 }
 
@@ -154,8 +157,8 @@ make_ca() {
       -alias $alias \
       -dname $dname \
       -keystore $dir/$keystore \
-      -keypass $pass \
       -storepass $pass \
+      -keypass $PASS \
       -keyalg RSA \
       -keysize 2048 \
       -storetype JKS \
@@ -211,6 +214,7 @@ make_server_keystore() {
       -dname $dname \
       -keystore $dir/$keystore \
       -storepass $pass \
+      -keypass $PASS \
       -file $dir/$csr \
 
    # Sign certicate with CA
@@ -218,6 +222,7 @@ make_server_keystore() {
       -alias $ca_alias \
       -keystore $ca_dir/$ca_keystore \
       -storepass $pass \
+      -keypass $PASS \
       -infile $dir/$csr \
       -outfile $dir/$cer
 
@@ -234,6 +239,7 @@ make_server_keystore() {
       -alias $alias \
       -keystore $dir/$keystore \
       -storepass $pass \
+      -keypass $PASS \
       -file $dir/$cer
 
    # Convert into a p12 keystore

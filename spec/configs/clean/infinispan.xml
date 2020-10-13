@@ -1,15 +1,15 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:10.0 http://www.infinispan.org/schemas/infinispan-config-10.0.xsd
-                            urn:infinispan:server:10.0 http://www.infinispan.org/schemas/infinispan-server-10.0.xsd"
-        xmlns="urn:infinispan:config:10.0"
-        xmlns:server="urn:infinispan:server:10.0">
+        xsi:schemaLocation="urn:infinispan:config:12.0 http://www.infinispan.org/schemas/infinispan-config-12.0.xsd
+                            urn:infinispan:server:12.0 http://www.infinispan.org/schemas/infinispan-server-12.0.xsd"
+        xmlns="urn:infinispan:config:12.0"
+        xmlns:server="urn:infinispan:server:12.0">
 
     <cache-container>
         <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}"/>
     </cache-container>
 
-    <server xmlns="urn:infinispan:server:10.0">
+    <server xmlns="urn:infinispan:server:12.0">
         <interfaces>
             <interface name="public">
                 <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
@@ -41,7 +41,12 @@
         </security>
 
         <endpoints socket-binding="default" security-realm="default">
-            <hotrod-connector name="hotrod"/>
+            <hotrod-connector name="hotrod">
+                <authentication>
+                    <sasl mechanisms="PLAIN"
+                          server-name="infinispan"/>
+                </authentication>
+            </hotrod-connector>
             <rest-connector name="rest"/>
             <!-- Uncomment to enable the memcached connector -->
             <!-- memcached-connector socket-binding="memcached" / -->

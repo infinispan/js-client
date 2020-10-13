@@ -9,9 +9,9 @@ else
 fi
 
 
-SERVER_VERSION="11.0.3.Final"
+SERVER_VERSION="12.0.0.Final"
 SERVER_HOME=server/infinispan-server-$SERVER_VERSION
-CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c localhost:11322 -f batch "
+CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
 
 CONF_DIR_TO_COPY_FROM="spec/configs/"
@@ -41,6 +41,7 @@ function prepareServerDir()
     local isSsl=$3
     local dirName=${4}
 
+    echo ${isSsl}
     if [ ! -f server/infinispan-server-$SERVER_VERSION.zip ]; then
         cd server
         wget $ZIP_ROOT/$SERVER_VERSION/infinispan-server-$SERVER_VERSION.zip
@@ -56,14 +57,15 @@ function prepareServerDir()
          cp -r ${SERVER_HOME}/* $SERVER_TMP
          echo "Server copied to temporary directory."
 
-         $SERVER_TMP/bin/user-tool.sh -u admin -p 'mypassword'
+         $SERVER_TMP/bin/cli.sh user create admin -p pass
          echo "Admin user added."
     fi
 
     cp -r ${SERVER_HOME}/server ${SERVER_TMP}/${dirName}
-
-
+    cp "${SERVER_TMP}/server/conf/users.properties" "${SERVER_TMP}/${dirName}/conf/users.properties"
     cp "${CONF_DIR_TO_COPY_FROM}/${confPath}" ${SERVER_TMP}/${dirName}/conf
+    echo ${SERVER_TMP}
+
     echo "Infinispan configuration file ${confPath} copied to server ${dirName}."
 
     if [[ ${isSsl} = "true" && ${IS_SSL_PROCESSED} = 0 ]]; then
@@ -74,11 +76,12 @@ function prepareServerDir()
     fi
 
     if [[ ${isSsl} = "true" ]]; then
-        cp out/ssl/ca/ca.jks $SERVER_TMP/${dirName}/conf
-        cp out/ssl/server/server.jks $SERVER_TMP/${dirName}/conf
-        cp out/ssl/sni-trust1/trust1.jks $SERVER_TMP/${dirName}/conf
-        cp out/ssl/sni-trust2/trust2.jks $SERVER_TMP/${dirName}/conf
-        cp out/ssl/sni-untrust/untrust.jks $SERVER_TMP/${dirName}/conf
+        cp out/ssl/ca/ca.p12 $SERVER_TMP/${dirName}/conf
+        cp out/ssl/server/server.p12 $SERVER_TMP/${dirName}/conf
+        cp out/ssl/client/client.p12 $SERVER_TMP/${dirName}/conf
+        cp out/ssl/sni-trust1/trust1.p12 $SERVER_TMP/${dirName}/conf
+        cp out/ssl/sni-trust2/trust2.p12 $SERVER_TMP/${dirName}/conf
+        cp out/ssl/sni-untrust/untrust.p12 $SERVER_TMP/${dirName}/conf
         echo "Security key and trust stores copied to temporary server."
     fi
     export SERVER_TMP=${SERVER_TMP}
@@ -99,6 +102,7 @@ function startServer()
         portStr="-p ${port}"
     fi
 
+    echo 'Run server '$nodeName' in '$SERVER_TMP''
 
     if [[ ${isCi} = "--ci" ]]; then
       nohup $SERVER_TMP/bin/server.sh -Djavax.net.debug -Dorg.infinispan.openssl=false -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-""}  --node-name=${nodeName} ${jvmParam:-} &
@@ -110,17 +114,15 @@ function startServer()
 #deleting the testable server directory
 rm -drf server/${SERVER_DIR}
 
-export JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=512m"
+export JAVA_OPTS="-Xms1024m -Xmx2048m -XX:MetaspaceSize=254M -XX:MaxMetaspaceSize=1024m"
 
 startServer "$1" infinispan.xml false 11222 "server-local"
 startServer "$1" infinispan-clustered.xml false 11322 "server-one"
 startServer "$1" infinispan-clustered.xml false 11332 "server-two"
 startServer "$1" infinispan-clustered.xml false 11342 "server-three"
 startServer "$1" infinispan-ssl.xml true 11622 "server-ssl"
-startServer "$1" infinispan-ssl1.xml true 11632 "server-ssl1"
-startServer "$1" infinispan-ssl2.xml true 11642 "server-ssl2"
 
-#Preparing server dirs for failover tests (3 servers)
+##Preparing server dirs for failover tests (3 servers)
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-one"
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-two"
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
@@ -129,8 +131,8 @@ prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
 prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
 prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
 
-waitForClusters
-echo "Infinispan test server started."
+#waitForClusters
+echo "Infinispan test servers started."
 
 
 if [[ $1 = "--ci" ]]; then
@@ -142,3 +144,4 @@ else
     sleep 5
   done
 fi
+
