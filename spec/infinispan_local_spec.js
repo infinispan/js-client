@@ -116,7 +116,7 @@ describe('Infinispan local client', function() {
       .finally(done);
   });
   it('can put -> get -> remove a key/value pair on a named cache with disabled ssl', function(done) {
-    t.client(t.local, {cacheName: 'namedCache', ssl: {enabled: false}})
+    t.client(t.local, {cacheName: 'namedCache', security: {ssl: {enabled: false}}})
         .then(t.assert(t.put('key', 'value')))
         .then(t.assert(t.get('key'), t.toBe('value')))
         .then(t.assert(t.remove('key'), t.toBeTruthy))

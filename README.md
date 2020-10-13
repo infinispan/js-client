@@ -614,9 +614,11 @@ With that in mind, the client can be configured in the following way:
 ```Javascript
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
   {
-    ssl: {
-      enabled: true,
-      trustCerts: ['my-root-ca.crt.pem']
+    security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['my-root-ca.crt.pem']
+        }
     }
   }
 );
@@ -627,12 +629,14 @@ Alternatively, the client can also read trusted certificates from `PKCS#12` or `
 ```Javascript
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
   {
-    ssl: {
-      enabled: true,
-      cryptoStore: {
-        path: 'my-truststore.p12',
-        passphrase: 'secret'
-      }
+    security: {
+        ssl: {
+          enabled: true,
+          cryptoStore: {
+            path: 'my-truststore.p12',
+            passphrase: 'secret'
+          }
+        }
     }
   }
 );
@@ -644,14 +648,16 @@ To do that, it's necessary to provide the location of the private key, the passp
 ```Javascript
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
   {
-    ssl: {
-      enabled: true,
-      trustCerts: ['my-root-ca.crt.pem'],
-      clientAuth: {
-        key: 'privkey.pem',
-        passphrase: 'secret',
-        cert: 'cert.pem'
-      }
+     security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['my-root-ca.crt.pem'],
+          clientAuth: {
+            key: 'privkey.pem',
+            passphrase: 'secret',
+            cert: 'cert.pem'
+          }
+        }
     }
   }
 );
@@ -662,10 +668,12 @@ Optionally, the client can indicate which hostname it is attempting to connect t
 ```Javascript
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
   {
-    ssl: {
-      enabled: true,
-      trustCerts: ['my-root-ca.crt.pem']
-      sniHostName: 'example.com'
+    security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['my-root-ca.crt.pem']
+          sniHostName: 'example.com'
+        }
     }
   }
 );

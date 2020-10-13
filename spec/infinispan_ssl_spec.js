@@ -107,20 +107,24 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslTrust() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem']
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem']
+        }
       }
     }
   }
 
   function sslTrustCryptoStore() {
     return {
-      ssl: {
-        enabled: true,
-        cryptoStore: {
-          path: 'out/ssl/client/client.p12',
-          passphrase: 'secret'
+      security: {
+        ssl: {
+          enabled: true,
+          cryptoStore: {
+            path: 'out/ssl/client/client.p12',
+            passphrase: 'secret'
+          }
         }
       }
     }
@@ -128,13 +132,15 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslAuth() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        clientAuth: {
-          key: 'out/ssl/client/client.pk',
-          passphrase: 'secret',
-          cert: 'out/ssl/client/client.pem'
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          clientAuth: {
+            key: 'out/ssl/client/client.pk',
+            passphrase: 'secret',
+            cert: 'out/ssl/client/client.pem'
+          }
         }
       }
     }
@@ -142,48 +148,58 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslSniTrusted() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        sniHostName: 'trust1'
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          sniHostName: 'trust1'
+        }
       }
     }
   }
 
   function sslSniTrustedInCaseOfMultipleTrustedSni() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        sniHostName: 'trust2'
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          sniHostName: 'trust2'
+        }
       }
     }
   }
 
   function sslSniDefault() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem']
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem']
+        }
       }
     }
   }
 
   function sslSniDefaultWithTrustedCertificate() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem']
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem']
+        }
       }
     }
   }
 
   function sslSniUntrusted() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem'],
-        sniHostName: "untrust"
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem'],
+          sniHostName: "untrust"
+        }
       }
     }
   }
@@ -241,38 +257,46 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslStoreNoPath() {
     return {
-      ssl: {
-        enabled: true,
-        cryptoStore: {}
+      security: {
+        ssl: {
+          enabled: true,
+          cryptoStore: {}
+        }
       }
     }
   }
 
   function sslStoreNoCryptoStore() {
     return {
-      ssl: {
-        enabled: true
+      security: {
+        ssl: {
+          enabled: true
+        }
       }
     }
   }
 
   function sslSniWithNoCert() {
     return {
-      ssl: {
-        enabled: true,
-        sniHostName: "untrust"
+      security: {
+        ssl: {
+          enabled: true,
+          sniHostName: "untrust"
+        }
       }
     }
   }
 
   function sslAuthWithMissingKey() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        clientAuth: {
-          passphrase: 'secret',
-          cert: 'out/ssl/client/client.pem'
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          clientAuth: {
+            passphrase: 'secret',
+            cert: 'out/ssl/client/client.pem'
+          }
         }
       }
     }
@@ -280,12 +304,14 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslAuthWithMissingPassphrase() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        clientAuth: {
-          key: 'out/ssl/client/client.pk',
-          cert: 'out/ssl/client/client.pem'
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          clientAuth: {
+            key: 'out/ssl/client/client.pk',
+            cert: 'out/ssl/client/client.pem'
+          }
         }
       }
     }
@@ -293,12 +319,14 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslAuthWithMissingCert() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        clientAuth: {
-          key: 'out/ssl/client/client.pk',
-          passphrase: 'secret'
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          clientAuth: {
+            key: 'out/ssl/client/client.pk',
+            passphrase: 'secret'
+          }
         }
       }
     }
@@ -306,22 +334,26 @@ describe('Infinispan TLS/SSL client', function() {
 
   function sslAuthWithMissingInfo() {
     return {
-      ssl: {
-        enabled: true,
-        trustCerts: ['out/ssl/ca/ca.pem'],
-        clientAuth: {}
+      security: {
+        ssl: {
+          enabled: true,
+          trustCerts: ['out/ssl/ca/ca.pem'],
+          clientAuth: {}
+        }
       }
     }
   }
 
   function sslAuthWithMissingTrustCertificate() {
     return {
-      ssl: {
-        enabled: true,
-        clientAuth: {
-          key: 'out/ssl/client/client.pk',
-          passphrase: 'secret',
-          cert: 'out/ssl/client/client.pem'
+      security: {
+        ssl: {
+          enabled: true,
+          clientAuth: {
+            key: 'out/ssl/client/client.pk',
+            passphrase: 'secret',
+            cert: 'out/ssl/client/client.pem'
+          }
         }
       }
     }
