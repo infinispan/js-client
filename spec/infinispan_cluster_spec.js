@@ -5,7 +5,7 @@ var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 
 describe('Infinispan cluster client', function() {
-  var client = t.client(t.cluster1);
+  var client = t.client(t.cluster1, t.authOpts);
 
   // Since Jasmine 1.3 does not have beforeAll callback and stats resets is a
   // bit slow, execute it as first test so that it only gets executed once.
@@ -23,9 +23,9 @@ describe('Infinispan cluster client', function() {
 
   it('can use consistent hashing to direct key-based ops to owner nodes', function(done) { client
       .then(routeConsistentHash())
-      .then(t.assert(t.clear()))
       .catch(t.failed(done)).finally(done);
   });
+
 
   it('can load balance key-less operations in round-robin fashion', function(done) { client
       .then(routeRoundRobin())
@@ -129,7 +129,12 @@ describe('Infinispan cluster client', function() {
 
   function routeConsistentHash() {
     return function(client) {
-      var ownerPairs = [[t.cluster1, t.cluster2], [t.cluster2, t.cluster3], [t.cluster3, t.cluster1]];
+      var members = client.getTopologyInfo().getMembers();
+      var ownerPairs = members.map(function (member, index) {
+          if(index == members.length - 1)
+            return [members[index], members[0]];
+          return [members[index], members[index+1]];
+      });
       var keys = _.map(ownerPairs, function(pair) {
         return t.findKeyForServers(client, pair);
       });
@@ -148,7 +153,7 @@ describe('Infinispan cluster client', function() {
 
       return Promise.all(f.cat([statsBefore], statsAfter)).then(function(stats) {
         _.forEach(_.tail(stats), function(stat) {
-          expect(stat.stores).toBe(stats[0].stores + 1);
+          expect(stat.stores).toBe(1);
           expect(stat.currentNumberOfEntries).toBe(2 * (stats[0].stores + 1));
         });
         return client;
@@ -157,7 +162,9 @@ describe('Infinispan cluster client', function() {
   }
 
   function getStats(c, cluster) {
-    var stats = pmap(cluster, function() { return c.stats(); });
+    var stats = pmap(cluster, function() {
+      return c.stats();
+    });
     return stats.then(function(stats) {
       _.forEach(stats, function(stat) {
         expect(stat.stores).toBe(stats[0].stores);

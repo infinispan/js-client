@@ -127,6 +127,24 @@ connected.then(function (client) {
 
 });
 ```
+## Authentication
+The client supports PLAIN authentication. Other authentication mechanisms will be supporded
+in the next releases.
+
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+{
+    authentication: {
+      enabled: true,
+      serverName: 'infinispan',
+      saslMechanism: 'PLAIN',
+      userName: 'admin',
+      password: 'pass'
+    }
+  }
+);
+```
 
 ## Using conditional operations
 
@@ -644,13 +662,13 @@ To do that, it's necessary to provide the location of the private key, the passp
 ```Javascript
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
   {
-    ssl: {
+     {
       enabled: true,
       trustCerts: ['my-root-ca.crt.pem'],
       clientAuth: {
         key: 'privkey.pem',
         passphrase: 'secret',
-        cert: 'cert.pem'
+        cert:ssl 'cert.pem'
       }
     }
   }
@@ -721,6 +739,20 @@ Server like this:
     $ ./bin/server.sh -c infinispan.xml --node-name node2 -o 300
 
 And then using this code to verify that the topology is the expected one:
+
+#### Note for Mac Users:
+You might experience MPING issues running an  Infinispan cluster.
+
+```bash
+13:37:15,561 ERROR (jgroups-5,server-two) [org.jgroups.protocols.MPING] 
+```
+
+If you run into the errors above, add the following to the routes of your host
+
+```bash
+sudo route add -net 224.0.0.0/5 127.0.0.1
+sudo route add -net 232.0.0.0/5 192.168.1.3
+```
 
 ```Javascript
 var infinispan = require('infinispan');

@@ -9,7 +9,7 @@ describe('Infinispan clustered clients', function() {
     var keys = ['before-failover-listener', 'middle-failover-listener', 'after-failover-listener'];
     t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1)
        .then(function() {
-         return t.client(t.failover1);
+         return t.client(t.failover1, t.authOpts);
        })
       .then(t.assert(t.getMembers(), t.toContain([t.failover1])))
       .then(t.assert(t.clear()))
