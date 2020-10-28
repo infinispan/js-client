@@ -9,7 +9,7 @@ else
 fi
 
 
-SERVER_VERSION="11.0.4.Final"
+SERVER_VERSION="12.0.0.Dev04"
 SERVER_HOME=server/infinispan-server-$SERVER_VERSION
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c localhost:11322 -f batch "
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
@@ -56,7 +56,7 @@ function prepareServerDir()
          cp -r ${SERVER_HOME}/* $SERVER_TMP
          echo "Server copied to temporary directory."
 
-         $SERVER_TMP/bin/user-tool.sh -u admin -p 'mypassword'
+         $SERVER_TMP/bin/cli.sh user create 'admin' 'mypassword'
          echo "Admin user added."
     fi
 
@@ -113,23 +113,23 @@ rm -drf server/${SERVER_DIR}
 export JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=512m"
 
 startServer "$1" infinispan.xml false 11222 "server-local"
-startServer "$1" infinispan-clustered.xml false 11322 "server-one"
-startServer "$1" infinispan-clustered.xml false 11332 "server-two"
-startServer "$1" infinispan-clustered.xml false 11342 "server-three"
-startServer "$1" infinispan-ssl.xml true 11622 "server-ssl"
-startServer "$1" infinispan-ssl1.xml true 11632 "server-ssl1"
-startServer "$1" infinispan-ssl2.xml true 11642 "server-ssl2"
+#startServer "$1" infinispan-clustered.xml false 11322 "server-one"
+#startServer "$1" infinispan-clustered.xml false 11332 "server-two"
+#startServer "$1" infinispan-clustered.xml false 11342 "server-three"
+#startServer "$1" infinispan-ssl.xml true 11622 "server-ssl"
+#startServer "$1" infinispan-ssl1.xml true 11632 "server-ssl1"
+#startServer "$1" infinispan-ssl2.xml true 11642 "server-ssl2"
 
 #Preparing server dirs for failover tests (3 servers)
-prepareServerDir "$1" infinispan-clustered.xml false "server-failover-one"
-prepareServerDir "$1" infinispan-clustered.xml false "server-failover-two"
-prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
+#prepareServerDir "$1" infinispan-clustered.xml false "server-failover-one"
+#prepareServerDir "$1" infinispan-clustered.xml false "server-failover-two"
+#prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
 
 #Preparing server dirs for xsite tests (2 servers)
-prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
-prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
+#prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
+#prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
 
-waitForClusters
+#waitForClusters
 echo "Infinispan test server started."
 
 

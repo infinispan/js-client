@@ -17,6 +17,16 @@ var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
 exports.serverDirName = "infinispan-server";
+
+exports.authLocalOpts = {
+  authentication: {
+    enabled: true,
+    saslMechanism: 'PLAIN',
+    userName: 'admin',
+    password: 'mypassword'
+  }
+};
+
 exports.local = {port: 11222, host: '127.0.0.1'};
 
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
@@ -69,6 +79,8 @@ exports.configureLogging = function() {
 
 exports.client = function(args, opts) {
   this.configureLogging();
+
+  console.log(args);
 
   if (!f.existy(opts) || !f.existy(opts.version)) {
     var version = exports.getHotrodProtocolVersion();
