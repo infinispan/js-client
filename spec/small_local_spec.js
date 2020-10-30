@@ -4,12 +4,40 @@ var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 
-describe('Infinispan Small Test client', function() {
-  var client = t.client(t.local, t.authLocalOpts);
+var authLocalOpts = {
+  authentication: {
+    enabled: true,
+    saslMechanism: 'PLAIN',
+    userName: 'admin',
+    password: 'pass'
+  }
+}
 
-  it('size', function(done) { client
-    .then(t.assert(t.size(), t.toBe(0)))
-    .catch(t.failed(done))
-    .finally(done);
-  });
+describe('Infinispan Test Auth', function() {
+    it('can authenticate with PLAIN mechanism',
+        testAuth('PLAIN', t.local, {authentication: {
+                enabled: true,
+                saslMechanism: 'PLAIN',
+                userName: 'admin',
+                password: 'pass'
+            }})
+    );
+
+    // it('can raise connection error with PLAIN mechanism',
+    //     testAuth('PLAIN', t.local, {authentication: {
+    //             enabled: true,
+    //             saslMechanism: 'PLAIN',
+    //             userName: 'wrong',
+    //             password: 'wrong'
+    //         }})
+    // );
+
+    function testAuth(infix, addr, authOpts) {
+        return function(done) {
+            t.client(addr, authOpts)
+                .then(t.disconnect())
+                .catch(t.failed(done))
+                .finally(done);
+        }
+    }
 });
