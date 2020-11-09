@@ -15,12 +15,7 @@ var authLocalOpts = {
 
 describe('Infinispan Test Auth', function() {
     it('can authenticate with PLAIN mechanism',
-        testAuth('PLAIN', t.local, {authentication: {
-                enabled: true,
-                saslMechanism: 'PLAIN',
-                userName: 'admin',
-                password: 'pass'
-            }})
+        testAuth('PLAIN', t.local, authLocalOpts)
     );
 
     // it('can raise connection error with PLAIN mechanism',
@@ -35,6 +30,7 @@ describe('Infinispan Test Auth', function() {
     function testAuth(infix, addr, authOpts) {
         return function(done) {
             t.client(addr, authOpts)
+                .size()
                 .then(t.disconnect())
                 .catch(t.failed(done))
                 .finally(done);

@@ -27,12 +27,14 @@ exports.authLocalOpts = {
   }
 };
 
-exports.local = {port: 11222, host: '127.0.0.1', authentication: {
+exports.local = {port: 11222, host: '127.0.0.1',
+  authentication: {
     enabled: true,
     saslMechanism: 'PLAIN',
     userName: 'admin',
     password: 'pass'
-  }};
+  }
+};
 
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
 exports.cluster2 = {port: 11332, host: '127.0.0.1'};
@@ -84,8 +86,6 @@ exports.configureLogging = function() {
 
 exports.client = function(args, opts) {
   this.configureLogging();
-
-  console.log(args);
 
   if (!f.existy(opts) || !f.existy(opts.version)) {
     var version = exports.getHotrodProtocolVersion();

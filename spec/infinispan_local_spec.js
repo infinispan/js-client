@@ -5,7 +5,7 @@ var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 
 describe('Infinispan local client', function() {
-  var client = t.client(t.local);
+  var client = t.client(t.local, t.authLocalOpts);
 
   beforeEach(function(done) { client
       .then(t.assert(t.clear()))
