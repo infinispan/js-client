@@ -27,14 +27,7 @@ exports.authLocalOpts = {
   }
 };
 
-exports.local = {port: 11222, host: '127.0.0.1',
-  authentication: {
-    enabled: true,
-    saslMechanism: 'PLAIN',
-    userName: 'admin',
-    password: 'pass'
-  }
-};
+exports.local = {port: 11222, host: '127.0.0.1'};
 
 exports.cluster1 = {port: 11322, host: '127.0.0.1'};
 exports.cluster2 = {port: 11332, host: '127.0.0.1'};
@@ -103,8 +96,6 @@ exports.client = function(args, opts) {
 exports.protocol25 = function() { return protocols.version25(); };
 
 exports.protocol29 = function(clientOpts) { return protocols.version29(clientOpts); };
-
-exports.protocol30 = function(clientOpts) { return protocols.version30(clientOpts); };
 
 exports.put = function(k, v, opts) {
   return function(client) { return client.put(k, v, opts); }
