@@ -8,12 +8,12 @@
     <cache-container name="clustered" default-cache="default">
         <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
         <!--<global-state/>-->
-        <distributed-cache name="default" mode="SYNC" segments="20" owners="2" remote-timeout="30000">
-            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
+        <distributed-cache name="default" segments="20" owners="2" remote-timeout="30000">
+            <locking acquire-timeout="30000" concurrency-level="1000" />
             <transaction mode="NONE"/>
         </distributed-cache>
-        <distributed-cache name="memcachedCache" mode="SYNC" segments="20" owners="2" remote-timeout="30000">
-            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
+        <distributed-cache name="memcachedCache" segments="20" owners="2" remote-timeout="30000">
+            <locking acquire-timeout="30000" concurrency-level="1000" />
             <transaction mode="NONE"/>
         </distributed-cache>
     </cache-container>
@@ -27,7 +27,6 @@
 
         <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
             <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
-            <socket-binding name="memcached" port="11421"/>
         </socket-bindings>
 
         <security>

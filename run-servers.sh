@@ -11,7 +11,7 @@ fi
 
 SERVER_VERSION="11.0.5.Final"
 SERVER_HOME=server/infinispan-server-$SERVER_VERSION
-CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c localhost:11322 -f batch "
+CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
 
 CONF_DIR_TO_COPY_FROM="spec/configs/"
