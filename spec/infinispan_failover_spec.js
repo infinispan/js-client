@@ -5,7 +5,7 @@ describe('Infinispan clustered clients', function() {
   it('can failover when nodes crash', function(done) {
       t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1)
           .then(function() {
-              return t.client(t.failover1);
+              return t.client(t.failover1,  t.authOpts);
           })
           .then(t.assert(t.getMembers(), t.toContain([t.failover1])))
           .then(function(client) {return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2['port'], t.failoverMCastAddr,  2, client);}) //11432

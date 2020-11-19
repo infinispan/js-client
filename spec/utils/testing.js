@@ -18,7 +18,7 @@ var protocols = require('../../lib/protocols');
 
 exports.serverDirName = "infinispan-server";
 
-exports.authLocalOpts = {
+exports.authOpts = {
   authentication: {
     enabled: true,
     saslMechanism: 'PLAIN',
@@ -58,7 +58,8 @@ exports.json = {
   dataFormat: {
     keyType: 'application/json'
     , valueType: 'application/json'
-  }
+  },
+  authentication: exports.authOpts.authentication
 };
 
 var CLUSTER_NODES = ['server-one', 'server-two', 'server-three'];
@@ -309,6 +310,7 @@ exports.toContain = function(value) {
   }
 };
 
+exports.toBeDefined = function(actual) { expect(actual).toBeDefined() };
 exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
 exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };
 exports.toBeFalsy = function(actual) { expect(actual).toBeFalsy(); };
