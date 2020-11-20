@@ -157,7 +157,10 @@ describe('Infinispan cluster client', function() {
   }
 
   function getStats(c, cluster) {
-    var stats = pmap(cluster, function() { return c.stats(); });
+    var stats = pmap(cluster, function() {
+      console.log(cluster);
+      return c.stats();
+    });
     return stats.then(function(stats) {
       _.forEach(stats, function(stat) {
         expect(stat.stores).toBe(stats[0].stores);

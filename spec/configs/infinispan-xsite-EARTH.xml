@@ -23,12 +23,12 @@
 
     <cache-container name="clustered">
         <transport cluster="${infinispan.cluster.name}" stack="xsite"/>
-        <distributed-cache name="xsiteCache" mode="SYNC" segments="20" owners="2" remote-timeout="30000" >
-            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
-            <transaction mode="NONE"/>
+        <distributed-cache name="xsiteCache" mode="SYNC" segments="20" remote-timeout="30000" >
+            <locking acquire-timeout="30000" concurrency-level="1000" />
             <backups>
                 <backup site="MOON" strategy="SYNC" timeout="3000"/>
             </backups>
+            <encoding media-type="application/x-protostream"/>
         </distributed-cache>
     </cache-container>
 
@@ -65,7 +65,7 @@
         </security>
 
         <!-- not secured -->
-        <endpoints socket-binding="default">
+        <endpoints socket-binding="default" security-realm="default">
             <hotrod-connector name="hotrod"/>
             <rest-connector name="rest"/>
             <!-- Uncomment to enable the memcached connector -->

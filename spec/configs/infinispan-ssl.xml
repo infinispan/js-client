@@ -8,14 +8,16 @@
     <cache-container name="local" default-cache="default" statistics="true">
         <global-state/>
         <local-cache name="default">
-            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
-            <transaction mode="NONE"/>
+            <locking acquire-timeout="30000" concurrency-level="1000"/>
+            <encoding media-type="application/x-protostream"/>
         </local-cache>
         <local-cache name="memcachedCache">
-            <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
-            <transaction mode="NONE"/>
+            <locking acquire-timeout="30000" concurrency-level="1000" />
+            <encoding media-type="application/x-protostream"/>
         </local-cache>
-        <local-cache name="namedCache"/>
+        <local-cache name="namedCache">
+            <encoding media-type="application/x-protostream"/>
+        </local-cache>
     </cache-container>
 
     <server xmlns="urn:infinispan:server:11.0">

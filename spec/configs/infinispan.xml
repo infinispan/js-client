@@ -8,19 +8,18 @@
    <cache-container name="default" statistics="true" default-cache="default">
       <local-cache name="default">
          <locking acquire-timeout="30000" concurrency-level="1000" />
-         <encoding>
-            <key media-type="text/plain"/>
-            <value media-type="text/plain"/>
-         </encoding>
+         <encoding media-type="application/x-protostream"/>
       </local-cache>
       <local-cache name="memcachedCache">
          <locking acquire-timeout="30000" concurrency-level="1000" />
-         <encoding>
-            <key media-type="text/plain"/>
-            <value media-type="text/plain"/>
-         </encoding>
+         <encoding media-type="application/x-protostream"/>
       </local-cache>
-      <local-cache name="namedCache"/>
+      <local-cache name="namedCache">
+         <encoding media-type="application/x-protostream"/>
+      </local-cache>
+      <local-cache name="jsonCache">
+         <encoding media-type="text/plain"/>
+      </local-cache>
    </cache-container>
 
    <server xmlns="urn:infinispan:server:11.0">

@@ -128,8 +128,8 @@ prepareServerDir "$1" infinispan-clustered.xml false "server-failover-two"
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
 
 #Preparing server dirs for xsite tests (2 servers)
-#prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
-#prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
+prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
+prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
 
 waitForClusters
 echo "Infinispan test servers started."

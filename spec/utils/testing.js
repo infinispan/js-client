@@ -59,7 +59,8 @@ exports.json = {
     keyType: 'application/json'
     , valueType: 'application/json'
   },
-  authentication: exports.authOpts.authentication
+  authentication: exports.authOpts.authentication,
+  cacheName: 'jsonCache'
 };
 
 var CLUSTER_NODES = ['server-one', 'server-two', 'server-three'];
