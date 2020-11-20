@@ -6,7 +6,8 @@ set -e
 #./node_modules/.bin/jasmine-node spec --captureExceptions
 #node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/codec_spec.js --captureExceptions
 #node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/functional_spec.js --captureExceptions
-node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_cluster_spec.js --captureExceptions
+node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_auth_spec.js --captureExceptions
+#node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_cluster_spec.js --captureExceptions
 #node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_expiry_spec.js --captureExceptions
 #node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_failover_listener_spec.js --captureExceptions
 #node --trace-deprecation node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_failover_spec.js --captureExceptions
