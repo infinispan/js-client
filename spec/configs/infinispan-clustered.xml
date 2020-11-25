@@ -12,10 +12,6 @@
             <locking acquire-timeout="30000" concurrency-level="1000" />
             <encoding media-type="application/x-protostream"/>
         </distributed-cache>
-        <distributed-cache name="memcachedCache" segments="20" remote-timeout="30000">
-            <locking acquire-timeout="30000" concurrency-level="1000" />
-            <encoding media-type="application/x-protostream"/>
-        </distributed-cache>
     </cache-container>
 
     <server xmlns="urn:infinispan:server:11.0">

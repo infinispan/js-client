@@ -730,6 +730,20 @@ Server like this:
 
 And then using this code to verify that the topology is the expected one:
 
+#### Note for Mac Users:
+You might experience MPING issues running an  Infinispan cluster.
+
+```bash
+13:37:15,561 ERROR (jgroups-5,server-two) [org.jgroups.protocols.MPING] 
+```
+
+If you run into the errors above, add the following to the routes of your host
+
+```bash
+sudo route add -net 224.0.0.0/5 127.0.0.1
+sudo route add -net 232.0.0.0/5 192.168.1.3
+```
+
 ```Javascript
 var infinispan = require('infinispan');
 
