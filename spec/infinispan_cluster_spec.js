@@ -28,66 +28,66 @@ describe('Infinispan cluster client', function() {
   });
 
 
-  // it('can load balance key-less operations in round-robin fashion', function(done) { client
-  //     .then(routeRoundRobin())
-  //     .then(t.assert(t.clear()))
-  //     .catch(t.failed(done)).finally(done);
-  // });
-  //
-  // if (process.env.protocol == null || process.env.protocol >= '2.5') {
-  //
-  //   it('can iterate over entries in a cluster, one entry at the time',
-  //      tests.iterateEntries('cluster', 1, client)
-  //   );
-  //
-  //   it('can iterate over entries in a cluster, more than one entry at the time',
-  //      tests.iterateEntries('cluster', 3, client)
-  //   );
-  //
-  // }
-  //
-  // it('can remove listener in cluster', function(done) { client
-  //     .then(t.assert(t.clear()))
-  //     .then(t.on('create', t.expectEvent('listen-distinct-1', done, false, 'v1')))
-  //     .then(t.assert(t.putIfAbsent('listen-distinct-1', 'v1'), t.toBeTruthy))
-  //     .then(t.on('create', t.expectEvent('listen-distinct-2', done, true, 'v2')))
-  //     .then(t.assert(t.putIfAbsent('listen-distinct-2', 'v2'), t.toBeTruthy))
-  //     .catch(t.failed(done));
-  // });
-  //
-  // it('can execute a script remotely to store and retrieve data in cluster mode',
-  //     tests.execPutGet(
-  //       'spec/utils/typed-put-get.js', 'cluster', client, t.toBe('cluster-typed-value')
-  //     )
-  // );
-  // it('can execute a script remotely to store and retrieve data in distributed mode',
-  //     tests.execPutGet(
-  //       'spec/utils/typed-put-get-dist.js', 'dist-cluster', client
-  //       , toEqualJson(_.range(t.clusterSize())
-  //                       .map(function() { return 'dist-cluster-typed-value'; }))
-  //     )
-  // );
-  // it('can execute a distributed script remotely that returns undefined', function(done) {
-  //   client
-  //     .then(t.loadAndExec('spec/utils/typed-null-return-dist.js'))
-  //     .then(t.assert(t.exec('typed-null-return-dist.js'),
-  //                    toEqualJson(_.range(t.clusterSize())
-  //                                  .map(function() { return ''; }))))
-  //     .catch(t.failed(done)).finally(done);
-  // });
-  //
-  // it('can get ignore topology updates with client configuration', function(done) {
-  //   t.client(t.cluster1, {topologyUpdates: false})
-  //     .then(t.assert(t.getMembers(), t.toEqual([t.cluster1])))
-  //     .then(t.disconnect())
-  //     .catch(t.failed(done)).finally(done);
-  // });
-  //
-  // function toEqualJson(value) {
-  //   return function(actual) {
-  //     expect(JSON.parse(actual)).toEqual(value);
-  //   }
-  // }
+  it('can load balance key-less operations in round-robin fashion', function(done) { client
+      .then(routeRoundRobin())
+      .then(t.assert(t.clear()))
+      .catch(t.failed(done)).finally(done);
+  });
+
+  if (process.env.protocol == null || process.env.protocol >= '2.5') {
+
+    it('can iterate over entries in a cluster, one entry at the time',
+       tests.iterateEntries('cluster', 1, client)
+    );
+
+    it('can iterate over entries in a cluster, more than one entry at the time',
+       tests.iterateEntries('cluster', 3, client)
+    );
+
+  }
+
+  it('can remove listener in cluster', function(done) { client
+      .then(t.assert(t.clear()))
+      .then(t.on('create', t.expectEvent('listen-distinct-1', done, false, 'v1')))
+      .then(t.assert(t.putIfAbsent('listen-distinct-1', 'v1'), t.toBeTruthy))
+      .then(t.on('create', t.expectEvent('listen-distinct-2', done, true, 'v2')))
+      .then(t.assert(t.putIfAbsent('listen-distinct-2', 'v2'), t.toBeTruthy))
+      .catch(t.failed(done));
+  });
+
+  it('can execute a script remotely to store and retrieve data in cluster mode',
+      tests.execPutGet(
+        'spec/utils/typed-put-get.js', 'cluster', client, t.toBe('cluster-typed-value')
+      )
+  );
+  it('can execute a script remotely to store and retrieve data in distributed mode',
+      tests.execPutGet(
+        'spec/utils/typed-put-get-dist.js', 'dist-cluster', client
+        , toEqualJson(_.range(t.clusterSize())
+                        .map(function() { return 'dist-cluster-typed-value'; }))
+      )
+  );
+  it('can execute a distributed script remotely that returns undefined', function(done) {
+    client
+      .then(t.loadAndExec('spec/utils/typed-null-return-dist.js'))
+      .then(t.assert(t.exec('typed-null-return-dist.js'),
+                     toEqualJson(_.range(t.clusterSize())
+                                   .map(function() { return ''; }))))
+      .catch(t.failed(done)).finally(done);
+  });
+
+  it('can get ignore topology updates with client configuration', function(done) {
+    t.client(t.cluster1, {topologyUpdates: false})
+      .then(t.assert(t.getMembers(), t.toEqual([t.cluster1])))
+      .then(t.disconnect())
+      .catch(t.failed(done)).finally(done);
+  });
+
+  function toEqualJson(value) {
+    return function(actual) {
+      expect(JSON.parse(actual)).toEqual(value);
+    }
+  }
 
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
