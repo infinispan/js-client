@@ -1,0 +1,197 @@
+[2020-12-14T17:31:51.991] [DEBUG] client - Using protocol version: 2.9
+[2020-12-14T17:31:51.993] [DEBUG] protocols - Before init, key media type was: undefined
+[2020-12-14T17:31:51.994] [DEBUG] protocols - After init, key media type is: text/plain
+[2020-12-14T17:31:51.997] [DEBUG] io_1 - New router installed: FixedRouter(conn=127.0.0.1:11322@conn_2)
+[2020-12-14T17:31:51.998] [DEBUG] io_1_conn_2 - Connecting to 127.0.0.1:11322
+[2020-12-14T17:31:52.001] [DEBUG] io_1_conn_2 - Connected to 127.0.0.1:11322
+[2020-12-14T17:31:52.001] [DEBUG] io_1 - Invoke authMech(msgId=3)
+[2020-12-14T17:31:52.002] [TRACE] encoder - Encode operation with topology id 0
+[2020-12-14T17:31:52.004] [TRACE] io_1 - Write buffer(msgId=3) to 127.0.0.1:11322@conn_2: A0031D2100000300010D00010D00
+[2020-12-14T17:31:52.062] [TRACE] decoder - Read header(msgId=3): opCode=34, status=0, hasNewTopology=1
+[2020-12-14T17:31:52.063] [DEBUG] io_1 - New topology(id=9) discovered: [127.0.0.1:11342,127.0.0.1:11322,127.0.0.1:11332]
+[2020-12-14T17:31:52.063] [DEBUG] io_1 - Removed server: none
+[2020-12-14T17:31:52.063] [DEBUG] io_1 - Added servers: [127.0.0.1:11342,127.0.0.1:11332]
+[2020-12-14T17:31:52.064] [DEBUG] io_1 - Connected servers: [127.0.0.1:11322]
+[2020-12-14T17:31:52.064] [TRACE] decoder - Call decode for request(msgId=3)
+[2020-12-14T17:31:52.064] [TRACE] sasl - [
+  'SCRAM-SHA-512',
+  'SCRAM-SHA-384',
+  'SCRAM-SHA-256',
+  'SCRAM-SHA-1',
+  'DIGEST-SHA-512',
+  'DIGEST-SHA-384',
+  'DIGEST-SHA-256',
+  'DIGEST-SHA',
+  'CRAM-MD5',
+  'DIGEST-MD5'
+]
+[2020-12-14T17:31:52.065] [TRACE] io_1_conn_2 - After decoding request(msgId=3), buffer size is 236, and offset 236
+[2020-12-14T17:31:52.066] [DEBUG] io_1 - New router installed: ConsistentHashRouter(conns=[127.0.0.1:11322@conn_2,127.0.0.1:11342@conn_4,127.0.0.1:11332@conn_5])
+[2020-12-14T17:31:52.066] [DEBUG] io_1_conn_4 - Connecting to 127.0.0.1:11342
+[2020-12-14T17:31:52.066] [DEBUG] io_1_conn_5 - Connecting to 127.0.0.1:11332
+[2020-12-14T17:31:52.067] [DEBUG] io_1_conn_4 - Connected to 127.0.0.1:11342
+[2020-12-14T17:31:52.067] [DEBUG] io_1 - Invoke authMech(msgId=6)
+[2020-12-14T17:31:52.067] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.067] [TRACE] io_1 - Write buffer(msgId=6) to 127.0.0.1:11342@conn_4: A0061D2100000309010D00010D00
+[2020-12-14T17:31:52.068] [DEBUG] io_1_conn_5 - Connected to 127.0.0.1:11332
+[2020-12-14T17:31:52.068] [DEBUG] io_1 - Invoke authMech(msgId=7)
+[2020-12-14T17:31:52.068] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.068] [TRACE] io_1 - Write buffer(msgId=7) to 127.0.0.1:11332@conn_5: A0071D2100000309010D00010D00
+[2020-12-14T17:31:52.340] [TRACE] decoder - Read header(msgId=7): opCode=34, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.340] [TRACE] decoder - Call decode for request(msgId=7)
+[2020-12-14T17:31:52.340] [TRACE] sasl - [
+  'SCRAM-SHA-512',
+  'SCRAM-SHA-384',
+  'SCRAM-SHA-256',
+  'SCRAM-SHA-1',
+  'DIGEST-SHA-512',
+  'DIGEST-SHA-384',
+  'DIGEST-SHA-256',
+  'DIGEST-SHA',
+  'CRAM-MD5',
+  'DIGEST-MD5'
+]
+[2020-12-14T17:31:52.341] [TRACE] io_1_conn_5 - Complete success for request(msgId=7) with [SCRAM-SHA-512,SCRAM-SHA-384,SCRAM-SHA-256,SCRAM-SHA-1,DIGEST-SHA-512,DIGEST-SHA-384,DIGEST-SHA-256,DIGEST-SHA,CRAM-MD5,DIGEST-MD5]
+[2020-12-14T17:31:52.341] [TRACE] io_1_conn_5 - After decoding request(msgId=7), buffer size is 136, and offset 136
+[2020-12-14T17:31:52.341] [DEBUG] io_1 - Invoke auth(msgId=8)
+[2020-12-14T17:31:52.341] [DEBUG] sasl - {
+  enabled: true,
+  saslMechanism: 'PLAIN',
+  userName: 'admin',
+  password: 'pass'
+}
+[2020-12-14T17:31:52.342] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.342] [TRACE] sasl - Try auth with PLAIN
+[2020-12-14T17:31:52.342] [TRACE] io_1 - Write buffer(msgId=8) to 127.0.0.1:11332@conn_5: A0081D2300000309010D00010D0005504C41494E0B0061646D696E0070617373
+[2020-12-14T17:31:52.369] [TRACE] decoder - Read header(msgId=6): opCode=34, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.369] [TRACE] decoder - Call decode for request(msgId=6)
+[2020-12-14T17:31:52.369] [TRACE] sasl - [
+  'SCRAM-SHA-512',
+  'SCRAM-SHA-384',
+  'SCRAM-SHA-256',
+  'SCRAM-SHA-1',
+  'DIGEST-SHA-512',
+  'DIGEST-SHA-384',
+  'DIGEST-SHA-256',
+  'DIGEST-SHA',
+  'CRAM-MD5',
+  'DIGEST-MD5'
+]
+[2020-12-14T17:31:52.370] [TRACE] io_1_conn_4 - Complete success for request(msgId=6) with [SCRAM-SHA-512,SCRAM-SHA-384,SCRAM-SHA-256,SCRAM-SHA-1,DIGEST-SHA-512,DIGEST-SHA-384,DIGEST-SHA-256,DIGEST-SHA,CRAM-MD5,DIGEST-MD5]
+[2020-12-14T17:31:52.370] [TRACE] io_1_conn_4 - After decoding request(msgId=6), buffer size is 136, and offset 136
+[2020-12-14T17:31:52.370] [DEBUG] io_1 - Invoke auth(msgId=9)
+[2020-12-14T17:31:52.370] [DEBUG] sasl - {
+  enabled: true,
+  saslMechanism: 'PLAIN',
+  userName: 'admin',
+  password: 'pass'
+}
+[2020-12-14T17:31:52.370] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.370] [TRACE] sasl - Try auth with PLAIN
+[2020-12-14T17:31:52.371] [TRACE] io_1 - Write buffer(msgId=9) to 127.0.0.1:11342@conn_4: A0091D2300000309010D00010D0005504C41494E0B0061646D696E0070617373
+[2020-12-14T17:31:52.543] [TRACE] decoder - Read header(msgId=8): opCode=36, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.543] [TRACE] decoder - Call decode for request(msgId=8)
+[2020-12-14T17:31:52.543] [TRACE] io_1_conn_5 - Complete success for request(msgId=8) with authenticated 0
+[2020-12-14T17:31:52.543] [TRACE] io_1_conn_5 - After decoding request(msgId=8), buffer size is 7, and offset 7
+[2020-12-14T17:31:52.572] [TRACE] decoder - Read header(msgId=9): opCode=36, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.572] [TRACE] decoder - Call decode for request(msgId=9)
+[2020-12-14T17:31:52.572] [TRACE] io_1_conn_4 - Complete success for request(msgId=9) with authenticated 0
+[2020-12-14T17:31:52.573] [TRACE] io_1_conn_4 - After decoding request(msgId=9), buffer size is 7, and offset 7
+[2020-12-14T17:31:52.573] [DEBUG] io_1 - Failover listeners registered in: []
+[2020-12-14T17:31:52.573] [TRACE] io_1_conn_2 - Complete success for request(msgId=3) with [SCRAM-SHA-512,SCRAM-SHA-384,SCRAM-SHA-256,SCRAM-SHA-1,DIGEST-SHA-512,DIGEST-SHA-384,DIGEST-SHA-256,DIGEST-SHA,CRAM-MD5,DIGEST-MD5]
+[2020-12-14T17:31:52.573] [DEBUG] io_1 - Invoke auth(msgId=10)
+[2020-12-14T17:31:52.573] [DEBUG] sasl - {
+  enabled: true,
+  saslMechanism: 'PLAIN',
+  userName: 'admin',
+  password: 'pass'
+}
+[2020-12-14T17:31:52.574] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.574] [TRACE] sasl - Try auth with PLAIN
+[2020-12-14T17:31:52.574] [TRACE] io_1 - Write buffer(msgId=10) to 127.0.0.1:11322@conn_2: A00A1D2300000309010D00010D0005504C41494E0B0061646D696E0070617373
+[2020-12-14T17:31:52.679] [TRACE] decoder - Read header(msgId=10): opCode=36, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.679] [TRACE] decoder - Call decode for request(msgId=10)
+[2020-12-14T17:31:52.679] [TRACE] io_1_conn_2 - Complete success for request(msgId=10) with authenticated 0
+[2020-12-14T17:31:52.679] [TRACE] io_1_conn_2 - After decoding request(msgId=10), buffer size is 7, and offset 7
+[2020-12-14T17:31:52.680] [DEBUG] client - Started Infinispan Client(id=io_1,router=ConsistentHashRouter(conns=[127.0.0.1:11322@conn_2,127.0.0.1:11342@conn_4,127.0.0.1:11332@conn_5]))
+[2020-12-14T17:31:52.682] [DEBUG] testing - Generated key=cbumztJT hashing to [127.0.0.1:11322,127.0.0.1:11342]
+[2020-12-14T17:31:52.683] [DEBUG] testing - Generated key=uAYZg5xm hashing to [127.0.0.1:11342,127.0.0.1:11332]
+[2020-12-14T17:31:52.683] [DEBUG] testing - Generated key=ybmJUrBd hashing to [127.0.0.1:11332,127.0.0.1:11322]
+[2020-12-14T17:31:52.684] [DEBUG] client - Invoke stats(msgId=30)
+[2020-12-14T17:31:52.684] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.684] [TRACE] io_1 - Write buffer(msgId=30) to 127.0.0.1:11322@conn_2: A01E1D1500000309010D00010D00
+[2020-12-14T17:31:52.684] [DEBUG] client - Invoke stats(msgId=31)
+[2020-12-14T17:31:52.685] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.685] [TRACE] io_1 - Write buffer(msgId=31) to 127.0.0.1:11342@conn_4: A01F1D1500000309010D00010D00
+[2020-12-14T17:31:52.685] [DEBUG] client - Invoke stats(msgId=32)
+[2020-12-14T17:31:52.685] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.686] [TRACE] io_1 - Write buffer(msgId=32) to 127.0.0.1:11332@conn_5: A0201D1500000309010D00010D00
+[2020-12-14T17:31:52.703] [TRACE] decoder - Read header(msgId=30): opCode=22, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.703] [TRACE] decoder - Call decode for request(msgId=30)
+[2020-12-14T17:31:52.704] [TRACE] io_1_conn_2 - Complete success for request(msgId=30) with {"globalRemoveMisses":0,"globalRemoveHits":0,"globalMisses":0,"globalHits":0,"globalRetrievals":0,"globalStores":0,"globalCurrentNumberOfEntries":0,"removeMisses":0,"removeHits":0,"misses":0,"hits":0,"retrievals":0,"stores":0,"totalNumberOfEntries":0,"currentNumberOfEntries":0,"timeSinceStart":32}
+[2020-12-14T17:31:52.704] [TRACE] io_1_conn_2 - After decoding request(msgId=30), buffer size is 271, and offset 271
+[2020-12-14T17:31:52.705] [TRACE] decoder - Read header(msgId=31): opCode=22, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.705] [TRACE] decoder - Call decode for request(msgId=31)
+[2020-12-14T17:31:52.706] [TRACE] io_1_conn_4 - Complete success for request(msgId=31) with {"globalRemoveMisses":0,"globalRemoveHits":0,"globalMisses":0,"globalHits":0,"globalRetrievals":0,"globalStores":0,"globalCurrentNumberOfEntries":0,"removeMisses":0,"removeHits":0,"misses":0,"hits":0,"retrievals":0,"stores":0,"totalNumberOfEntries":0,"currentNumberOfEntries":0,"timeSinceStart":32}
+[2020-12-14T17:31:52.707] [TRACE] io_1_conn_4 - After decoding request(msgId=31), buffer size is 271, and offset 271
+[2020-12-14T17:31:52.708] [TRACE] decoder - Read header(msgId=32): opCode=22, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.708] [TRACE] decoder - Call decode for request(msgId=32)
+[2020-12-14T17:31:52.709] [TRACE] io_1_conn_5 - Complete success for request(msgId=32) with {"globalRemoveMisses":0,"globalRemoveHits":0,"globalMisses":0,"globalHits":0,"globalRetrievals":0,"globalStores":0,"globalCurrentNumberOfEntries":0,"removeMisses":0,"removeHits":0,"misses":0,"hits":0,"retrievals":0,"stores":0,"totalNumberOfEntries":0,"currentNumberOfEntries":0,"timeSinceStart":30}
+[2020-12-14T17:31:52.709] [TRACE] io_1_conn_5 - After decoding request(msgId=32), buffer size is 271, and offset 271
+[2020-12-14T17:31:52.710] [DEBUG] client - Invoke put(msgId=33,key=cbumztJT,value=value,opts=undefined)
+[2020-12-14T17:31:52.711] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.712] [TRACE] io_1 - Write buffer(msgId=33) to 127.0.0.1:11322@conn_2: A0211D0100000309010D00010D00086362756D7A744A54770576616C7565
+[2020-12-14T17:31:52.712] [DEBUG] client - Invoke put(msgId=35,key=uAYZg5xm,value=value,opts=undefined)
+[2020-12-14T17:31:52.712] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.713] [TRACE] io_1 - Write buffer(msgId=35) to 127.0.0.1:11342@conn_4: A0231D0100000309010D00010D00087541595A6735786D770576616C7565
+[2020-12-14T17:31:52.713] [DEBUG] client - Invoke put(msgId=37,key=ybmJUrBd,value=value,opts=undefined)
+[2020-12-14T17:31:52.713] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.714] [TRACE] io_1 - Write buffer(msgId=37) to 127.0.0.1:11332@conn_5: A0251D0100000309010D00010D000879626D4A55724264770576616C7565
+[2020-12-14T17:31:52.757] [TRACE] decoder - Read header(msgId=33): opCode=2, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.757] [TRACE] decoder - Call decode for request(msgId=33)
+[2020-12-14T17:31:52.758] [TRACE] io_1_conn_2 - Complete success for request(msgId=33) with undefined
+[2020-12-14T17:31:52.758] [TRACE] io_1_conn_2 - After decoding request(msgId=33), buffer size is 5, and offset 5
+[2020-12-14T17:31:52.758] [TRACE] decoder - Read header(msgId=37): opCode=2, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.758] [TRACE] decoder - Call decode for request(msgId=37)
+[2020-12-14T17:31:52.758] [TRACE] io_1_conn_5 - Complete success for request(msgId=37) with undefined
+[2020-12-14T17:31:52.759] [TRACE] io_1_conn_5 - After decoding request(msgId=37), buffer size is 5, and offset 5
+[2020-12-14T17:31:52.764] [TRACE] decoder - Read header(msgId=35): opCode=2, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.764] [TRACE] decoder - Call decode for request(msgId=35)
+[2020-12-14T17:31:52.764] [TRACE] io_1_conn_4 - Complete success for request(msgId=35) with undefined
+[2020-12-14T17:31:52.764] [TRACE] io_1_conn_4 - After decoding request(msgId=35), buffer size is 5, and offset 5
+[2020-12-14T17:31:52.764] [DEBUG] client - Invoke stats(msgId=39)
+[2020-12-14T17:31:52.764] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.765] [TRACE] io_1 - Write buffer(msgId=39) to 127.0.0.1:11322@conn_2: A0271D1500000309010D00010D00
+[2020-12-14T17:31:52.765] [DEBUG] client - Invoke stats(msgId=40)
+[2020-12-14T17:31:52.765] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.766] [TRACE] io_1 - Write buffer(msgId=40) to 127.0.0.1:11342@conn_4: A0281D1500000309010D00010D00
+[2020-12-14T17:31:52.766] [DEBUG] client - Invoke stats(msgId=41)
+[2020-12-14T17:31:52.766] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.766] [TRACE] io_1 - Write buffer(msgId=41) to 127.0.0.1:11332@conn_5: A0291D1500000309010D00010D00
+[2020-12-14T17:31:52.767] [TRACE] decoder - Read header(msgId=39): opCode=22, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.767] [TRACE] decoder - Call decode for request(msgId=39)
+[2020-12-14T17:31:52.767] [TRACE] io_1_conn_2 - Complete success for request(msgId=39) with {"globalRemoveMisses":0,"globalRemoveHits":0,"globalMisses":0,"globalHits":0,"globalRetrievals":0,"globalStores":0,"globalCurrentNumberOfEntries":0,"removeMisses":0,"removeHits":0,"misses":0,"hits":0,"retrievals":0,"stores":1,"totalNumberOfEntries":1,"currentNumberOfEntries":2,"timeSinceStart":32}
+[2020-12-14T17:31:52.767] [TRACE] io_1_conn_2 - After decoding request(msgId=39), buffer size is 271, and offset 271
+[2020-12-14T17:31:52.768] [TRACE] decoder - Read header(msgId=41): opCode=22, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.769] [TRACE] decoder - Call decode for request(msgId=41)
+[2020-12-14T17:31:52.769] [TRACE] io_1_conn_5 - Complete success for request(msgId=41) with {"globalRemoveMisses":0,"globalRemoveHits":0,"globalMisses":0,"globalHits":0,"globalRetrievals":0,"globalStores":0,"globalCurrentNumberOfEntries":0,"removeMisses":0,"removeHits":0,"misses":0,"hits":0,"retrievals":0,"stores":1,"totalNumberOfEntries":1,"currentNumberOfEntries":3,"timeSinceStart":30}
+[2020-12-14T17:31:52.769] [TRACE] io_1_conn_5 - After decoding request(msgId=41), buffer size is 271, and offset 271
+[2020-12-14T17:31:52.769] [TRACE] decoder - Read header(msgId=40): opCode=22, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.770] [TRACE] decoder - Call decode for request(msgId=40)
+[2020-12-14T17:31:52.770] [TRACE] io_1_conn_4 - Complete success for request(msgId=40) with {"globalRemoveMisses":0,"globalRemoveHits":0,"globalMisses":0,"globalHits":0,"globalRetrievals":0,"globalStores":0,"globalCurrentNumberOfEntries":0,"removeMisses":0,"removeHits":0,"misses":0,"hits":0,"retrievals":0,"stores":1,"totalNumberOfEntries":1,"currentNumberOfEntries":1,"timeSinceStart":32}
+[2020-12-14T17:31:52.770] [TRACE] io_1_conn_4 - After decoding request(msgId=40), buffer size is 271, and offset 271
+[2020-12-14T17:31:52.771] [DEBUG] client - Invoke clear(msgId=42)
+[2020-12-14T17:31:52.771] [TRACE] encoder - Encode operation with topology id 9
+[2020-12-14T17:31:52.771] [TRACE] io_1 - Write buffer(msgId=42) to 127.0.0.1:11322@conn_2: A02A1D1300000309010D00010D00
+[2020-12-14T17:31:52.783] [TRACE] decoder - Read header(msgId=42): opCode=20, status=0, hasNewTopology=0
+[2020-12-14T17:31:52.784] [TRACE] decoder - Call decode for request(msgId=42)
+[2020-12-14T17:31:52.785] [TRACE] io_1_conn_2 - Complete success for request(msgId=42) with undefined
+[2020-12-14T17:31:52.785] [TRACE] io_1_conn_2 - After decoding request(msgId=42), buffer size is 5, and offset 5
+[2020-12-14T17:31:52.787] [DEBUG] io_1 - Disconnect transport
+[2020-12-14T17:31:52.788] [DEBUG] io_1 - Disconnect all router connections: [127.0.0.1:11322@conn_2,127.0.0.1:11342@conn_4,127.0.0.1:11332@conn_5]
+[2020-12-14T17:31:52.788] [DEBUG] io_1_conn_2 - Called disconnect on 127.0.0.1:11322
+[2020-12-14T17:31:52.788] [DEBUG] io_1_conn_4 - Called disconnect on 127.0.0.1:11342
+[2020-12-14T17:31:52.788] [DEBUG] io_1_conn_5 - Called disconnect on 127.0.0.1:11332
+[2020-12-14T17:31:52.790] [DEBUG] io_1_conn_2 - Disconnected from 127.0.0.1:11322
+[2020-12-14T17:31:52.792] [DEBUG] io_1_conn_5 - Disconnected from 127.0.0.1:11332
+[2020-12-14T17:31:52.794] [DEBUG] io_1_conn_4 - Disconnected from 127.0.0.1:11342
