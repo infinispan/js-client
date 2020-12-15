@@ -28,7 +28,7 @@
             <backups>
                 <backup site="MOON" strategy="SYNC" timeout="3000"/>
             </backups>
-            <encoding media-type="application/x-protostream"/>
+            <encoding media-type="text/plain"/>
         </distributed-cache>
     </cache-container>
 

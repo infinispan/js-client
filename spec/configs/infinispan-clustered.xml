@@ -10,7 +10,7 @@
         <!--<global-state/>-->
         <distributed-cache name="default" segments="20" remote-timeout="30000">
             <locking acquire-timeout="30000" concurrency-level="1000" />
-            <encoding media-type="application/x-protostream"/>
+            <encoding media-type="text/plain"/>
         </distributed-cache>
     </cache-container>
 

@@ -115,12 +115,12 @@ rm -drf server/${SERVER_DIR}
 export JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=512m"
 
 #startServer "$1" infinispan.xml false 11222 "server-local"
-startServer "$1" infinispan-clustered.xml false 11322 "server-one"
-startServer "$1" infinispan-clustered.xml false 11332 "server-two"
-startServer "$1" infinispan-clustered.xml false 11342 "server-three"
-#startServer "$1" infinispan-ssl.xml true 11622 "server-ssl"
-#startServer "$1" infinispan-ssl1.xml true 11632 "server-ssl1"
-#startServer "$1" infinispan-ssl2.xml true 11642 "server-ssl2"
+#startServer "$1" infinispan-clustered.xml false 11322 "server-one"
+#startServer "$1" infinispan-clustered.xml false 11332 "server-two"
+#startServer "$1" infinispan-clustered.xml false 11342 "server-three"
+startServer "$1" infinispan-ssl.xml true 11622 "server-ssl"
+startServer "$1" infinispan-ssl1.xml true 11632 "server-ssl1"
+startServer "$1" infinispan-ssl2.xml true 11642 "server-ssl2"
 
 #Preparing server dirs for failover tests (3 servers)
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-one"
@@ -131,7 +131,7 @@ prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
 #prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
 #prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
 
-waitForClusters
+#waitForClusters
 echo "Infinispan test servers started."
 
 

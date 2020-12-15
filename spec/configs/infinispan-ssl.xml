@@ -9,14 +9,14 @@
         <global-state/>
         <local-cache name="default">
             <locking acquire-timeout="30000" concurrency-level="1000"/>
-            <encoding media-type="application/x-protostream"/>
+            <encoding media-type="text/plain"/>
         </local-cache>
         <local-cache name="memcachedCache">
             <locking acquire-timeout="30000" concurrency-level="1000" />
-            <encoding media-type="application/x-protostream"/>
+            <encoding media-type="text/plain"/>
         </local-cache>
         <local-cache name="namedCache">
-            <encoding media-type="application/x-protostream"/>
+            <encoding media-type="text/plain"/>
         </local-cache>
     </cache-container>
 

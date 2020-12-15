@@ -29,7 +29,7 @@
                     <state-transfer chunk-size="098" timeout="7654" max-retries="321" wait-time="0101"/>
                 </backup>
             </backups>
-            <encoding media-type="application/x-protostream"/>
+            <encoding media-type="text/plain"/>
         </distributed-cache>
     </cache-container>
 
