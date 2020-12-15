@@ -76,6 +76,7 @@ function assertGet(k, expected, client) {
 function clusterSiteMoon() {
   return {
     cacheName: t.xsiteCacheName,
+    authentication: t.authOpts.authentication,
     clusters: [
       {
         name: 'server-moon',
@@ -88,6 +89,6 @@ function clusterSiteMoon() {
 function siteClients() {
   return Promise.all([
     t.client(t.earth1, clusterSiteMoon()),
-    t.client(t.moon1, {cacheName: t.xsiteCacheName})
+    t.client(t.moon1, {cacheName: t.xsiteCacheName, authentication: t.authOpts.authentication})
   ]);
 }
