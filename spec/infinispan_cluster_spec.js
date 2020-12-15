@@ -5,7 +5,7 @@ var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 
 describe('Infinispan cluster client', function() {
-  var client = t.client(t.cluster1, t.authOpts);
+  var client = t.client(t.cluster1);
 
   // Since Jasmine 1.3 does not have beforeAll callback and stats resets is a
   // bit slow, execute it as first test so that it only gets executed once.
@@ -23,7 +23,6 @@ describe('Infinispan cluster client', function() {
 
   it('can use consistent hashing to direct key-based ops to owner nodes', function(done) { client
       .then(routeConsistentHash())
-      .then(t.assert(t.clear()))
       .catch(t.failed(done)).finally(done);
   });
 
@@ -136,10 +135,12 @@ describe('Infinispan cluster client', function() {
             return [members[index], members[0]];
           return [members[index], members[index+1]];
       });
+      console.log(ownerPairs);
       var keys = _.map(ownerPairs, function(pair) {
         return t.findKeyForServers(client, pair);
       });
 
+      console.log(keys);
       var statsBefore = getStats(client, t.cluster);
 
       var puts = statsBefore.then(function() {

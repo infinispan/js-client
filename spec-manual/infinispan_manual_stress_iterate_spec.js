@@ -4,7 +4,7 @@ var f = require('../lib/functional');
 var t = require('../spec/utils/testing'); // Testing dependency
 
 describe('Infinispan local client under iterate stress load', function () {
-  var client = t.client(t.local_notsecured);
+  var client = t.client(t.local, t.authOpts);
 
   beforeEach(function (done) {
     client
