@@ -685,7 +685,6 @@ function waitUntil(expectF, cond, op) {
 
   function loop(promise) {
     exports.sleepFor(1000); // brief sleep
-
     // Simple recursive loop until condition has been met
     return promise
       .then(function(response) {
@@ -713,6 +712,7 @@ exports.sleepFor = function(sleepDuration) {
 };
 
 function getClusterMembers(port) {
+
   return function() {
     var opUrl ="/cache-managers/clustered/";
 
@@ -733,7 +733,7 @@ function invokeDmrHttp(op, port) {
       url: 'http://localhost:' + port + '/rest/v2',
       auth: {
         user: 'admin',
-        pass: 'mypassword',
+        pass: 'pass',
         sendImmediately: false
       },
       headers: {
@@ -758,7 +758,7 @@ function invokeDmrHttpGet(opUrl, port) {
             url: 'http://localhost:' + port + '/rest/v2' + opUrl,
             auth: {
                 user: 'admin',
-                pass: 'mypassword',
+                pass: 'pass',
                 sendImmediately: false
             },
             headers: {

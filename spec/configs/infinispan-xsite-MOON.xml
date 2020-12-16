@@ -118,7 +118,7 @@
                     min_threshold="0.40"
             />
             <FRAG3 frag_size="8000"/>
-            <relay.RELAY2 site="${relay.site}"/>
+            <relay.RELAY2 site="MOON"/>
             <remote-sites default-stack="bridge">
                 <remote-site name="EARTH"/>
                 <remote-site name="MOON"/>
@@ -128,8 +128,8 @@
 
 
     <cache-container name="clustered">
-        <transport cluster="${infinispan.cluster.name}" stack="xsite"/>
-        <distributed-cache name="xsiteCache" mode="SYNC" segments="20" remote-timeout="30000" >
+        <transport cluster="cluster-moon" stack="cluster"/>
+        <distributed-cache name="xsiteCache" segments="20" remote-timeout="30000" >
             <locking acquire-timeout="30000" concurrency-level="1000"/>
             <backups>
                 <backup site="EARTH" strategy="SYNC" timeout="3000">
