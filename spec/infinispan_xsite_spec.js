@@ -13,7 +13,9 @@ describe('Infinispan xsite cluster client', function() {
       logger.debugf("Starting servers for xsite replication tests.");
       t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, t.client)
           .then(function(client) {return t.launchClusterNodeAndWaitView('server-moon', t.moon1Config, t.moon1['port'], t.moon1MCastAddr, 1, client);})
-          .catch(t.failed(done)).finally(done);
+          .then(function () {
+            logger.debugf("Both moon and earth servers started");
+          }).catch(t.failed(done)).finally(done);
   }, 15000);
 
   it('can manually switch and fail over sites', function(done) {
@@ -35,35 +37,26 @@ describe('Infinispan xsite cluster client', function() {
         // Client connected to surviving site should find data
         .then(assertGet('xsite-key', 'xsite-value', cs[1]))
         // // Client connected to crashed site should failover
-          .then(function () {
-            console.log('after get here pepepeppe');
-          })
         .then(assertGet('xsite-key', 'xsite-value', cs[0]))
-          .then(function () {
-            console.log('after get here hahahah');
-          })
-        // Double check both clients' topologies point to the same server
         .then(function() {
           expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.moon1]);
           expect(cs[1].getTopologyInfo().getMembers()).toEqual([t.moon1]);
         })
-          .then(function () {
-            console.log('after get here yayayayyay');
-          })
         // // Re-launch site stopped site and stop alive site
-        // .then(function(client) { return t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, client); })
-        // .then(t.stopClusterNode(t.moon1['port'], true))
-        // // Client connected to failed over site should come back to original site
-        // .then(assertGet('xsite-key', undefined, cs[0]))
-        // .then(function() {
-        //   expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.earth1]);
-        // })
-        // .then(function() {
-        //   return cs[0].put('xsite-key-2', 'xsite-value-2');
-        // })
+        .then(assertGet('xsite-key', 'xsite-value', cs[0]))
+        .then(function(client) { return t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, client); })
+        .then(t.stopClusterNode(t.moon1['port'], true))
+        // Client connected to failed over site should come back to original site
+        .then(assertGet('xsite-key', undefined, cs[0]))
+        .then(function() {
+          expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.earth1]);
+        })
+        .then(function() {
+          return cs[0].put('xsite-key-2', 'xsite-value-2');
+        })
         .then(assertGet('xsite-key-2', 'xsite-value-2', cs[0]))
           //Stopping the rest of the servers to finish the test
-        // .then(t.stopClusterNode(t.earth1['port'], false))
+        .then(t.stopClusterNode(t.earth1['port'], false))
         .finally(function() {
           return Promise.all(_.map(cs, function(c) { return c.disconnect(); }));
         });
