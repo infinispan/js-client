@@ -9,7 +9,7 @@ else
 fi
 
 
-SERVER_VERSION="11.0.7.Final"
+SERVER_VERSION="11.0.9.Final"
 SERVER_HOME=server/infinispan-server-$SERVER_VERSION
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
@@ -114,7 +114,7 @@ rm -drf server/${SERVER_DIR}
 
 export JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=512m"
 
-#startServer "$1" infinispan.xml false 11222 "server-local"
+startServer "$1" infinispan.xml false 11222 "server-local"
 #startServer "$1" infinispan-clustered.xml false 11322 "server-one"
 #startServer "$1" infinispan-clustered.xml false 11332 "server-two"
 #startServer "$1" infinispan-clustered.xml false 11342 "server-three"
@@ -128,8 +128,8 @@ export JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize
 #prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
 
 #Preparing server dirs for xsite tests (2 servers)
-prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
-prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
+#prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
+#prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
 
 #waitForClusters
 echo "Infinispan test servers started."
