@@ -26,7 +26,6 @@ infinispan-server-*
 # nohup
 nohup.out
 
-package-lock.json
 /build
 /server/infinispan-server/
 batch
