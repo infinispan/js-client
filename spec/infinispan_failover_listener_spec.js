@@ -7,7 +7,7 @@ describe('Infinispan clustered clients', function() {
 
   it('can failover when nodes crash', function(done) {
     var keys = ['before-failover-listener', 'middle-failover-listener', 'after-failover-listener'];
-    t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1)
+    t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1, t.client)
        .then(function() {
          return t.client(t.failover1, t.authOpts);
        })
@@ -21,22 +21,12 @@ describe('Infinispan clustered clients', function() {
       .then(withAll(t.stopAndWaitView(t.failover1['port'], 1, t.failover2['port'])))
       .then(expectClientView([t.failover2]))
       .then(t.assert(t.putIfAbsent(keys[2], 'value'), t.toBeTruthy))
-      .then(withAll(t.stopClusterNode(t.failover2['port'], false)))
+      .then(withAll(t.stopClusterNode(t.failover2['port'], true)))
       .then(withAll(t.disconnect()))
       .catch(t.failed(done));
-  }, 20000);
+  }, 10000);
 
 });
-
-function keyGen(addrs) {
-  return function(cl) { return [cl, t.findKeyForServers(cl, addrs)]; }
-}
-
-function withFirst(fun) {
-  return function(params) {
-    return fun(params[0]).then(function() { return params; })
-  }
-}
 
 function withAll(fun) {
   return function(param) {

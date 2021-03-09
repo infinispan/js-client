@@ -128,7 +128,7 @@ connected.then(function (client) {
 });
 ```
 ## Authentication
-The client supports PLAIN authentication. Other authentication mechanisms will be supporded
+The client supports PLAIN authentication. Other authentication mechanisms will be supported
 in the next releases.
 
 
@@ -741,7 +741,7 @@ Server like this:
 And then using this code to verify that the topology is the expected one:
 
 #### Note for Mac Users:
-You might experience MPING issues running an  Infinispan cluster.
+You might experience MPING issues running an Infinispan cluster.
 
 ```bash
 13:37:15,561 ERROR (jgroups-5,server-two) [org.jgroups.protocols.MPING] 
