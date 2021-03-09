@@ -614,7 +614,7 @@ function getServerStatus(port) {
 
 exports.stopAndWaitView = function(nodeStop, expectNumMembers, nodeView) {
   return function() {
-    return exports.stopClusterNode(nodeStop, false)()
+    return exports.stopClusterNode(nodeStop, true)()
       .then(function() { return exports.waitUntilView(expectNumMembers, nodeView); });
   }
 };
@@ -667,8 +667,10 @@ exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAdd
 
         fulfill();
     }).then(function() {
+        logger.debugf('wait until view ' + expectNumMembers)
         return exports.waitUntilView(expectNumMembers, port);
     }).then(function() {
+        logger.debugf('return client');
         return client;
     });
 };

@@ -8,7 +8,8 @@ describe('Infinispan clustered clients', function() {
               return t.client(t.failover1,  t.authOpts);
           })
           .then(t.assert(t.getMembers(), t.toContain([t.failover1])))
-          .then(function(client) {return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2['port'], t.failoverMCastAddr,  2, client);}) //11432
+          .then(function(client) {
+            return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2['port'], t.failoverMCastAddr,  2, client);}) //11432
           .then(expectClientView([t.failover1, t.failover2]))
           .then(function(client) { return t.launchClusterNodeAndWaitView('server-failover-three', t.failoverConfig, t.failover3['port'], t.failoverMCastAddr, 3, client); }) //11442
           .then(expectClientView([t.failover1, t.failover2, t.failover3]))

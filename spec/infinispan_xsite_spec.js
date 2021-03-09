@@ -36,13 +36,13 @@ describe('Infinispan xsite cluster client', function() {
         .then(t.stopClusterNode(t.earth1['port'], true))
         // Client connected to surviving site should find data
         .then(assertGet('xsite-key', 'xsite-value', cs[1]))
-        // // Client connected to crashed site should failover
+        // Client connected to crashed site should failover
         .then(assertGet('xsite-key', 'xsite-value', cs[0]))
         .then(function() {
           expect(cs[0].getTopologyInfo().getMembers()).toEqual([t.moon1]);
           expect(cs[1].getTopologyInfo().getMembers()).toEqual([t.moon1]);
         })
-        // // Re-launch site stopped site and stop alive site
+        // Re-launch site stopped site and stop alive site
         .then(assertGet('xsite-key', 'xsite-value', cs[0]))
         .then(function(client) { return t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, client); })
         .then(t.stopClusterNode(t.moon1['port'], true))
