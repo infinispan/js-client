@@ -1,11 +1,14 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:12.0 https://infinispan.org/schemas/infinispan-config-12.0.xsd
-                            urn:infinispan:server:12.0 https://infinispan.org/schemas/infinispan-server-12.0.xsd"
-        xmlns="urn:infinispan:config:12.0"
-        xmlns:server="urn:infinispan:server:12.0">
+        xsi:schemaLocation="urn:infinispan:config:12.1 https://infinispan.org/schemas/infinispan-config-12.1.xsd
+                            urn:infinispan:server:12.1 https://infinispan.org/schemas/infinispan-server-12.1.xsd"
+        xmlns="urn:infinispan:config:12.1"
+        xmlns:server="urn:infinispan:server:12.1">
 
     <cache-container name="clustered" default-cache="default">
+        <security>
+            <authorization/>
+        </security>
         <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
         <!--<global-state/>-->
         <distributed-cache name="default" segments="20" remote-timeout="30000">

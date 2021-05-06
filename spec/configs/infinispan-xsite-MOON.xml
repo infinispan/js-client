@@ -1,10 +1,10 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:12.0 https://infinispan.org/schemas/infinispan-config-12.0.xsd
-                            urn:infinispan:server:12.0 https://infinispan.org/schemas/infinispan-server-12.0.xsd
+        xsi:schemaLocation="urn:infinispan:config:12.1 https://infinispan.org/schemas/infinispan-config-12.1.xsd
+                            urn:infinispan:server:12.1 https://infinispan.org/schemas/infinispan-server-12.1.xsd
                              urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.0.xsd"
-        xmlns="urn:infinispan:config:12.0"
-        xmlns:server="urn:infinispan:server:12.0">
+        xmlns="urn:infinispan:config:12.1"
+        xmlns:server="urn:infinispan:server:12.1">
 
 
     <jgroups>
@@ -129,6 +129,9 @@
 
     <cache-container name="clustered">
         <transport cluster="cluster-moon" stack="cluster"/>
+        <security>
+            <authorization/>
+        </security>
         <distributed-cache name="xsiteCache" segments="20" remote-timeout="30000" >
             <locking acquire-timeout="30000" concurrency-level="1000"/>
             <backups>
@@ -140,7 +143,7 @@
         </distributed-cache>
     </cache-container>
 
-    <server xmlns="urn:infinispan:server:12.0">
+    <server xmlns="urn:infinispan:server:12.1">
         <interfaces>
             <interface name="public">
                 <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
