@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
+                nodejs(nodeJSInstallationName: '14.16.1') {
                     sh 'rm -drf node_modules/'
                     sh 'npm config ls'
                     sh 'npm install'
@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Docs') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
+                nodejs(nodeJSInstallationName: '14.16.1') {
                     sh './node_modules/.bin/jsdoc lib/*.js'
                 }
             }
@@ -35,7 +35,7 @@ pipeline {
             steps {
                 sh 'rm -drf tmp-tests.log'
 
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
+                nodejs(nodeJSInstallationName: 'Node 14.16.1') {
                     sh './node_modules/.bin/jasmine-node spec --captureExceptions --forceexit'
                 }
             }
@@ -48,7 +48,7 @@ pipeline {
             steps {
                 sh 'rm -drf tmp-tests.log'
 
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
+                nodejs(nodeJSInstallationName: 'Node 14.16.1') {
                     sh './node_modules/.bin/jasmine-node spec --captureExceptions --forceexit'
                 }
             }
@@ -61,7 +61,7 @@ pipeline {
             steps {
                 sh 'rm -drf tmp-tests.log'
 
-                nodejs(nodeJSInstallationName: 'Node 8.11') {
+                nodejs(nodeJSInstallationName: 'Node 14.16.1') {
                     sh './node_modules/.bin/jasmine-node spec --captureExceptions --forceexit'
                 }
             }
