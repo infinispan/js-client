@@ -238,8 +238,6 @@ describe('Infinispan local client', function() {
       }).catch(t.failed(done)).finally(done);
   });
 
-  if (process.env.protocol == null || process.env.protocol >= '2.9') {
-
     it('can listen for custom events for created events', function(done) {
       var expected = 'KeyValueWithPrevious{key=listen-custom-create, value=value, prev=null}';
       var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
@@ -268,10 +266,6 @@ describe('Infinispan local client', function() {
         .catch(t.failed(done));
     });
 
-  }
-
-  if (process.env.protocol == null || process.env.protocol >= '2.5') {
-
     it('can iterate over entries, one entry at the time',
        tests.iterateEntries('local', 1, client)
     );
@@ -292,8 +286,6 @@ describe('Infinispan local client', function() {
           .catch(t.failed(done))
           .finally(done);
     });
-
-  }
 
   it('can failover to a secondary node if first node is not available', function(done) {
     t.client([{port: 1234, host: '127.0.0.1'}, t.local])

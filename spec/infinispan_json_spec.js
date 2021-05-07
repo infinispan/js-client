@@ -3,8 +3,6 @@ var t = require('./utils/testing'); // Testing dependency
 describe('Infinispan JSON client', function() {
   var client = t.client(t.local, t.json);
 
-  if (process.env.protocol == null || process.env.protocol >= '2.9') {
-
     beforeEach(function (done) {
       client
         .then(t.assert(t.clear()))
@@ -121,8 +119,6 @@ describe('Infinispan JSON client', function() {
         .catch(t.failed(done));
     });
 
-    if (process.env.protocol == null || process.env.protocol >= '2.5') {
-
       it('can iterate over entries, one entry at the time', function (done) {
         var pairs = [
           {key: {k: 'jlocal-it1'}, value: {v: 'jv1'}, done: false},
@@ -137,8 +133,6 @@ describe('Infinispan JSON client', function() {
           .catch(t.failed(done))
           .finally(done);
       });
-
-    }
 
     // it('can execute a script remotely to store and retrieve data', function(done) {
     //   var scriptName = 'local-typed-json-put-get.js';
@@ -177,8 +171,6 @@ describe('Infinispan JSON client', function() {
     //           , {k: 'listen-typed-key', v: 'listen-typed-value'}), t.toBe('listen-typed-value')))
     //       .catch(t.failed(done));
     // });
-
-  }
 
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
