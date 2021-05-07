@@ -52,19 +52,17 @@ The client is normally connected to one of the sites, but if its members fail to
 
 # Requirements
 
-`infinispan` client requires Node.js version `8.11.4` or higher.
+`infinispan` client requires Node.js version `12` or '14'. 
 
-It can only talk to Infinispan Server 8.x or higher versions.
+*Node.js 15 and 16 are not yet supported*
+
+It can only talk to Infinispan Server 9.4.x or higher versions.
 
 By default, Infinispan clients talk Hot Rod protocol version `2.9` which is
 supported starting with Infinispan server 9.4.x.
+*Version '3.0' is not yet supported.*
 
-Please find below information on how to use the client with older Infinispan server versions:
-
-*  For versions between `8.2.x` and `9.3.x`, use Hot Rod protocol version `2.5`.
-To do so, construct the client with `{version: '2.5'}` optional argument.
-*  For versions `8.0.x` and `8.1.x`, use Hot Rod protocol version `2.2`.
-To do so, construct the client with `{version: '2.2'}` optional argument.
+For versions between `8.2.x` and `9.3.x`, use js-client `0.7`.
 
 # API docs
 
