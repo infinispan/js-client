@@ -126,8 +126,12 @@ connected.then(function (client) {
 });
 ```
 ## Authentication
-The client supports PLAIN authentication. Other authentication mechanisms will be supported
-in the next releases.
+The client supports different authentication mechanisms.
+
+### PLAIN
+
+`PLAIN` sends unencrypted username and password over the wire (similar to HTTP's BASIC authentication) and is 
+only recommended when encrypting the connection with TLS.
 
 
 ```Javascript
@@ -135,10 +139,88 @@ var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
 {
     authentication: {
       enabled: true,
-      serverName: 'infinispan',
       saslMechanism: 'PLAIN',
       userName: 'admin',
       password: 'pass'
+    }
+  }
+);
+```
+
+### DIGEST-MD5
+
+`DIGEST-MD5` uses the MD5 hashing algorithm as well as server and client nonces to encrypt the credentials and 
+avoid replay attacks.
+
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+{
+    authentication: {
+      enabled: true,
+      saslMechanism: 'DIGEST-MD5',
+      userName: 'admin',
+      password: 'pass',
+      serverName: 'infinispan'
+    }
+  }
+);
+```
+
+### SCRAM
+
+The `SCRAM` family of mechanisms uses multiple iterations of the SHA hashing algorithm as well as server and client nonces
+to encrypt the credentials and avoid replay attacks. The name of the mechanism determines the strength of the hashing:
+`SCRAM-SHA-1`, `SCRAM-SHA-256`, `SCRAM-SHA-384`, `SCRAM-SHA-512`.
+
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+{
+    authentication: {
+      enabled: true,
+      saslMechanism: 'SCRAM-SHA-1',
+      userName: 'admin',
+      password: 'pass'
+    }
+  }
+);
+```
+
+### EXTERNAL
+
+`EXTERNAL` relies on the identity of a client certificate to perform authentication.
+
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+{
+    authentication: {
+      enabled: true,
+      saslMechanism: 'EXTERNAL'
+    },
+    ssl: {
+      enabled: true,
+      clientAuth: {
+        cert: 'out/ssl/client/client.p12',
+      }
+    }
+  }
+);
+```
+
+### OAUTHBEARER
+
+`OAUTHBEARER` uses a token obtained via an OAuth 2.0 provider.
+
+
+```Javascript
+var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
+{
+    authentication: {
+      enabled: true,
+      saslMechanism: 'OAUTHBEARER',
+      token: `...`
     }
   }
 );
