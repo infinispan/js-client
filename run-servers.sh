@@ -8,13 +8,11 @@ else
   trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_VERSION="${SERVER_VERSION:-"12.1.4.Final"}"
-SERVER_HOME=${SCRIPT_DIR}/server/original-server
-SERVER_ZIP=${SCRIPT_DIR}/server/${SERVER_VERSION}.zip
+
+SERVER_VERSION="12.1.4.Final"
+SERVER_HOME=server/infinispan-server-$SERVER_VERSION
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
 ZIP_ROOT="http://downloads.jboss.org/infinispan"
-DOWNLOAD_URL="${DOWNLOAD_URL:-"$ZIP_ROOT/$SERVER_VERSION/infinispan-server-$SERVER_VERSION.zip"}"
 
 CONF_DIR_TO_COPY_FROM="spec/configs/"
 IS_SSL_PROCESSED=0
@@ -44,18 +42,10 @@ function prepareServerDir()
     local dirName=${4}
 
     echo ${isSsl}
-    if [ ! -f "${SERVER_ZIP}" ]; then
+    if [ ! -f server/infinispan-server-$SERVER_VERSION.zip ]; then
         cd server
-        wget "${DOWNLOAD_URL}" -O "${SERVER_ZIP}" --no-check-certificate
-        unzip  "${SERVER_ZIP}"
-
-        if [[ ${DOWNLOAD_URL} == *"redhat-datagrid"* ]]; then
-          datagrid=$(cd "${SCRIPT_DIR}"/server/redhat-datagrid-*/; pwd)
-          mv "$datagrid" "${SERVER_HOME}"
-        else
-          datagrid=$(cd "${SCRIPT_DIR}"/server/infinispan-server-*/; pwd)
-          mv "$datagrid" "${SERVER_HOME}"
-        fi
+        wget $ZIP_ROOT/$SERVER_VERSION/infinispan-server-$SERVER_VERSION.zip
+        unzip  infinispan-server-$SERVER_VERSION.zip
         cd ..
     fi
 
@@ -115,7 +105,7 @@ function startServer()
     echo 'Run server '$nodeName' in '$SERVER_TMP''
 
     if [[ ${isCi} = "--ci" ]]; then
-      nohup $SERVER_TMP/bin/server.sh -Djavax.net.debug -Dorg.infinispan.openssl=false -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-""}  --node-name=${nodeName} ${jvmParam:-} -Djgroups.bind.address=127.0.0.1 &
+      nohup $SERVER_TMP/bin/server.sh -Djavax.net.debug -Dorg.infinispan.openssl=false -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-""}  --node-name=${nodeName} ${jvmParam:-} &
     else
       ${SERVER_TMP}/bin/server.sh -Djavax.net.debug -Dorg.infinispan.openssl=false -c ${confPath} -s ${SERVER_TMP}/${nodeName} ${portStr:-} --node-name=${nodeName} ${jvmParam:-} &
     fi
