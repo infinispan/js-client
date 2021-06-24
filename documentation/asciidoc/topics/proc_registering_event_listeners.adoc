@@ -1,0 +1,31 @@
+[id='registering-event-listeners_{context}']
+= Registering event listeners
+
+Clients can register event listeners that get invoked when data changes happen.
+Create, modified, remove and expired events are supported.
+Create and modified events emit key and version of value after event.
+Remove and expired events only emit key information.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/register-event-listener.js[]
+----
+
+Starting with client version `0.7` and Infinispan `9.4.x` server,
+it's possible to tailor events to add or remove information from each event.
+
+For example, a user might want to find out the value associated with the key after an event.
+If the value was sent back along with the key within the event, unnecessary round trips to fetch the value would be avoided.
+This can be achieved configuring the listener with a remote event converter.
+
+Infinispan servers come with a converter called `key-value-with-previous-converter-factory` which can be used for this purpose:
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/key-value-converter.js[]
+----
+
+You can also create and deploy your own converters into Infinispan server instances.
+See the
+[event filter and conversion](https://infinispan.org/docs/stable/titles/developing/developing.html#event_filtering_and_conversion)
+section in the Developers Guide for more information.

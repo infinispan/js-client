@@ -1,0 +1,11 @@
+[id='getting-started']
+:context: getting-started
+= Getting started with {hr_js} clients
+Ensure your system meets requirements before installing the {hr_js} client.
+
+include::{topics}/proc_installing_clients.adoc[leveloffset=+1]
+include::{topics}/ref_basic_usage.adoc[leveloffset=+1]
+
+// Restore the parent context.
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]

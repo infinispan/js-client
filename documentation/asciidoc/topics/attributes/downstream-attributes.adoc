@@ -1,0 +1,4 @@
+:brandname: Data Grid
+:hr_js: Hot Rod JS
+
+:js_api_docs: https://access.redhat.com/webassets/avalon/d/red-hat-data-grid/8.2/node/

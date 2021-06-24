@@ -1,0 +1,40 @@
+[id='installing-clients_{context}']
+= Installing {hr_js} clients
+{brandname} provides a distribution of the {hr_js} client that you can install via the NPM package manager.
+
+.Prerequisites
+
+* Node.js version `12` or `14`.
+//Community content
+ifdef::community[]
+* {brandname} Server 9.4.x or later.
++
+Use js-client `0.7` for {brandname} Server `8.2.x` to `9.3.x`.
+endif::community[]
+//Downstream content
+ifdef::downstream[]
+* {brandname} Server {ProductVersion}.
+endif::downstream[]
+
+.Procedure
+
+//Community content
+ifdef::community[]
+* Install the `infinispan` client as follows:
++
+[source,bash,options="nowrap",subs=attributes+]
+----
+$ npm i infinispan
+----
+endif::community[]
+
+//Downstream content
+ifdef::downstream[]
+. Download and extract the `redhat-datagrid-<version>-nodejs-client.zip` from the {portal}.
+. Install the `tgz` package from the extracted directory as in the following example:
++
+[source,bash,options="nowrap",subs=attributes+]
+----
+$ npm install /path/to/redhat-datagrid-<version>-nodejs-client/infinispan-<version>.tgz
+----
+endif::downstream[]

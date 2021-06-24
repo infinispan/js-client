@@ -1,0 +1,7 @@
+[id='using-conditional-operations_{context}']
+= Using conditional operations
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/conditional-operations.js[]
+----

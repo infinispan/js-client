@@ -1,0 +1,10 @@
+:brandname: Data Grid
+:hr_js: Hot Rod JS
+:rhel_long: Red Hat Enterprise Linux (RHEL)
+:rhel_short: RHEL
+:win_long: Microsoft Windows
+:win_short: Windows
+
+:doc_home: https://access.redhat.com/documentation/en-us/red_hat_data_grid/
+:download_url: https://access.redhat.com/jbossnetwork/restricted/listSoftware.html?product=data.grid&downloadType=distributions
+:js_api_docs: https://access.redhat.com/webassets/avalon/d/red-hat-data-grid/8.2/node/
