@@ -1,0 +1,18 @@
+[id='client-configuration']
+:context: client-configuration
+= Configuring {hr_js} clients
+Configure {hr_js} clients to connect to {brandname} Server, use different media types for keys and values, and adjust levels for log messages.
+
+include::{topics}/proc_configuring_connections.adoc[leveloffset=+1]
+include::{topics}/proc_configuring_connections_xsite.adoc[leveloffset=+2]
+include::{topics}/proc_switching_clusters.adoc[leveloffset=+2]
+include::{topics}/proc_configuring_authentication.adoc[leveloffset=+1]
+include::{topics}/ref_authentication_mechanisms.adoc[leveloffset=+2]
+include::{topics}/proc_configuring_encryption.adoc[leveloffset=+1]
+include::{topics}/ref_encryption.adoc[leveloffset=+2]
+include::{topics}/proc_configuring_data_formats.adoc[leveloffset=+1]
+include::{topics}/proc_configuring_logging.adoc[leveloffset=+1]
+
+// Restore the parent context.
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]

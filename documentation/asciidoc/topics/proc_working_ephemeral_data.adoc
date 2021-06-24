@@ -1,0 +1,7 @@
+[id='working-ephemeral-data_{context}']
+= Working with ephemeral data
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/ephemeral-data.js[]
+----

@@ -1,0 +1,7 @@
+[id='working-single-entries-statistics_{context}']
+= Working with single entries and statistics
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/single-entries.js[]
+----

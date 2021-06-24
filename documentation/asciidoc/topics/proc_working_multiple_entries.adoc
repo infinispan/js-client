@@ -1,0 +1,7 @@
+[id='working-multiple-entries_{context}']
+= Working with multiple entries
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/multiple-entries.js[]
+----
