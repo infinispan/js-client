@@ -7,7 +7,7 @@ pipeline {
 
     parameters {
         string(name: 'version', defaultValue: '0.0.0', description: 'Release version')
-        string(name: 'branch', defaultValue: 'master', description: 'Branch to release from')
+        string(name: 'branch', defaultValue: 'main', description: 'Branch to release from')
     }
 
     options {
