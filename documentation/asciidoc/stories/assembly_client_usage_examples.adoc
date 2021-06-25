@@ -1,15 +1,9 @@
 [id='client-usage-examples']
 :context: client-usage-examples
 = Using {hr_js} clients
-This section provides code examples that show you how to use {hr_js} clients to perform various operations.
+Take a look at some examples for using the {hr_js} client with {brandname}.
 
-include::{topics}/proc_working_single_entries_statistics.adoc[leveloffset=+1]
-include::{topics}/proc_using_conditional_operations.adoc[leveloffset=+1]
-include::{topics}/proc_working_multiple_entries.adoc[leveloffset=+1]
-include::{topics}/proc_working_ephemeral_data.adoc[leveloffset=+1]
-include::{topics}/proc_registering_event_listeners.adoc[leveloffset=+1]
-include::{topics}/proc_executing_scripts.adoc[leveloffset=+1]
-include::{topics}/proc_using_async_await.adoc[leveloffset=+1]
+include::{topics}/ref_client_usage.adoc[leveloffset=+1]
 
 // Restore the parent context.
 ifdef::parent-context[:context: {parent-context}]

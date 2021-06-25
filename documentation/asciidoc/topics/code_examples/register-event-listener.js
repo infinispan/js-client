@@ -8,9 +8,8 @@ connected.then(function (client) {
 
     var clientAddListeners = clientAddListenerCreate.then(
         function(listenerId) {
-            // Multiple callbacks can be associated with a single client-side listener.
-            // This is achieved by registering listeners with the same listener id
-            // as shown in the example below.
+            // Associate multiple callbacks with a single client-side listener.
+            // To do this, register listeners with the same listener ID.
             var clientAddListenerModify =
                 client.addListener('modify', onModify, {listenerId: listenerId});
 

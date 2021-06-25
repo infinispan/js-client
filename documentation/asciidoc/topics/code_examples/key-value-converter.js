@@ -11,7 +11,7 @@ var connected = infinispan.client(
 );
 
 connected.then(function (client) {
-
+    // Include the remote event converter to avoid unnecessary roundtrips.
     var opts = {
         converterFactory : {
             name: "key-value-with-previous-converter-factory"
@@ -22,9 +22,8 @@ connected.then(function (client) {
 
     var clientAddListeners = clientAddListenerCreate.then(
         function(listenerId) {
-            // Multiple callbacks can be associated with a single client-side listener.
-            // This is achieved by registering listeners with the same listener id
-            // as shown in the example below.
+            // Associate multiple callbacks with a single client-side listener.
+            // To do this, register listeners with the same listener ID.
             var clientAddListenerModify =
                 client.addListener('modify', logEvent("Modified"), {opts, listenerId: listenerId});
 

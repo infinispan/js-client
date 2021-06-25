@@ -18,6 +18,7 @@ connected.then(function (client) {
   var clientGetMetaForReplace = showReplace.then(
       function() { return client.getWithMetadata('cond'); });
 
+  // Call the getWithMetadata method to retrieve the value and its metadata.
   var clientReplaceWithVersion = clientGetMetaForReplace.then(
       function(entry) {
         console.log('getWithMetadata(cond)=' + JSON.stringify(entry));
