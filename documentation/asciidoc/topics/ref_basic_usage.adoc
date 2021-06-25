@@ -1,8 +1,0 @@
-[id='basic-usage_{context}']
-= Basic {hr_js} client usage
-Review a basic example for using the {hr_js} client with {brandname} Server.
-
-[source,javascript,options="nowrap",subs=attributes+]
-----
-include::code_examples/hello-world.js[]
-----

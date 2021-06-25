@@ -1,8 +1,18 @@
 var infinispan = require('infinispan');
 
 // Connect to {brandname} Server.
+// Use an existing cache named "myCache".
 var connected = infinispan.client(
-  {port: 11222, host: '127.0.0.1'}, {cacheName: 'myCache'});
+  {port: 11222, host: '127.0.0.1'}, {cacheName: 'myCache},
+  {
+    authentication: {
+        enabled: true,
+        saslMechanism: 'PLAIN',
+        userName: 'username',
+        password: 'changeme'
+    }
+  }
+);
 
 connected.then(function (client) {
 

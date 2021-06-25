@@ -1,8 +1,10 @@
-[id='client-configuration']
-:context: client-configuration
-= Configuring {hr_js} clients
-Configure {hr_js} clients to connect to {brandname} Server, use different media types for keys and values, and adjust levels for log messages.
+[id='install-configure']
+:context: install-configure
+= Installing and configuring {hr_js} clients
+Ensure your system meets requirements before installing the {hr_js} client.
+You can then configure {hr_js} clients to connect to {brandname} Server, use different media types for keys and values, and customize logging.
 
+include::{topics}/proc_installing_clients.adoc[leveloffset=+1]
 include::{topics}/proc_configuring_connections.adoc[leveloffset=+1]
 include::{topics}/proc_configuring_connections_xsite.adoc[leveloffset=+2]
 include::{topics}/proc_switching_clusters.adoc[leveloffset=+2]

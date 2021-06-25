@@ -21,7 +21,7 @@ async function test() {
   let stats = await client.stats();
   console.log('Number of stores: ' + stats.stores);
   console.log('Number of cache hits: ' + stats.hits);
-  console.log('All stats: ' + JSON.stringify(stats, null, " "));
+  console.log('All statistics: ' + JSON.stringify(stats, null, " "));
 
   await client.disconnect();
 }

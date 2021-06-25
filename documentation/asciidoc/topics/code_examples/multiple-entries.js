@@ -1,6 +1,16 @@
 var infinispan = require('infinispan');
 
-var connected = infinispan.client({port: 11222, host: '127.0.0.1'});
+var connected = infinispan.client(
+  {port: 11222, host: '127.0.0.1'}, {cacheName: 'myCache},
+  {
+    authentication: {
+        enabled: true,
+        saslMechanism: 'PLAIN',
+        userName: 'username',
+        password: 'changeme'
+    }
+  }
+);
 
 connected.then(function (client) {
   var data = [
@@ -25,7 +35,7 @@ connected.then(function (client) {
   var showIterated = clientIterator.then(
     function(it) {
       function loop(promise, fn) {
-        // Simple recursive loop over iterator's next() call
+        // Simple recursive loop over the iterator's next() call.
         return promise.then(fn).then(function (entry) {
           return entry.done
             ? it.close().then(function () { return entry.value; })

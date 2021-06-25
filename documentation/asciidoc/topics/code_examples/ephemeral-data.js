@@ -8,26 +8,26 @@ connected.then(function (client) {
 
   var clientGetMetaAndSize = clientPutExpiry.then(
     function() {
-      // Compute getWithMetadata and size in parallel
+      // Compute getWithMetadata and size in parallel.
       return Promise.all([client.getWithMetadata('expiry'), client.size()]);
     });
 
   var showGetMetaAndSize = clientGetMetaAndSize.then(
     function(values) {
-      console.log('before expiration:');
+      console.log('Before expiration:');
       console.log('getWithMetadata(expiry)=' + JSON.stringify(values[0]));
       console.log('size=' + values[1]);
     });
 
   var clientContainsAndSize = showGetMetaAndSize.then(
     function() {
-      sleepFor(1100); // Sleep to force expiration
+      sleepFor(1100); // Sleep to force expiration.
       return Promise.all([client.containsKey('expiry'), client.size()]);
     });
 
   var showContainsAndSize = clientContainsAndSize.then(
     function(values) {
-      console.log('after expiration:');
+      console.log('After expiration:');
       console.log('containsKey(expiry)=' + values[0]);
       console.log('size=' + values[1]);
     });
@@ -43,5 +43,5 @@ connected.then(function (client) {
 
 function sleepFor(sleepDuration){
   var now = new Date().getTime();
-  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
+  while(new Date().getTime() < now + sleepDuration){ /* Do nothing. */ }
 }
