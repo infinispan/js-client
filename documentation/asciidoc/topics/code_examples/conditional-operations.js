@@ -1,6 +1,11 @@
 var infinispan = require('infinispan');
 
-var connected = infinispan.client({port: 11222, host: '127.0.0.1'});
+var connected = infinispan.client(
+  {port: 11222, host: '127.0.0.1'}
+  {
+    // Configure client connections with authentication and encryption here.
+  }
+);
 
 connected.then(function (client) {
 
