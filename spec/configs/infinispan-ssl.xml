@@ -1,9 +1,9 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:12.1 https://infinispan.org/schemas/infinispan-config-12.1.xsd
-                            urn:infinispan:server:12.1 https://infinispan.org/schemas/infinispan-server-12.1.xsd"
-        xmlns="urn:infinispan:config:12.1"
-        xmlns:server="urn:infinispan:server:12.1">
+        xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd
+                            urn:infinispan:server:13.0 https://infinispan.org/schemas/infinispan-server-13.0.xsd"
+        xmlns="urn:infinispan:config:13.0"
+        xmlns:server="urn:infinispan:server:13.0">
 
     <cache-container name="local" default-cache="default" statistics="true">
         <global-state/>
@@ -23,7 +23,7 @@
         </local-cache>
     </cache-container>
 
-    <server xmlns="urn:infinispan:server:12.1">
+    <server xmlns="urn:infinispan:server:13.0">
         <interfaces>
             <interface name="public">
                 <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
@@ -89,24 +89,26 @@
             </security-realms>
         </security>
 
-        <endpoints socket-binding="default" security-realm="default">
-            <hotrod-connector>
-                <authentication>
-                    <sasl mechanisms="PLAIN"
-                          server-name="infinispan"/>
-                </authentication>
-            </hotrod-connector>
-            <rest-connector/>
+        <endpoints>
+            <endpoint socket-binding="default" security-realm="default">
+                <hotrod-connector>
+                    <authentication>
+                        <sasl mechanisms="PLAIN"
+                              server-name="infinispan"/>
+                    </authentication>
+                </hotrod-connector>
+                <rest-connector/>
+            </endpoint>
+            <endpoint socket-binding="hotrod-trust" security-realm="client-cert">
+                <hotrod-connector>
+                    <authentication>
+                        <sasl mechanisms="PLAIN"
+                              server-name="infinispan"/>
+                    </authentication>
+                </hotrod-connector>
+                <rest-connector/>
+            </endpoint>
         </endpoints>
 
-        <endpoints socket-binding="hotrod-trust" security-realm="client-cert">
-            <hotrod-connector>
-                <authentication>
-                    <sasl mechanisms="PLAIN"
-                          server-name="infinispan"/>
-                </authentication>
-            </hotrod-connector>
-            <rest-connector/>
-        </endpoints>
     </server>
 </infinispan>
