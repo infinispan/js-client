@@ -9,7 +9,7 @@ else
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_VERSION="${SERVER_VERSION:-"12.1.4.Final"}"
+SERVER_VERSION="${SERVER_VERSION:-"13.0.0.CR1"}"
 SERVER_HOME=${SCRIPT_DIR}/server/original-server
 SERVER_ZIP=${SCRIPT_DIR}/server/${SERVER_VERSION}.zip
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
