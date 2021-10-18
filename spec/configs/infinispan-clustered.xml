@@ -11,6 +11,7 @@
 <!--        </security>-->
         <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
         <!--<global-state/>-->
+        <metrics accurate-size="true"/>
         <distributed-cache name="default" segments="20" remote-timeout="30000">
             <locking acquire-timeout="30000" concurrency-level="1000" />
             <encoding media-type="text/plain"/>
