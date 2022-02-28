@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 14') {
+                nodejs(nodeJSInstallationName: 'Node 16') {
                     sh 'rm -drf node_modules/'
                     sh 'npm config ls'
                     sh 'npm install'
@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Docs') {
             steps {
-                nodejs(nodeJSInstallationName: 'Node 14') {
+                nodejs(nodeJSInstallationName: 'Node 16') {
                     sh './node_modules/.bin/jsdoc lib/*.js'
                 }
             }
@@ -31,11 +31,20 @@ pipeline {
                 sh './run-servers.sh --ci'
             }
         }
-        stage('Test') {
+        stage('Test 14') {
             steps {
                 sh 'rm -drf tmp-tests.log'
 
                 nodejs(nodeJSInstallationName: 'Node 14') {
+                    sh './node_modules/.bin/jasmine-node spec --captureExceptions --forceexit'
+                }
+            }
+        }
+        stage('Test 16') {
+            steps {
+                sh 'rm -drf tmp-tests.log'
+
+                nodejs(nodeJSInstallationName: 'Node 16') {
                     sh './node_modules/.bin/jasmine-node spec --captureExceptions --forceexit'
                 }
             }
