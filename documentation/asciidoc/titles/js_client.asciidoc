@@ -9,6 +9,7 @@ include::{topics}/attributes/community-attributes.adoc[]
 //Downstream
 //include::{topics}/attributes/downstream-attributes.adoc[]
 //:downstream:
+//:rhdg-install-npmrepo:
 
 //Title attributes
 :toc2:

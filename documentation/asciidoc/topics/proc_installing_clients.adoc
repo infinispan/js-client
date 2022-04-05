@@ -22,19 +22,37 @@ endif::downstream[]
 ifdef::community[]
 * Install the `infinispan` client as follows:
 +
-[source,bash,options="nowrap",subs=attributes+]
+[source,options="nowrap",subs=attributes+]
 ----
-$ npm i infinispan
+npm install infinispan
 ----
 endif::community[]
 
 //Downstream content
-ifdef::downstream[]
+ifdef::rhdg-install-npmrepo[]
+. Add the Red Hat repository to your NPM configuration.
++
+You can use the `npm config` command or add the following to an `.npmrc` file in your project:
++
+[source,options="nowrap",subs=attributes+]
+----
+@redhat:registry=https://npm.registry.redhat.com
+registry=https://registry.npmjs.org/
+----
+
+. Install the {hr_js} client as follows:
++
+[source,options="nowrap",subs=attributes+]
+----
+npm install @redhat/infinispan
+----
+endif::rhdg-install-npmrepo[]
+ifdef::rhdg-install-package[]
 . Download and extract the `redhat-datagrid-<version>-nodejs-client.zip` from the {portal}.
 . Install the `tgz` package from the extracted directory as in the following example:
 +
 [source,bash,options="nowrap",subs=attributes+]
 ----
-$ npm install /path/to/redhat-datagrid-<version>-nodejs-client/infinispan-<version>.tgz
+npm install /path/to/redhat-datagrid-<version>-nodejs-client/infinispan-<version>.tgz
 ----
-endif::downstream[]
+endif::rhdg-install-package[]
