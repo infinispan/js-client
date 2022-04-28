@@ -29,7 +29,6 @@
     "create-hash": "^1.1.0",
     "create-hmac": "^1.1.3",
     "log4js": "^3.0.5",
-    "promise.prototype.finally": "^3.1.0",
     "randombytes": "^2.0.1",
     "saslmechanisms": "^0.1.1",
     "underscore": "^1.9.1"
