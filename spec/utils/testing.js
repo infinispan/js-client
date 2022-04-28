@@ -4,9 +4,6 @@ var _ = require('underscore');
 
 var log4js = require('log4js');
 
-var promiseFinally = require('promise.prototype.finally');
-promiseFinally.shim(); // will be a no-op if not needed
-
 var readFile = require('fs').readFile;
 var httpRequest = require('request');
 var util = require('util');
