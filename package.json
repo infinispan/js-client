@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "buffer-xor": "^2.0.2",
-    "log4js": "^3.0.5",
+    "log4js": "^6.4.6",
     "saslmechanisms": "^0.1.1",
     "underscore": "^1.9.1"
   },
