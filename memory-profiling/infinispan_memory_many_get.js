@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var infinispan = require('../lib/infinispan');
-
-var heapdump = require('heapdump');
+var helper = require('./helper');
 
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},{cacheName: 'namedCache'});
 console.log("Connected to JDG server");
@@ -12,7 +11,6 @@ connected.then(function (client) {
 
   return put.then(function() {
     var heapUseAfterPut = process.memoryUsage().heapUsed;
-    //heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
 
     var temp = [];
     var numOps = 10000; // 500000

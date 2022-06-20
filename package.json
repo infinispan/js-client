@@ -31,7 +31,6 @@
   },
   "devDependencies": {
     "growl": "^1.10.5",
-    "heapdump": "^0.3.15",
     "jasmine-node": "^3.0.0",
     "jsdoc": "^3.6.10",
     "request": "^2.88.0"

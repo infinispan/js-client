@@ -1,7 +1,9 @@
 var _ = require('underscore');
 var infinispan = require('../lib/infinispan');
+var helper = require('./helper');
 
-var heapdump = require('heapdump');
+const fs = require('fs');
+const v8 = require('v8');
 
 var connected = infinispan.client({port: 11222, host: '127.0.0.1'},{cacheName: 'namedCache'});
 console.log("Connected to JDG server");
@@ -12,7 +14,7 @@ connected.then(function (client) {
   var afterPut = put.then(function() {
     //console.log("After put, heapUsed: "+process.memoryUsage().heapUsed);
 
-    heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
+    helper.createHeapSnapshot();
   });
 
   var get1 = afterPut.then(function test_get1() {
@@ -27,7 +29,7 @@ connected.then(function (client) {
     global.gc();
     //console.log("After get1, heapUsed: "+process.memoryUsage().heapUsed);
 
-    heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
+    helper.createHeapSnapshot();
   });
 
   var get2 = dumpAfterGet1.then(function test_get2() {
@@ -42,7 +44,7 @@ connected.then(function (client) {
     global.gc();
     //console.log("After get2, heapUsed: "+process.memoryUsage().heapUsed);
 
-    heapdump.writeSnapshot('/tmp/' + Date.now() + '.heapsnapshot');
+    helper.createHeapSnapshot();
   });
 
   return dumpAfterGet2.then(function test_disconnect() {
