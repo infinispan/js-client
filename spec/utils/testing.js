@@ -93,6 +93,7 @@ exports.client = function(args, opts) {
 exports.protocol25 = function() { return protocols.version25(); };
 
 exports.protocol29 = function(clientOpts) { return protocols.version29(clientOpts); };
+exports.protocol30 = function(clientOpts) { return protocols.version30(clientOpts); };
 
 exports.put = function(k, v, opts) {
   return function(client) { return client.put(k, v, opts); }
