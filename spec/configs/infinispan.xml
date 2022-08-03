@@ -24,6 +24,12 @@
       <local-cache name="jsonCache">
          <encoding media-type="text/plain"/>
       </local-cache>
+      <local-cache name="protoStreamCache">
+         <encoding>
+             <key media-type="text/plain"/>
+	     <value media-type="application/x-protostream"/>
+         </encoding>
+      </local-cache>
    </cache-container>
 
    <server xmlns="urn:infinispan:server:13.0">
