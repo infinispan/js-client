@@ -39,7 +39,7 @@ describe('Protobuf encoding', function () {
         root = protobuf.parse(myMsg).root;
 
         // Obtain a message type
-        var AwesomeMessage = root.lookupType("awesomepackage.AwesomeMessage");
+        var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
         var payload = { awesomeField: "AwesomeString" };
         var errMsg = AwesomeMessage.verify(payload);
         expect(errMsg === null).toBeTruthy();
@@ -51,10 +51,10 @@ describe('Protobuf encoding', function () {
 );
 
 describe('Protostream encoding', function () {
-    p30.registerProtostreamType("AwesomeMessage", 1000043);
+    p30.registerProtostreamType(".awesomepackage.AwesomeMessage", 1000043);
 
     it("Returns the Protostream type", function () {
-        var psType = p30.lookupProtostreamTypeByName("AwesomeMessage");
+        var psType = p30.lookupProtostreamTypeByName(".awesomepackage.AwesomeMessage");
         expect(psType.protostreamDescriptorId).toBe(1000043);
     });
 
@@ -62,9 +62,8 @@ describe('Protostream encoding', function () {
         root = protobuf.parse(myMsg).root;
         protobuf.loadSync(path.join(__dirname + '/../lib/protostream/message-wrapping.proto'), root);
         // Obtain message types
-        var AwesomeMessage = root.lookupType("awesomepackage.AwesomeMessage");
-        var WrappedMessage = root.lookupType("org.infinispan.protostream.WrappedMessage");
-
+        var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
+        var WrappedMessage = root.lookupType(".org.infinispan.protostream.WrappedMessage");
         // Build input message
         var payload = { awesomeField: "AwesomeString" };
         var errMsg = AwesomeMessage.verify(payload);
@@ -101,7 +100,7 @@ describe("Put/Get protostream object to/from Infinispan", function () {
             var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
             var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
             var root = protobuf.parse(myMsg).root;
-            var AwesomeMessage = root.lookupType("awesomepackage.AwesomeMessage");
+            var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
             var payload = { awesomeField: "AwesomeString" };
             var errMsg = AwesomeMessage.verify(payload);
             expect(errMsg === null).toBeTruthy();
