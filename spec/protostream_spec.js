@@ -96,11 +96,11 @@ describe('Protostream encoding', function () {
 
 describe("Put/Get protostream object to/from Infinispan", function () {
     it("Puts protostream on Infinispan", async function (done) {
-        try {
+        var root = protobuf.parse(myMsg).root;
+        var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
+    try {
             var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
             var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
-            var root = protobuf.parse(myMsg).root;
-            var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
             var payload = { awesomeField: "AwesomeString" };
             var errMsg = AwesomeMessage.verify(payload);
             expect(errMsg === null).toBeTruthy();
@@ -117,6 +117,24 @@ describe("Put/Get protostream object to/from Infinispan", function () {
             client.disconnect();
             done();
         } catch (error) {
+            protoMetaClient.disconnect();
+            client.disconnect();
+            done(new Error(error));
+        }
+    }
+    );
+    it("Gets protostream on Infinispan", async function (done) {
+        try {
+            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
+            p30.registerProtostreamRoot(root);
+            myObj=await client.get("myKey");
+            protoMetaClient.disconnect();
+            client.disconnect();
+            done();
+        } catch (error) {
+            protoMetaClient.disconnect();
+            client.disconnect();
             done(new Error(error));
         }
     }
