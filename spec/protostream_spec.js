@@ -55,7 +55,7 @@ describe('Protostream encoding', function () {
 
     it("Returns the Protostream type", function () {
         var psType = p30.lookupProtostreamTypeByName(".awesomepackage.AwesomeMessage");
-        expect(psType.protostreamDescriptorId).toBe(1000043);
+        expect(psType).toBe(1000043);
     });
 
     it("Encodes a Protostream message", function () {
