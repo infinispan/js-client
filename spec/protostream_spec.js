@@ -112,6 +112,11 @@ describe("Put/Get protostream object to/from Infinispan", function () {
             expect(await client.size()).toBe(0);
             await client.put("myKey", message);
             expect(await client.size()).toBe(1);
+            await client.put("myKey1", 1.2);
+            await client.put("myKey2","string");
+            await client.put("myKey3",true);
+            await client.put("myKey4",new ArrayBuffer(8));
+            expect(await client.size()).toBe(5);
 
             protoMetaClient.disconnect();
             client.disconnect();
@@ -123,12 +128,17 @@ describe("Put/Get protostream object to/from Infinispan", function () {
         }
     }
     );
+
     it("Gets protostream on Infinispan", async function (done) {
         try {
             var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
             var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
             p30.registerProtostreamRoot(root);
-            myObj=await client.get("myKey");
+            var myObj=await client.get("myKey");
+            var myObj1=await client.get("myKey1");
+            var myObj2=await client.get("myKey2");
+            var myObj3=await client.get("myKey3");
+            var myObj4=await client.get("myKey4"); 
             protoMetaClient.disconnect();
             client.disconnect();
             done();
