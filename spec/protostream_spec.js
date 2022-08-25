@@ -140,6 +140,7 @@ describe("Put/Get protostream object to/from Infinispan", function () {
             var myObj3=await client.get("myKey3");
             var myObj4=await client.get("myKey4"); 
             protoMetaClient.disconnect();
+            await client.clear();
             client.disconnect();
             done();
         } catch (error) {
@@ -150,3 +151,32 @@ describe("Put/Get protostream object to/from Infinispan", function () {
     }
     );
 });
+
+describe('Querying in application/x-protostream format',function () {
+    var root = protobuf.parse(myMsg).root;
+    var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
+    it("Queries the server", async function (done) {
+        try{
+            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
+            await protoMetaClient.put("awesomepackage/AwesomeMessage.proto", myMsg2);
+            await client.clear();
+            for(let i=0;i<10;i++){
+                var payload = { awesomeField: "AwesomeString"+i };
+                var message = AwesomeMessage.create(payload);
+                await client.put(i,message)
+            }
+            var queryResp = await client.query({queryString:`from awesomepackage.AwesomeMessage ORDER BY awesome_field`});
+            expect(queryResp.length).toBe(10);
+            protoMetaClient.disconnect();
+            await client.clear();
+            client.disconnect();
+            done();
+        }catch (error) {
+            protoMetaClient.disconnect();
+            client.disconnect();
+            done(new Error(error));
+        }
+    });
+}
+);
