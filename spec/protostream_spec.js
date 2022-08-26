@@ -166,8 +166,12 @@ describe('Querying in application/x-protostream format',function () {
                 var message = AwesomeMessage.create(payload);
                 await client.put(i,message)
             }
-            var queryResp = await client.query({queryString:`from awesomepackage.AwesomeMessage ORDER BY awesome_field`});
-            expect(queryResp.length).toBe(10);
+            var queryResp1 = await client.query({queryString:`from awesomepackage.AwesomeMessage ORDER BY awesome_field`});
+            expect(queryResp1.length).toBe(10);
+            var queryResp2 = await client.query({queryString:`from awesomepackage.AwesomeMessage a where a.awesome_field='AwesomeString1'`});
+            expect(queryResp2.length).toBe(1);
+            var queryResp3 = await client.query({queryString:`from awesomepackage.AwesomeMessage a where a.awesome_field='AwesomeString100'`});
+            expect(JSON.stringify(queryResp3)).toBe(JSON.stringify([{}]));
             protoMetaClient.disconnect();
             await client.clear();
             client.disconnect();
