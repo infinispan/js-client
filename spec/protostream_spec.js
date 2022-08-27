@@ -25,6 +25,16 @@ message AwesomeMessage {
     required string awesome_field = 1;
 }`
 
+var myMsg3 = `package awesomepackage;
+/**
+ * @TypeId(1000044)
+ */
+message AwesomeUser {
+    required string name = 1;
+    required int64 age = 2;
+    required bool isVerified =3;
+}`
+
 var p30 = t.protocol30({
     dataFormat: {
         keyType: 'text/plain',
@@ -155,7 +165,9 @@ describe("Put/Get protostream object to/from Infinispan", function () {
 describe('Querying in application/x-protostream format',function () {
     var root = protobuf.parse(myMsg).root;
     var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
-    it("Queries the server", async function (done) {
+    var root2 = protobuf.parse(myMsg3).root;
+    var AwesomeUser = root2.lookupType(".awesomepackage.AwesomeUser");
+    it("Queries the server without projection", async function (done) {
         try{
             var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
             var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
@@ -183,5 +195,42 @@ describe('Querying in application/x-protostream format',function () {
             done(new Error(error));
         }
     });
+
+    it("Queries the server with projection", async function (done) {
+        try{
+            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
+            await protoMetaClient.put("awesomepackage/AwesomeUser.proto", myMsg3);
+            p30.registerProtostreamRoot(root2);
+            p30.registerProtostreamType(".awesomepackage.AwesomeUser",1000044);
+            await client.clear();
+            for(let i=0;i<10;i++){
+                var payload = { name: "AwesomeString"+i , age : i , isVerified: (Math.random()<0.5)};
+                var message = AwesomeUser.create(payload);
+                await client.put(i,message)
+            }
+
+            var query1 = await client.query({queryString:`select u.name,u.age from awesomepackage.AwesomeUser u where u.age<20`});
+            
+            expect(query1.length).toBe(10);
+            expect(query1[0].length).toBe(2);
+            
+            var query2 = await client.query({queryString:`select u.name from awesomepackage.AwesomeUser u where u.age=2`});
+            expect(query2[0][0]).toBe("AwesomeString2");
+
+            var query3 = await client.query({queryString:`select u.name from awesomepackage.AwesomeUser u where u.age>20`});
+            expect(query3.length).toBe(0);
+
+            protoMetaClient.disconnect();
+            await client.clear();
+            client.disconnect();
+            done();
+        }catch (error) {
+            protoMetaClient.disconnect();
+            client.disconnect();
+            done(new Error(error));
+        }
+    });
+    
 }
 );
