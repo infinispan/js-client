@@ -2,6 +2,7 @@
 
 var _ = require('underscore');
 var path = require('path');
+var long = require('long');
 
 var t = require('./utils/testing'); // Testing dependency
 var protobuf = require('protobufjs');
@@ -204,17 +205,17 @@ describe('Querying in application/x-protostream format',function () {
             p30.registerProtostreamRoot(root2);
             p30.registerProtostreamType(".awesomepackage.AwesomeUser",1000044);
             await client.clear();
-            for(let i=0;i<10;i++){
+            for (let i = 0; i < 10; i++){
                 var payload = { name: "AwesomeString"+i , age : i , isVerified: (Math.random()<0.5)};
                 var message = AwesomeUser.create(payload);
                 await client.put(i,message)
             }
-
-            var query1 = await client.query({queryString:`select u.name,u.age from awesomepackage.AwesomeUser u where u.age<20`});
-            
+            var query1 = await client.query({ queryString: `select u.name,u.age from awesomepackage.AwesomeUser u where u.age<20 order by u.name asc` });
             expect(query1.length).toBe(10);
             expect(query1[0].length).toBe(2);
-            
+            for (let i = 0; i < 10; i++) {
+                expect(_.isEqual(query1[i][1], long.fromValue(i))).toBeTruthy();
+            }
             var query2 = await client.query({queryString:`select u.name from awesomepackage.AwesomeUser u where u.age=2`});
             expect(query2[0][0]).toBe("AwesomeString2");
 
