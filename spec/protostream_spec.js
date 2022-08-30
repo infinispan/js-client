@@ -144,7 +144,7 @@ describe("Put/Get protostream object to/from Infinispan", function () {
         try {
             var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
             var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
-            p30.registerProtostreamRoot(root);
+            client.registerProtostreamRoot(root);
             var myObj=await client.get("myKey");
             var myObj1=await client.get("myKey1");
             var myObj2=await client.get("myKey2");
@@ -202,8 +202,8 @@ describe('Querying in application/x-protostream format',function () {
             var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
             var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
             await protoMetaClient.put("awesomepackage/AwesomeUser.proto", myMsg3);
-            p30.registerProtostreamRoot(root2);
-            p30.registerProtostreamType(".awesomepackage.AwesomeUser",1000044);
+            client.registerProtostreamRoot(root2);
+            client.registerProtostreamType(".awesomepackage.AwesomeUser",1000044);
             await client.clear();
             for (let i = 0; i < 10; i++){
                 var payload = { name: "AwesomeString"+i , age : i , isVerified: (Math.random()<0.5)};
