@@ -114,3 +114,12 @@ Use the `getWithMetadata` and `size` methods expire cache entries.
 ----
 include::code_examples/ephemeral-data.js[]
 ----
+
+== Working with queries
+
+Use `query` method to query caches. Client must be configured to have `application/x-protostream` data format for values. See https://infinispan.org/docs/stable/titles/query/query.html[Querying Infinispan] for more info.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/queries.js[]
+----
