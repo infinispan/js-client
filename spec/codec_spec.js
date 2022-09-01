@@ -120,7 +120,7 @@ function strSize(str) {
 
 describe('Variable number encode/decode', function() {
   it('can resize buffer when encoding a VInt', function() {
-    assert(Math.pow(2, 31) - 1, 5, singleVIntEncode(Math.pow(2, 31) - 1), singleVIntDecode, 1);
+    assert(Math.pow(2, 32) - 1, 5, singleVIntEncode(Math.pow(2, 32) - 1), singleVIntDecode, 1);
   });
   it('can resize buffer when encoding a VLong', function() {
     assert(Math.pow(2, 53) - 1, 8, singleVLongEncode(Math.pow(2, 53) - 1), singleVLongDecode, 1);
@@ -134,12 +134,12 @@ describe('Variable number encode/decode', function() {
   it('can encode 2^21', function() { encodeDecodeVNum(Math.pow(2, 21)); });
   it('can encode 2^28 - 1', function() { encodeDecodeVNum(Math.pow(2, 28) - 1); });
   it('can encode 2^28', function() { encodeDecodeVNum(Math.pow(2, 28)); });
-  it('can encode 2^31 - 1', function() { encodeDecodeVNum(Math.pow(2, 31) - 1); });
-  it('fails to encode 2^31 as a VInt because it is out of bounds', function() {
-    var encode = f.actions([codec.encodeVInt(Math.pow(2, 31))], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrow('must be less than 2^31');
+  it('can encode 2^32 - 1', function() { encodeDecodeVNum(Math.pow(2, 32) - 1); });
+  it('fails to encode 2^32 as a VInt because it is out of bounds', function() {
+    var encode = f.actions([codec.encodeVInt(Math.pow(2, 32))], codec.bytesEncoded);
+    expect(function() { encode(t.newByteBuf()) }).toThrow('must be less than 2^32');
   });
-  it('can encode 2^31', function() { encodeDecodeVLong(Math.pow(2, 31)); });
+  it('can encode 2^32', function() { encodeDecodeVLong(Math.pow(2, 32)); });
   it('can encode 2^35 - 1', function() { encodeDecodeVLong(Math.pow(2, 35) - 1); });
   it('can encode 2^35', function() { encodeDecodeVLong(Math.pow(2, 35)); });
   it('can encode 2^42 - 1', function() { encodeDecodeVLong(Math.pow(2, 42) - 1); });
@@ -155,7 +155,7 @@ describe('Variable number encode/decode', function() {
   it('fails to encode a number when it is not a number', function() {
     var encode = f.actions([codec.encodeVInt('blah')], codec.bytesEncoded);
     expect(function() { encode(t.newByteBuf()) })
-        .toThrow('must be a number, must be >= 0, must be less than 2^31');
+        .toThrow('must be a number, must be >= 0, must be less than 2^32');
   });
   it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeVInt(-1)], codec.bytesEncoded);
