@@ -117,9 +117,12 @@ include::code_examples/ephemeral-data.js[]
 
 == Working with queries
 
-Use `query` method to query caches. Client must be configured to have `application/x-protostream` data format for values. See https://infinispan.org/docs/stable/titles/query/query.html[Querying Infinispan] for more info.
+Use the `query` method to perform queries on your caches.
+You must configure {hr_js} client to have `application/x-protostream` data format for values in your caches.
 
 [source,javascript,options="nowrap",subs=attributes+]
 ----
 include::code_examples/queries.js[]
 ----
+
+See link:{query_docs}[Querying {brandname} caches] for more information.
