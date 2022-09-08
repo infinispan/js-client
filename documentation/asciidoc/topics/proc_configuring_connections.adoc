@@ -2,7 +2,7 @@
 = Configuring {brandname} connections
 Configure {hr_js} clients to connect to {brandname} Server.
 
-If add multiple server addresses to the configuration, the {hr_js} client loops through them until it finds a node to which it can connect.
+If you add multiple server addresses to the configuration, the {hr_js} client loops through them until it finds a node to which it can connect.
 
 However, you only need to add one {brandname} Server address for the client to receive the entire cluster topology.
 If the {hr_js} client connects to a single server instance that is a member of a cluster, the client gets the address information for all nodes.
