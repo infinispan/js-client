@@ -3,7 +3,6 @@
   "version": "0.9.0",
   "description": "Infinispan Javascript client",
   "main": "index",
-  "type": "module",
   "typings": "./types",
   "directories": {
     "test": "test"
