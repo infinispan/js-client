@@ -26,8 +26,8 @@ export type mediaType = string | number | object ;
 //TODO: add type for protobuf instance
 
 export interface addr{
-    port : Number,
-    host : String
+    port : number,
+    host : string
 }
 
 export interface clientOpts{
