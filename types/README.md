@@ -7,7 +7,7 @@ const protobuf = require("protobufjs");
 
 import * as infinispan from "infinispan";
 
-var client = infinispan.client(
+var client = infinispan.Client(
   { port: 11222, host: "127.0.0.1" },
   {
     dataFormat: {
@@ -25,7 +25,7 @@ var client = infinispan.client(
   }
 );
 
-var protoMetaClient = infinispan.client({ port: 11222, host: "127.0.0.1" }, {
+var protoMetaClient = infinispan.Client({ port: 11222, host: "127.0.0.1" }, {
   authentication: {
     enabled: true,
     saslMechanism: "DIGEST-MD5",
