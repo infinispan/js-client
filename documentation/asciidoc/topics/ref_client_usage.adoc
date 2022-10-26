@@ -114,3 +114,15 @@ Use the `getWithMetadata` and `size` methods expire cache entries.
 ----
 include::code_examples/ephemeral-data.js[]
 ----
+
+== Working with queries
+
+Use the `query` method to perform queries on your caches.
+You must configure {hr_js} client to have `application/x-protostream` data format for values in your caches.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/queries.js[]
+----
+
+See link:{query_docs}[Querying {brandname} caches] for more information.
