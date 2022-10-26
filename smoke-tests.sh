@@ -15,6 +15,7 @@ node \
   spec/infinispan_ssl_spec.js \
   spec/infinispan_stress_spec.js \
   spec/protocols_spec.js \
+  spec/protostream_spec.js \
   spec/tests.js \
   spec/utils_spec.js \
   --captureExceptions --junitreport --forceexit
