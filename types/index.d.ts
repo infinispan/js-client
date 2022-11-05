@@ -16,52 +16,146 @@ export function client(args: {
      * - Server port.
      */
     port: number;
-}[], options: any): any;
-export function Client(addrs: any, clientOpts: any): {
+}[], options?: {
+    /**
+     * - Version of client/server protocol.
+     */
+    version?: (2.9 | 2.5 | 2.2) | null;
+    /**
+     * - Optional cache name.
+     */
+    cacheName: string | null;
+    /**
+     * - Optional number of retries for operation.
+     */
+    maxRetries?: number | null;
+    /**
+     * - Optional flag to enable SSL support.
+     */
+    enabled?: boolean | null;
+    /**
+     * - Optional field with secure protocol in use.
+     */
+    secureProtocol?: string | null;
+    /**
+     * - Optional paths of trusted SSL certificates.
+     */
+    trustCerts: string[] | null;
+    /**
+     * - Optional path to client authentication key.
+     */
+    key: string | null;
+    /**
+     * - Optional password for client key.
+     */
+    passphrase: string | null;
+    /**
+     * - Optional client certificate.
+     */
+    cert: string | null;
+    /**
+     * - Optional SNI host name.
+     */
+    sniHostName: string | null;
+    /**
+     * - Optional crypto store path.
+     */
+    path: string | null;
+    /**
+     * - Select the SASL mechanism to use. Can be one of PLAIN, DIGEST-MD5, SCRAM-SHA-1, SCRAM-SHA-256, SCRAM-SHA-384, SCRAM-SHA-512, EXTERNAL, OAUTHBEARER
+     */
+    saslMechanism: string | null;
+    /**
+     * - The authentication username. Required by the PLAIN, DIGEST and SCRAM mechanisms.
+     */
+    userName: string | null;
+    /**
+     * - The authentication password. Required by the PLAIN, DIGEST and SCRAM mechanisms.
+     */
+    password: string | null;
+    /**
+     * - The OAuth token. Required by the OAUTHBEARER mechanism.
+     */
+    token: string | null;
+    /**
+     * - The SASL authorization ID.
+     */
+    authzid: string | null;
+    /**
+     * - Optional flag to controls whether the client deals with topology updates or not.
+     */
+    topologyUpdates?: boolean | null;
+    /**
+     * - Media type of the cache contents.
+     */
+    mediaType?: ("text/plain" | "application/json") | null;
+    /**
+     * - Optional additional clusters for cross-site failovers.
+     */
+    clusters: {
+        /**
+         * - Cluster name.
+         */
+        name: string;
+        /**
+         * - Cluster servers details.
+         */
+        servers: {
+            /**
+             * - Server host name.
+             */
+            host: string;
+            /**
+             * - Server port.
+             */
+            port: number;
+        }[];
+    }[];
+}): Promise<{
     connect: () => any;
     /**
      * Disconnect client from backend server(s).
      *
-     * @returns {module:promise.Promise}
+     * @returns {Promise<void>}
      * A promise that will be completed once client has
      * completed disconnection from server(s).
      * @memberof Client#
      * @since 0.3
      */
-    disconnect: () => any;
+    disconnect: () => Promise<void>;
     /**
      * Get the value associated with the given key parameter.
      *
      * @param k {(String|Object)} Key to retrieve.
-     * @returns {module:promise.Promise.<?String>}
+     * @returns {Promise.<?String>}
      * A promise that will be completed with the value associated with
      * the key, or undefined if the value is not present.
      * @memberof Client#
      * @since 0.3
      */
-    get: (k: (string | any)) => any;
+    get: (k: (string | any)) => Promise<string | null>;
     /**
      * Query the server with the given queryString.
      *
      * @param q {(Object)} query to retrieve.
-     * @returns {module:promise.Promise.<?Object[]>}
+     * @returns {Promise.<?Object[]>}
      * A promise that will be completed with the array of values associated with
      * the query, or empty array if the no values matches the query.
      * @memberof Client#
      * @since 1.3
      */
-    query: (q: (any)) => any;
+    query: (q: (any)) => Promise<any[] | null>;
     /**
      * Check whether the given key is present.
      *
      * @param k {(String|Object)} Key to check for presence.
-     * @returns {module:promise.Promise.<boolean>}
+     * @returns {Promise.<boolean>}
      * A promise that will be completed with true if there is a value
      * associated with the key, or false otherwise.
      * @memberof Client#
      * @since 0.3
      */
-    containsKey: (k: (string | any)) => any;
+    containsKey: (k: (string | any)) => Promise<boolean>;
     /**
      * Metadata value.
      *
@@ -78,13 +172,32 @@ export function Client(addrs: any, clientOpts: any): {
      * Get the value and metadata associated with the given key parameter.
      *
      * @param k {(String|Object)} Key to retrieve.
-     * @returns {module:promise.Promise.<?MetadataValue>}
+     * @returns {Promise.<?MetadataValue>}
      * A promise that will be completed with the value and metadata
      * associated with the key, or undefined if the value is not present.
      * @memberof Client#
      * @since 0.3
      */
-    getWithMetadata: (k: (string | any)) => any;
+    getWithMetadata: (k: (string | any)) => Promise<{
+        /**
+         * - Value associated with the key
+         */
+        value: (string | any);
+        /**
+         * - Version of the value as a byte buffer.
+         */
+        version: Buffer;
+        /**
+         * - Lifespan of entry, defined in seconds.
+         * If the entry is immortal, it would be -1.
+         */
+        lifespan: number;
+        /**
+         * - Max idle time of entry, defined in seconds.
+         * If the entry is no transient, it would be -1.
+         */
+        maxIdle: number;
+    }>;
     /**
      * A String formatted to specify duration unit information.
      * Duration unit is formed of two elements, the first is the number of
@@ -115,15 +228,15 @@ export function Client(addrs: any, clientOpts: any): {
      *
      * @param k {(String|Object)} Key with which the specified value is to be associated.
      * @param v {(String|Object)} Value to be associated with the specified key.
-     * @param opts {?StoreOptions} Optional store options.
-     * @returns {module:promise.Promise.<?(String|Object)>}
+     * @param opts {StoreOptions=} Optional store options.
+     * @returns {Promise.<?(String|Object)>}
      * A promise that will be completed with undefined unless 'previous'
      * option has been enabled and a previous value exists, in which case it
      * would return the previous value.
      * @memberof Client#
      * @since 0.3
      */
-    put: (k: (string | any), v: (string | any), opts: {
+    put: (k: (string | any), v: (string | any), opts?: {
         /**
          * - Indicates whether previous value
          * should be returned. If no previous value exists, it would return
@@ -140,7 +253,7 @@ export function Client(addrs: any, clientOpts: any): {
          * Max idle time for the stored entry.
          */
         maxIdle: string;
-    }) => any;
+    }) => Promise<(string | any) | null>;
     /**
      * Remove options defines a set of optional parameters that can be
      * passed when removing data.
@@ -155,8 +268,8 @@ export function Client(addrs: any, clientOpts: any): {
      * Removes the mapping for a key if it is present.
      *
      * @param k {(String|Object)} Key whose mapping is to be removed.
-     * @param opts {?RemoveOptions} Optional remove options.
-     * @returns {module:promise.Promise.<(Boolean|String|Object)>}
+     * @param opts {RemoveOptions=} Optional remove options.
+     * @returns {Promise.<(Boolean|String|Object)>}
      * A promise that will be completed with true if the mapping was removed,
      * or false if the key did not exist.
      * If the 'previous' option is enabled, it returns the value
@@ -164,22 +277,22 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    remove: (k: (string | any), opts: {
+    remove: (k: (string | any), opts?: {
         /**
          * - Indicates whether previous value
          * should be returned. If no previous value exists, it would return
          * undefined.
          */
         previous: boolean;
-    }) => any;
+    }) => Promise<(boolean | string | any)>;
     /**
      * Conditional store operation that associates the key with the given
      * value if the specified key is not already associated with a value.
      *
      * @param k {(String|Object)} Key with which the specified value is to be associated.
      * @param v {(String|Object)} Value to be associated with the specified key.
-     * @param opts {?StoreOptions} Optional store options.
-     * @returns {module:promise.Promise.<(Boolean|String|Object)>}
+     * @param opts {StoreOptions=} Optional store options.
+     * @returns {Promise.<(Boolean|String|Object)>}
      * A promise that will be completed with true if the mapping was stored,
      * or false if the key is already present.
      * If the 'previous' option is enabled, it returns the existing value
@@ -187,7 +300,7 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    putIfAbsent: (k: (string | any), v: (string | any), opts: {
+    putIfAbsent: (k: (string | any), v: (string | any), opts?: {
         /**
          * - Indicates whether previous value
          * should be returned. If no previous value exists, it would return
@@ -204,15 +317,15 @@ export function Client(addrs: any, clientOpts: any): {
          * Max idle time for the stored entry.
          */
         maxIdle: string;
-    }) => any;
+    }) => Promise<(boolean | string | any)>;
     /**
      * Conditional store operation that replaces the entry for a key only
      * if currently mapped to a given value.
      *
      * @param k {(String|Object)} Key with which the specified value is associated.
      * @param v {(String|Object)} Value expected to be associated with the specified key.
-     * @param opts {?StoreOptions} Optional store options.
-     * @returns {module:promise.Promise.<(Boolean|String|Object)>}
+     * @param opts {StoreOptions=} Optional store options.
+     * @returns {Promise.<(Boolean|String|Object)>}
      * A promise that will be completed with true if the mapping was replaced,
      * or false if the key does not exist.
      * If the 'previous' option is enabled, it returns the value that was
@@ -220,7 +333,7 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    replace: (k: (string | any), v: (string | any), opts: {
+    replace: (k: (string | any), v: (string | any), opts?: {
         /**
          * - Indicates whether previous value
          * should be returned. If no previous value exists, it would return
@@ -237,7 +350,7 @@ export function Client(addrs: any, clientOpts: any): {
          * Max idle time for the stored entry.
          */
         maxIdle: string;
-    }) => any;
+    }) => Promise<(boolean | string | any)>;
     /**
      * Replaces the given value only if its version matches the supplied
      * version.
@@ -247,8 +360,8 @@ export function Client(addrs: any, clientOpts: any): {
      * @param version {Buffer} binary buffer version that should match the
      * one in the server for the operation to succeed. Version information
      * can be retrieved with getWithMetadata method.
-     * @param opts {?StoreOptions} Optional store options.
-     * @returns {module:promise.Promise.<(Boolean|String|Object)>}
+     * @param opts {StoreOptions=} Optional store options.
+     * @returns {Promise.<(Boolean|String|Object)>}
      * A promise that will be completed with true if the version matches
      * and the mapping was replaced, otherwise it returns false if not
      * replaced because key does not exist or version sent does not match
@@ -260,7 +373,7 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    replaceWithVersion: (k: (string | any), v: (string | any), version: Buffer, opts: {
+    replaceWithVersion: (k: (string | any), v: (string | any), version: Buffer, opts?: {
         /**
          * - Indicates whether previous value
          * should be returned. If no previous value exists, it would return
@@ -277,7 +390,7 @@ export function Client(addrs: any, clientOpts: any): {
          * Max idle time for the stored entry.
          */
         maxIdle: string;
-    }) => any;
+    }) => Promise<(boolean | string | any)>;
     /**
      * Removes the given entry only if its version matches the
      * supplied version.
@@ -286,8 +399,8 @@ export function Client(addrs: any, clientOpts: any): {
      * @param version {Buffer} binary buffer version that should match the
      * one in the server for the operation to succeed. Version information
      * can be retrieved with getWithMetadata method.
-     * @param opts {?RemoveOptions} Optional remove options.
-     * @returns {module:promise.Promise.<(Boolean|String|Object)>}
+     * @param opts {RemoveOptions=} Optional remove options.
+     * @returns {Promise.<(Boolean|String|Object)>}
      * A promise that will be completed with true if the version matches
      * and the mapping was removed, otherwise it returns false if not
      * removed because key does not exist or version sent does not match
@@ -299,14 +412,14 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    removeWithVersion: (k: (string | any), version: Buffer, opts: {
+    removeWithVersion: (k: (string | any), version: Buffer, opts?: {
         /**
          * - Indicates whether previous value
          * should be returned. If no previous value exists, it would return
          * undefined.
          */
         previous: boolean;
-    }) => any;
+    }) => Promise<(boolean | string | any)>;
     /**
      * Key/value entry.
      *
@@ -319,14 +432,23 @@ export function Client(addrs: any, clientOpts: any): {
      * Retrieves all of the entries for the provided keys.
      *
      * @param keys {(String[]|Object[])} Keys to find values for.
-     * @returns {module:promise.Promise.<Entry[]>}
+     * @returns {Promise.<Entry[]>}
      * A promise that will be completed with an array of entries for all
      * keys found. If a key does not exist, there won't be an entry for that
      * key in the returned array.
      * @memberof Client#
      * @since 0.3
      */
-    getAll: (keys: (string[] | any[])) => any;
+    getAll: (keys: (string[] | any[])) => Promise<{
+        /**
+         * - Entry's key.
+         */
+        key: (string | any);
+        /**
+         * - Entry's value.
+         */
+        value: (string | any);
+    }[]>;
     /**
      * Multi store options defines a set of optional parameters that can be
      * passed when storing multiple entries.
@@ -342,9 +464,9 @@ export function Client(addrs: any, clientOpts: any): {
      * Stores all of the mappings from the specified entry array.
      *
      * @param pairs {Entry[]} key/value pair mappings to be stored
-     * @param opts {MultiStoreOptions}
+     * @param opts {MultiStoreOptions=}
      * Optional storage options to apply to all entries.
-     * @returns {module:promise.Promise}
+     * @returns {Promise}
      * A promise that will be completed when all entries have been stored.
      * @memberof Client#
      * @since 0.3
@@ -358,7 +480,7 @@ export function Client(addrs: any, clientOpts: any): {
          * - Entry's value.
          */
         value: (string | any);
-    }[], opts: {
+    }[], opts?: {
         /**
          * -
          * Lifespan for the stored entry.
@@ -369,7 +491,7 @@ export function Client(addrs: any, clientOpts: any): {
          * Max idle time for the stored entry.
          */
         maxIdle: string;
-    }) => any;
+    }) => Promise<any>;
     /**
      * Iterator options defines a set of optional parameters that
      * control how iteration occurs and the data that's iterated over.
@@ -385,48 +507,48 @@ export function Client(addrs: any, clientOpts: any): {
      *
      * @param batchSize {Number}
      * The number of entries transferred from the server at a time.
-     * @param opts {?IteratorOptions} Optional iteration settings.
-     * @return {module:promise.Promise.<Iterator>}
+     * @param opts {IteratorOptions=} Optional iteration settings.
+     * @return {Promise.<Iterator>}
      * A promise that will be completed with an iterator that can be used
      * to retrieve stored elements.
      * @memberof Client#
      * @since 0.3
      */
-    iterator: (batchSize: number, opts: {
+    iterator: (batchSize: number, opts?: {
         /**
          * - Indicates whether entries iterated
          * over also expose metadata information. This option is false by
          * default which means no metadata information is exposed on iteration.
          */
         metadata: boolean;
-    }) => any;
+    }) => Promise<Iterator<any, any, undefined>>;
     /**
      * Count of entries in the server(s).
      *
-     * @returns {module:promise.Promise.<Number>}
+     * @returns {Promise.<Number>}
      * A promise that will be completed with the number of entries stored.
      * @memberof Client#
      * @since 0.3
      */
-    size: () => any;
+    size: () => Promise<number>;
     /**
      * Clear all entries stored in server(s).
      *
-     * @returns {module:promise.Promise}
+     * @returns {Promise}
      * A promise that will be completed when the clear has been completed.
      * @memberof Client#
      * @since 0.3
      */
-    clear: () => any;
+    clear: () => Promise<any>;
     /**
      * Pings the server(s).
      *
-     * @returns {module:promise.Promise}
+     * @returns {Promise}
      * A promise that will be completed when ping response was received.
      * @memberof Client#
      * @since 0.3
      */
-    ping: () => any;
+    ping: () => Promise<any>;
     /**
      * Statistic item.
      *
@@ -440,7 +562,7 @@ export function Client(addrs: any, clientOpts: any): {
     /**
      * Retrieve various statistics from server(s).
      *
-     * @returns {module:promise.Promise<StatsItem[]>}
+     * @returns {Promise<StatsItem[]>}
      * A promise that will be completed with an array of statistics, where
      * each element will have a single property. This single property will
      * have the statistic name as property name and statistic value as
@@ -448,7 +570,18 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    stats: () => any;
+    stats: () => Promise<{
+        /**
+         * -
+         * Name of the statistic.
+         */
+        STAT_NAME: string;
+        /**
+         * -
+         * Value of the statistic.
+         */
+        STAT_VALUE: string;
+    }[]>;
     /**
      * Listener options.
      *
@@ -470,44 +603,44 @@ export function Client(addrs: any, clientOpts: any): {
      * entry version and listener id.
      * 'remove' and 'expiry' events callback the function with key
      * and listener id.
-     * @param opts {?ListenOptions} Options for adding listener.
-     * @returns {module:promise.Promise<String>}
+     * @param opts {ListenOptions=} Options for adding listener.
+     * @returns {Promise<String>}
      * A promise that will be completed with the identifier of the listener.
      * This identifier can be used to register multiple callbacks with the
      * same listener, or to remove the listener.
      * @memberof Client#
      * @since 0.3
      */
-    addListener: (event: string, listener: Function, opts: {
+    addListener: (event: string, listener: Function, opts?: {
         /**
          * - Listener identifier can be passed
          * in as parameter to register multiple event callback functions for
          * the same listener.
          */
         listenerId: string;
-    }) => any;
+    }) => Promise<string>;
     /**
      * Remove an event listener.
      *
      * @param {String} listenerId
      * Listener identifier to identify listener to remove.
-     * @return {module:promise.Promise}
+     * @return {Promise}
      * A promise that will be completed when the listener has been removed.
      * @memberof Client#
      * @since 0.3
      */
-    removeListener: (listenerId: string) => any;
+    removeListener: (listenerId: string) => Promise<any>;
     /**
      * Add script to server(s).
      *
      * @param {String} scriptName Name of the script to store.
      * @param {String} script Script to store in server.
-     * @return {module:promise.Promise}
+     * @return {Promise}
      * A promise that will be completed when the script has been stored.
      * @memberof Client#
      * @since 0.3
      */
-    addScript: (scriptName: string, script: string) => any;
+    addScript: (scriptName: string, script: string) => Promise<any>;
     /**
      * Script execution parameters.
      *
@@ -522,9 +655,9 @@ export function Client(addrs: any, clientOpts: any): {
      * Execute the named script passing in optional parameters.
      *
      * @param {String} scriptName Name of the script to execute.
-     * @param {?ExecParams[]} params
+     * @param {ExecParams[]=} params
      * Optional array of named parameters to pass to script in server.
-     * @returns {module:promise.Promise<String|String[]>}
+     * @returns {Promise<String|String[]>}
      * A promise that will be completed with either the value returned by the
      * script after execution for local scripts, or an array of values
      * returned by the script when executed in multiple servers for
@@ -532,7 +665,7 @@ export function Client(addrs: any, clientOpts: any): {
      * @memberof Client#
      * @since 0.3
      */
-    execute: (scriptName: string, params: {
+    execute: (scriptName: string, params?: {
         /**
          * -
          * Name of the parameter.
@@ -543,7 +676,7 @@ export function Client(addrs: any, clientOpts: any): {
          * Value of the parameter.
          */
         PARAM_VALUE: string;
-    }[]) => any;
+    }[]) => Promise<string | string[]>;
     /**
      * Get server topology related information.
      *
@@ -603,24 +736,24 @@ export function Client(addrs: any, clientOpts: any): {
          * previously declared via configuration.
          *
          * @param clusterName name of the cluster to which to switch to
-         * @return {module:promise.Promise<Boolean>}
+         * @return {Promise<Boolean>}
          * A promise encapsulating a Boolean that indicates {@code true} if the
          * switch happened, or {@code false} otherwise.
          * @memberof Topology#
          * @since 0.4
          */
-        switchToCluster: (clusterName: any) => any;
+        switchToCluster: (clusterName: any) => Promise<boolean>;
         /**
          * Switch remote cache manager to the default cluster,
          * previously declared via configuration.
          *
-         * @return {module:promise.Promise<Boolean>}
+         * @return {Promise<Boolean>}
          * A promise encapsulating a Boolean that indicates {@code true} if the
          * switch happened, or {@code false} otherwise.
          * @memberof Topology#
          * @since 0.4
          */
-        switchToDefaultCluster: () => any;
+        switchToDefaultCluster: () => Promise<boolean>;
     };
     /**
      * Get client information represented as a string.
@@ -630,44 +763,4 @@ export function Client(addrs: any, clientOpts: any): {
     toString: () => string;
     registerProtostreamType: (typeName: any, descriptorId: any) => any;
     registerProtostreamRoot: (root: any) => any;
-};
-export namespace Client {
-    namespace config {
-        const version: string;
-        const cacheName: any;
-        const maxRetries: number;
-        namespace authentication {
-            const enabled: boolean;
-            const serverName: string;
-            const saslProperties: {};
-            const saslMechanism: string;
-            const userName: string;
-            const password: any[];
-            const realm: string;
-            const token: string;
-        }
-        namespace ssl {
-            const enabled_1: boolean;
-            export { enabled_1 as enabled };
-            export const secureProtocol: string;
-            export const trustCerts: any[];
-            export namespace clientAuth {
-                const key: any;
-                const passphrase: any;
-                const cert: any;
-            }
-            export const sniHostName: any;
-            export namespace cryptoStore {
-                export const path: any;
-                const passphrase_1: any;
-                export { passphrase_1 as passphrase };
-            }
-        }
-        namespace dataFormat {
-            const keyType: string;
-            const valueType: string;
-        }
-        const topologyUpdates: boolean;
-        const clusters: any[];
-    }
-}
+}>;
