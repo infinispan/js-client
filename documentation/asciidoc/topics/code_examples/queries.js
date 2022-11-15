@@ -12,8 +12,6 @@ const protobuf = require('protobufjs');
       required int64 age = 2;
       required bool isVerified =3;
   }`
-  let protoMetaClient;
-  let client;
   try {
     // Creating clients for two caches:
     // - ___protobuf_metadata for registering .proto file
@@ -36,8 +34,8 @@ const protobuf = require('protobufjs');
       dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" },
       cacheName: 'queryCache'
     }
-    protoMetaClient = await infinispan.client(connectProp, Object.assign(commonOpts, protoMetaClientOps));
-    client = await infinispan.client(connectProp, Object.assign(commonOpts, clientOps));
+    var protoMetaClient = await infinispan.client(connectProp, Object.assign(commonOpts, protoMetaClientOps));
+    var client = await infinispan.client(connectProp, Object.assign(commonOpts, clientOps));
 
     // Registering protobuf definition on server
     await protoMetaClient.put("awesomepackage/AwesomeUser.proto", cacheValueProtoDef);
@@ -75,7 +73,7 @@ const protobuf = require('protobufjs');
 })();
 
 function handleError(err) {
-  if (err.includes("'queryCache' not found")) {
+  if (err.message.includes("'queryCache' not found")) {
     console.log('*** ERROR ***');
     console.log(`*** This example needs a cache 'queryCache' with the following config:
     {
