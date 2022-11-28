@@ -24,7 +24,7 @@ export function client(args: {
     /**
      * - Optional cache name.
      */
-    cacheName: string | null;
+    cacheName?: string | null;
     /**
      * - Optional number of retries for operation.
      */
@@ -40,47 +40,47 @@ export function client(args: {
     /**
      * - Optional paths of trusted SSL certificates.
      */
-    trustCerts: string[] | null;
+    trustCerts?: string[] | null;
     /**
      * - Optional path to client authentication key.
      */
-    key: string | null;
+    key?: string | null;
     /**
      * - Optional password for client key.
      */
-    passphrase: string | null;
+    passphrase?: string | null;
     /**
      * - Optional client certificate.
      */
-    cert: string | null;
+    cert?: string | null;
     /**
      * - Optional SNI host name.
      */
-    sniHostName: string | null;
+    sniHostName?: string | null;
     /**
      * - Optional crypto store path.
      */
-    path: string | null;
+    path?: string | null;
     /**
      * - Select the SASL mechanism to use. Can be one of PLAIN, DIGEST-MD5, SCRAM-SHA-1, SCRAM-SHA-256, SCRAM-SHA-384, SCRAM-SHA-512, EXTERNAL, OAUTHBEARER
      */
-    saslMechanism: string | null;
+    saslMechanism?: string | null;
     /**
      * - The authentication username. Required by the PLAIN, DIGEST and SCRAM mechanisms.
      */
-    userName: string | null;
+    userName?: string | null;
     /**
      * - The authentication password. Required by the PLAIN, DIGEST and SCRAM mechanisms.
      */
-    password: string | null;
+    password?: string | null;
     /**
      * - The OAuth token. Required by the OAUTHBEARER mechanism.
      */
-    token: string | null;
+    token?: string | null;
     /**
      * - The SASL authorization ID.
      */
-    authzid: string | null;
+    authzid?: string | null;
     /**
      * - Optional flag to controls whether the client deals with topology updates or not.
      */
@@ -92,7 +92,7 @@ export function client(args: {
     /**
      * - Optional additional clusters for cross-site failovers.
      */
-    clusters: {
+    clusters?: {
         /**
          * - Cluster name.
          */
@@ -521,7 +521,7 @@ export function client(args: {
          * default which means no metadata information is exposed on iteration.
          */
         metadata: boolean;
-    }) => Promise<Iterator<any, any, undefined>>;
+    }) => Promise<Iterator>;
     /**
      * Count of entries in the server(s).
      *
@@ -760,7 +760,7 @@ export function client(args: {
      * @memberof Client#
      * @since 0.4
      */
-    toString: () => string;
+    toString: () => any;
     registerProtostreamType: (typeName: any, descriptorId: any) => any;
     registerProtostreamRoot: (root: any) => any;
 }>;
