@@ -4,15 +4,15 @@ The below code can be used for testing the type support.
 
 ```
 const protobuf = require("protobufjs");
+const infinispan = require("./lib/infinispan.js");
 
-import * as infinispan from "infinispan";
 
-var client = infinispan.Client(
+var client = infinispan.client(
   { port: 11222, host: "127.0.0.1" },
   {
     dataFormat: {
       keyType: "application/x-protostream",
-      valueType:  "application/x-protostream",
+      valueType: "application/x-protostream",
     },
     authentication: {
       enabled: true,
@@ -21,11 +21,11 @@ var client = infinispan.Client(
       password: "pass",
       serverName: "infinispan",
     },
-    cacheName:"protoStreamCache",
+    cacheName: "protoStreamCache",
   }
 );
 
-var protoMetaClient = infinispan.Client({ port: 11222, host: "127.0.0.1" }, {
+var protoMetaClient = infinispan.client({ port: 11222, host: "127.0.0.1" }, {
   authentication: {
     enabled: true,
     saslMechanism: "DIGEST-MD5",
@@ -37,7 +37,7 @@ var protoMetaClient = infinispan.Client({ port: 11222, host: "127.0.0.1" }, {
   dataFormat: { keyType: "text/plain", valueType: "text/plain" },
 });
 
-protoMetaClient.then(async function(client){
+protoMetaClient.then(async function (client) {
   var myMsg2 = `package awesomepackage;
   /**
    * @TypeId(1000042)
@@ -52,8 +52,8 @@ protoMetaClient.then(async function(client){
 })
 
 
-client.then(async function(client){
-    var myMsg2 = `package awesomepackage;
+client.then(async function (client) {
+  var myMsg2 = `package awesomepackage;
     /**
      * @TypeId(1000042)
      */
@@ -64,24 +64,24 @@ client.then(async function(client){
     }`;
 
 
-  let root=protobuf.parse(myMsg2).root;
-  let user=root.lookupType('awesomepackage.AwesomeMessages');
-  client.registerProtostreamType('.awesomepackage.AwesomeMessages',1000042);
+  let root = protobuf.parse(myMsg2).root;
+  let user = root.lookupType('awesomepackage.AwesomeMessages');
+  client.registerProtostreamType('.awesomepackage.AwesomeMessages', 1000042);
   client.registerProtostreamRoot(root);
-try {
-  for(let i=0;i<10;i++){
-    let payload = { name:"Neeraj"+i , age:20+i };
-    let buf=user.create(payload);
-    await client.put(i+1,buf);
-    console.log(await client.getWithMetadata(1));
+  try {
+    for (let i = 0; i < 10; i++) {
+      let payload = { name: "Neeraj" + i, age: 20 + i };
+      let buf = user.create(payload);
+      await client.put(i + 1, buf);
+      console.log(await client.getWithMetadata(1));
+    }
+    var decoded = await client.query({ queryString: `select u.name,u.age from awesomepackage.AwesomeMessages u where u.age>20` });
+    console.log(decoded);
+    await client.disconnect();
+  } catch (error) {
+    console.log(error);
   }
-  var decoded=await client.query({queryString:`select u.name,u.age from awesomepackage.AwesomeMessages u where u.age>20`});
-  console.log(decoded);
-  await client.disconnect();
-} catch (error) {
-  console.log(error);
-}
- 
+
 });
 ```
 

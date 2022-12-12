@@ -30,6 +30,10 @@ export function client(args: {
      */
     maxRetries?: number | null;
     /**
+     * - TLS/SSL properties.
+     */
+    ssl?: any | null;
+    /**
      * - Optional flag to enable SSL support.
      */
     enabled?: boolean | null;
@@ -62,6 +66,10 @@ export function client(args: {
      */
     path?: string | null;
     /**
+     * - Authentication properties.
+     */
+    authentication?: any | null;
+    /**
      * - Select the SASL mechanism to use. Can be one of PLAIN, DIGEST-MD5, SCRAM-SHA-1, SCRAM-SHA-256, SCRAM-SHA-384, SCRAM-SHA-512, EXTERNAL, OAUTHBEARER
      */
     saslMechanism?: string | null;
@@ -81,6 +89,18 @@ export function client(args: {
      * - The SASL authorization ID.
      */
     authzid?: string | null;
+    /**
+     * - Content-type for entry
+     */
+    dataFormat?: any | null;
+    /**
+     * - Content-type for key
+     */
+    keyType?: string | null;
+    /**
+     * - Content-type for value
+     */
+    valueType?: string | null;
     /**
      * - Optional flag to controls whether the client deals with topology updates or not.
      */
@@ -783,6 +803,7 @@ export function client(args: {
      * @property {?(2.9|2.5|2.2)} [version=2.9] - Version of client/server protocol.
      * @property {?String} [cacheName] - Optional cache name.
      * @property {?Number} [maxRetries=3] - Optional number of retries for operation.
+     * @property {?Object} [ssl] - TLS/SSL properties.
      * @property {?boolean} [ssl.enabled=false] - Optional flag to enable SSL support.
      * @property {?String} [ssl.secureProtocol=TLSv1_2_method] - Optional field with secure protocol in use.
      * @property {?String[]} [ssl.trustCerts] - Optional paths of trusted SSL certificates.
@@ -792,12 +813,17 @@ export function client(args: {
      * @property {?String} [ssl.sniHostName] - Optional SNI host name.
      * @property {?String} [ssl.cryptoStore.path] - Optional crypto store path.
      * @property {?String} [ssl.cryptoStore.passphrase] - Optional password for crypto store.
+     * @property {?Object} [authentication]- Authentication properties.
      * @property {?boolean} [authentication.enabled]- Enable authentication.
      * @property {?String} [authentication.saslMechanism] - Select the SASL mechanism to use. Can be one of PLAIN, DIGEST-MD5, SCRAM-SHA-1, SCRAM-SHA-256, SCRAM-SHA-384, SCRAM-SHA-512, EXTERNAL, OAUTHBEARER
      * @property {?String} [authentication.userName] - The authentication username. Required by the PLAIN, DIGEST and SCRAM mechanisms.
      * @property {?String} [authentication.password] - The authentication password. Required by the PLAIN, DIGEST and SCRAM mechanisms.
      * @property {?String} [authentication.token] - The OAuth token. Required by the OAUTHBEARER mechanism.
      * @property {?String} [authentication.authzid] - The SASL authorization ID.
+     * @property {?String} [authentication.authzid] - The SASL authorization ID.
+     * @property {?Object} [dataFormat] - Content-type for entry
+     * @property {?String} [dataFormat.keyType] - Content-type for key
+     * @property {?String} [dataFormat.valueType] - Content-type for value
      * @property {?boolean} [topologyUpdates=true] - Optional flag to controls whether the client deals with topology updates or not.
      * @property {?("text/plain"|"application/json")} [mediaType="text/plain"] - Media type of the cache contents.
      * @property {?Cluster[]} [clusters] - Optional additional clusters for cross-site failovers.
