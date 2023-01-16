@@ -5,7 +5,7 @@ var _ = require('underscore');
 var log4js = require('log4js');
 
 var readFile = require('fs').readFile;
-var httpRequest = require('request');
+var httpRequest = require('node-fetch');
 var util = require('util');
 
 var f = require('../../lib/functional');
@@ -729,16 +729,11 @@ function getClusterMembers(port) {
 
 function invokeDmrHttp(op, port) {
   return new Promise(function(fulfil, reject) {
-    httpRequest({
+    httpRequest('http://localhost:' + port + '/rest/v2',{
       method: 'POST',
-      url: 'http://localhost:' + port + '/rest/v2',
-      auth: {
-        user: 'admin',
-        pass: 'pass',
-        sendImmediately: false
-      },
       headers: {
-        'Content-Type' : 'application/json'
+        'Content-Type' : 'application/json',
+        'Authorization': `Basic ${Buffer.from('admin:pass', 'utf-8').toString('base64')}`
       },
       body: JSON.stringify(op)
     }, function(error, response, body) {
@@ -754,17 +749,12 @@ function invokeDmrHttp(op, port) {
 
 function invokeDmrHttpGet(method, opUrl, port) {
     return new Promise(function(fulfil, reject) {
-        httpRequest({
+        httpRequest('http://localhost:' + port + '/rest/v2' + opUrl, {
             method: method,
-            url: 'http://localhost:' + port + '/rest/v2' + opUrl,
-            auth: {
-                user: 'admin',
-                pass: 'pass',
-                sendImmediately: false
-            },
             headers: {
-                'Content-Type' : 'application/json'
-            }
+                'Content-Type' : 'application/json',
+                'Authorization': `Basic ${Buffer.from('admin:pass', 'utf-8').toString('base64')}`
+              }
         }, function(error, response, body) {
             if (!error && response.statusCode >= 200 && response.statusCode <= 204) {
               var resp = "";

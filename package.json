@@ -37,6 +37,6 @@
     "growl": "^1.10.5",
     "jasmine-node": "^3.0.0",
     "jsdoc": "^3.6.10",
-    "request": "^2.88.0"
+    "node-fetch": "^2.6.8"
   }
 }
