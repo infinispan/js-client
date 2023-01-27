@@ -27,7 +27,7 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if default server name (SNI) does not match default server realm',
-     testError(expectContainsError("self signed certificate in certificate chain"),
+     testError(expectContainsError('authority and subject key identifier mismatch'),
                sslSniDefault())
   );
 
@@ -36,7 +36,7 @@ describe('Infinispan TLS/SSL client', function() {
        expectAnyExactErrors(
          ['CERT_SIGNATURE_FAILURE'
            , 'certificate signature failure'
-           , 'self signed certificate in certificate chain'
+           , 'authority and subject key identifier mismatch'
          ])
        , sslSniUntrusted()
      )
@@ -53,32 +53,32 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if no encrypted transport is provided',
-      testError(expectAnyExactErrors(['self signed certificate in certificate chain']),
+      testError(expectAnyExactErrors(['self-signed certificate in certificate chain']),
                 sslStoreNoCryptoStore())
   );
 
   // it('fails to operate if key for authenticated encrypted transport is missing',
-  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self-signed certificate']),
   //               sslAuthWithMissingKey())
   // );
   //
   // it('fails to operate if passphrase for authenticated encrypted transport is missing',
-  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self-signed certificate']),
   //               sslAuthWithMissingPassphrase())
   // );
 
   // it('fails to operate if cert path for authenticated encrypted transport is missing',
-  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self-signed certificate']),
   //               sslAuthWithMissingCert())
   // );
 
   // it('fails to operate if authenticated encrypted transport is missing',
-  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self signed certificate']),
+  //     testError(expectAnyExactErrors(['CERT_SIGNATURE_FAILURE', 'self-signed certificate']),
   //               sslAuthWithMissingInfo())
   // );
 
   it('fails to operate if trusted certificate is missing for authenticated encrypted transport',
-      testError(expectAnyExactErrors(['self signed certificate in certificate chain']),
+      testError(expectAnyExactErrors(['self-signed certificate in certificate chain']),
                 sslAuthWithMissingTrustCertificate())
   );
 
