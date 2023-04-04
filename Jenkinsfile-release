@@ -39,6 +39,8 @@ pipeline {
                     withCredentials([string(credentialsId: 'npmauthtoken', variable: 'NPM_AUTH_TOKEN')]) {
                         sh './set-npm-auth-token.sh'
                     }
+                    sh "git status"
+                    sh "git diff"
                     sh "npm-release ${version}"
                 }
             }
