@@ -5,7 +5,7 @@
  *         Actually used range is: [4400 .. 4403]                                                                     *
  *********************************************************************************************************************/
 syntax = "proto2";
-import "Protos/message-wrapping.proto";
+import "message-wrapping.proto";
 
 package org.infinispan.query.remote.client;
 
