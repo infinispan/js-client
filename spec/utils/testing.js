@@ -723,7 +723,9 @@ function getClusterMembers(port) {
         var members = response.cluster_size;
         logger.debugf("Members are: %s", members);
         return members;
-      });
+      }).catch(function(response) {
+        logger.debugf("Server '%s' DEAD! Response: ", port, response);
+      }) ;
   }
 }
 
