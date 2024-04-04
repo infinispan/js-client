@@ -27,7 +27,7 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if default server name (SNI) does not match default server realm',
-     testError(expectContainsError("self signed certificate in certificate chain"),
+     testError(expectContainsAnyErrors(["self signed certificate in certificate chain", "self-signed certificate in certificate chain"]),
                sslSniDefault())
   );
 
@@ -37,6 +37,7 @@ describe('Infinispan TLS/SSL client', function() {
          ['CERT_SIGNATURE_FAILURE'
            , 'certificate signature failure'
            , 'self signed certificate in certificate chain'
+           , 'self-signed certificate in certificate chain'
          ])
        , sslSniUntrusted()
      )
@@ -53,7 +54,7 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if no encrypted transport is provided',
-      testError(expectAnyExactErrors(['self signed certificate in certificate chain']),
+      testError(expectAnyExactErrors(['self signed certificate in certificate chain',  'self-signed certificate in certificate chain']),
                 sslStoreNoCryptoStore())
   );
 
@@ -78,7 +79,7 @@ describe('Infinispan TLS/SSL client', function() {
   // );
 
   it('fails to operate if trusted certificate is missing for authenticated encrypted transport',
-      testError(expectAnyExactErrors(['self signed certificate in certificate chain']),
+      testError(expectAnyExactErrors(['self signed certificate in certificate chain', 'self-signed certificate in certificate chain']),
                 sslAuthWithMissingTrustCertificate())
   );
 
@@ -253,10 +254,10 @@ describe('Infinispan TLS/SSL client', function() {
     }
   }
 
-  function expectContainsError(msg) {
+  function expectContainsAnyErrors(msg) {
     return function(done) {
       return function(err) {
-        toContainAnyOf([msg], err, done);
+        toContainAnyOf(msg, err, done);
       }
     }
   }
