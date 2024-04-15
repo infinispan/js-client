@@ -30,13 +30,12 @@
     "buffer-xor": "^2.0.2",
     "log4js": "^6.4.6",
     "protobufjs": "^7.0.0",
-    "underscore": "^1.13.3"
+    "underscore": "^1.13.3",
+    "urllib": "^3.23.0"
   },
   "devDependencies": {
     "eslint": "^8.26.0",
-    "growl": "^1.10.5",
-    "jasmine-node": "^3.0.0",
-    "jsdoc": "^3.6.10",
-    "node-fetch": "^2.6.8"
+    "jasmine-node": "^1.16.0",
+    "long": "^5.2.3"
   }
 }

@@ -6,7 +6,7 @@
         xmlns:server="urn:infinispan:server:12.0">
 
     <cache-container>
-        <transport cluster="${infinispan.cluster.name}" stack="${infinispan.cluster.stack:tcp}"/>
+        <transport cluster="${infinispan.cluster.name:cluster}" stack="${infinispan.cluster.stack:tcp}"/>
     </cache-container>
 
     <server xmlns="urn:infinispan:server:12.0">
@@ -28,7 +28,7 @@
                     <!-- server-identities>
                        <ssl>
                           <keystore path="application.keystore" relative-to="infinispan.server.config.path"
-                                    keystore-password="password" alias="server" key-password="password"
+                                    password="password" alias="server" key-password="password"
                                     generate-self-signed-certificate-host="localhost"/>
                        </ssl>
                     </server-identities-->
