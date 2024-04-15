@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "buffer-xor": "^2.0.2",
+    "jsdoc": "^4.0.2",
     "log4js": "^6.4.6",
     "protobufjs": "^7.0.0",
     "underscore": "^1.13.3",
