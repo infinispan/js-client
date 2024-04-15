@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 // Commons functions
 
 var _ = require('underscore');
@@ -5,7 +6,7 @@ var _ = require('underscore');
 var log4js = require('log4js');
 
 var readFile = require('fs').readFile;
-var httpRequest = require('node-fetch');
+var httpRequest = require('urllib');
 var util = require('util');
 
 var f = require('../../lib/functional');
@@ -719,55 +720,36 @@ function getClusterMembers(port) {
 
     return invokeDmrHttpGet('GET', opUrl, port)
       .then(function(response) {
-        logger.debugf("Server '%s' replied with cluster members: %s", port, response.cluster_size);
+        logger.debugf('Server %s replied with cluster members: %s', port, response.cluster_size);
         var members = response.cluster_size;
-        logger.debugf("Members are: %s", members);
+        logger.debugf('Members are: %s', members);
         return members;
       });
-  }
+  };
 }
 
 function invokeDmrHttp(op, port) {
-  return new Promise(function(fulfil, reject) {
-    httpRequest('http://localhost:' + port + '/rest/v2',{
-      method: 'POST',
-      headers: {
-        'Content-Type' : 'application/json',
-        'Authorization': `Basic ${Buffer.from('admin:pass', 'utf-8').toString('base64')}`
-      },
-      body: JSON.stringify(op)
-    }, function(error, response, body) {
-      if (!error && response.statusCode == 200) {
-        fulfil(JSON.parse(body));
-      } else {
-        reject(util.format('Error (%s), body (%s), response(%s)',
-          error, body, JSON.stringify(response)));
-      }
-    });
-  });
+   return httpRequest.request(`http://localhost:${port}/rest/v2`,
+                              {method:'POST',
+                              digestAuth: 'admin:pass',
+                              headers:{
+                                 'Content-Type': 'application/json',
+                                 'body': op
+                               }}).then(res => res.statusCode==200 ? JSON.parse(res.data) : {},
+                                        error => (util.format('Error (%s)', error)));
 }
 
 function invokeDmrHttpGet(method, opUrl, port) {
-    return new Promise(function(fulfil, reject) {
-        httpRequest('http://localhost:' + port + '/rest/v2' + opUrl, {
-            method: method,
-            headers: {
-                'Content-Type' : 'application/json',
-                'Authorization': `Basic ${Buffer.from('admin:pass', 'utf-8').toString('base64')}`
-              }
-        }, function(error, response, body) {
-            if (!error && response.statusCode >= 200 && response.statusCode <= 204) {
-              var resp = "";
-              if (body) {
-                resp = JSON.parse(body);
-              }
-              fulfil(resp);
-            } else {
-                reject(util.format('Error (%s), body (%s), response(%s)',
-                    error, body, JSON.stringify(response)));
-            }
-        });
-    });
+
+   logger.debugf(`URL http://localhost:${port}/rest/v2${opUrl}`);
+   return httpRequest.request(`http://localhost:${port}/rest/v2${opUrl}`, {
+                   method: method,
+                   digestAuth: 'admin:pass',
+                   headers: {
+                       'Content-Type' : 'application/json'
+                     }
+               }).then( res => res.statusCode==200 ? JSON.parse(res.data) : {},
+                        error => (util.format('Error (%s)', error)));
 }
 
 function readFileAsync(path) {

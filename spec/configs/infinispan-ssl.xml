@@ -46,7 +46,7 @@
                 <security-realm name="default">
                     <server-identities>
                         <ssl>
-                            <keystore path="server.p12" keystore-password="secret" alias="server"/>
+                            <keystore path="server.p12" password="secret" alias="server"/>
                         </ssl>
                     </server-identities>
                     <properties-realm groups-attribute="Roles">
@@ -57,33 +57,33 @@
                 <security-realm name="client-cert">
                     <server-identities>
                         <ssl>
-                            <keystore path="server.p12" keystore-password="secret" alias="server"/>
+                            <keystore path="server.p12" password="secret" alias="server"/>
                         </ssl>
                     </server-identities>
                     <properties-realm groups-attribute="Roles">
                         <user-properties path="users.properties"/>
                         <group-properties path="groups.properties"/>
                     </properties-realm>
-                    <!--truststore-realm path="client.p12" keystore-password="secret"/-->
+                    <!--truststore-realm path="client.p12" password="secret"/-->
                 </security-realm>
                 <security-realm name="Trust1Realm">
                     <server-identities>
                         <ssl>
-                            <keystore path="trust1.p12" keystore-password="secret"/>
+                            <keystore path="trust1.p12" password="secret"/>
                         </ssl>
                     </server-identities>
                 </security-realm>
                 <security-realm name="Trust2Realm">
                     <server-identities>
                         <ssl>
-                            <keystore path="trust2.p12" keystore-password="secret"/>
+                            <keystore path="trust2.p12" password="secret"/>
                         </ssl>
                     </server-identities>
                 </security-realm>
                 <security-realm name="UntrustRealm">
                     <server-identities>
                         <ssl>
-                            <keystore path="untrust.p12" keystore-password="secret"/>
+                            <keystore path="untrust.p12" password="secret"/>
                         </ssl>
                     </server-identities>
                 </security-realm>

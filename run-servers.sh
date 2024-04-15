@@ -9,7 +9,7 @@ else
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_VERSION="${SERVER_VERSION:-"13.0.14.Final"}"
+SERVER_VERSION="${SERVER_VERSION:-"14.0.27.Final"}"
 SERVER_HOME=${SCRIPT_DIR}/server/original-server
 SERVER_ZIP=${SCRIPT_DIR}/server/${SERVER_VERSION}.zip
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
@@ -30,6 +30,7 @@ EOF
   MEMBERS_MAIN=''
   while [ "$MEMBERS_MAIN" != '3' ];
   do
+    echo $CLUSTER_SIZE_MAIN
     MEMBERS_MAIN=$($CLUSTER_SIZE_MAIN | grep cluster_size | cut -d':' -f2 | sed 's/.$//' | sed -e 's/^[[:space:]]*//')
     echo "Waiting for clusters to form (main: $MEMBERS_MAIN)"
     sleep 20
@@ -78,6 +79,18 @@ function prepareServerDir()
 
     echo "Infinispan configuration file ${confPath} copied to server ${dirName}."
 
+    #Installing nashorn engine before server startup
+    # If java > 15
+    if [ $(javap -verbose java.lang.String | grep "major version" | cut -d " " -f5) -ge 60 ];  then
+        mkdir -p ${SERVER_TMP}/${dirName}/lib
+        ${SERVER_TMP}/bin/cli.sh install org.openjdk.nashorn:nashorn-core:15.4 --server-root=${dirName}
+        ${SERVER_TMP}/bin/cli.sh install org.ow2.asm:asm:9.4  --server-root=${dirName}
+        ${SERVER_TMP}/bin/cli.sh install org.ow2.asm:asm-commons:9.4  --server-root=${dirName}
+        ${SERVER_TMP}/bin/cli.sh install org.ow2.asm:asm-tree:9.4  --server-root=${dirName}
+        ${SERVER_TMP}/bin/cli.sh install org.ow2.asm:asm-util:9.4  --server-root=${dirName}
+        echo Nashorn script engine installed for ${dirName}
+    fi
+
     if [[ ${isSsl} = "true" && ${IS_SSL_PROCESSED} = 0 ]]; then
         ./make-ssl.sh
         echo "Generate TLS/SSL certificates"
@@ -112,6 +125,8 @@ function startServer()
         portStr="-p ${port}"
     fi
 
+    echo 'Cleaning data dir in '$SERVER_TMP''
+    rm -rf $SERVER_TMP/data/*
     echo 'Run server '$nodeName' in '$SERVER_TMP''
 
     if [[ ${isCi} = "--ci" ]]; then
