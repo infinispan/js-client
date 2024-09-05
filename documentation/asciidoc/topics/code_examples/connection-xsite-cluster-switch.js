@@ -19,17 +19,17 @@ connected.then(function (client) {
   switchToB.then(function(switchSucceed) {
 
     if (switchSucceed) {
-      ...
+      // ...
     }
 
-    ...
+    // ...
 
     var switchToDefault = client.getTopologyInfo().switchToDefaultCluster();
 
     switchToDefault.then(function(switchSucceed) {
 
       if (switchSucceed) {
-        ...
+        // ...
       }
 
     })

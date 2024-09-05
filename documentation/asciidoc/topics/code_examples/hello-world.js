@@ -6,7 +6,7 @@ var connected = infinispan.client(
   {port: 11222, host: '127.0.0.1'},
   {
     cacheName: 'myCache',
-    clientIntelligence: 'BASIC',
+    topologyUpdates: false,
     authentication: {
       enabled: true,
       saslMechanism: 'DIGEST-MD5',

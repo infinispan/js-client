@@ -6,7 +6,7 @@ var connected = infinispan.client({port: 11222, host: '127.0.0.1'},
       clientAuth: {
         key: 'privkey.pem',
         passphrase: 'secret',
-        cert:ssl 'cert.pem'
+        cert: 'cert.pem'
       }
     }
   }
