@@ -98,7 +98,7 @@ $ npm install
 Next, start the Infinispan Servers via:
 
 ```bash
-$ ./run-server.sh
+$ ./run-servers.sh
 ```
 
 To run the testsuite once execute:
