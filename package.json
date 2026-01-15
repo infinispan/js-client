@@ -32,7 +32,7 @@
     "log4js": "^6.4.6",
     "protobufjs": "^7.0.0",
     "underscore": "^1.13.3",
-    "urllib": "^3.23.0"
+    "urllib": "^4.9.0"
   },
   "devDependencies": {
     "eslint": "^8.26.0",
