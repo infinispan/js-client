@@ -561,6 +561,42 @@ exports.prev = function() {
   return { previous: true };
 };
 
+exports.counterCreate = function(name, config) {
+  return function(client) { return client.counterCreate(name, config); };
+};
+
+exports.counterGet = function(name) {
+  return function(client) { return client.counterGet(name); };
+};
+
+exports.counterAddAndGet = function(name, value) {
+  return function(client) { return client.counterAddAndGet(name, value); };
+};
+
+exports.counterReset = function(name) {
+  return function(client) { return client.counterReset(name); };
+};
+
+exports.counterCompareAndSwap = function(name, expect, update) {
+  return function(client) { return client.counterCompareAndSwap(name, expect, update); };
+};
+
+exports.counterIsDefined = function(name) {
+  return function(client) { return client.counterIsDefined(name); };
+};
+
+exports.counterGetConfiguration = function(name) {
+  return function(client) { return client.counterGetConfiguration(name); };
+};
+
+exports.counterRemove = function(name) {
+  return function(client) { return client.counterRemove(name); };
+};
+
+exports.counterGetAndSet = function(name, value) {
+  return function(client) { return client.counterGetAndSet(name, value); };
+};
+
 exports.expectToThrow = function(func, errorMessage, done) {
   expect(func).toThrowError(errorMessage);
   if (f.existy(done)) done();
