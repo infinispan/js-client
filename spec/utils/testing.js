@@ -553,7 +553,7 @@ exports.prev = function() {
 };
 
 exports.expectToThrow = function(func, errorMessage, done) {
-  expect(func).toThrow(errorMessage);
+  expect(func).toThrowError(errorMessage);
   if (f.existy(done)) done();
 };
 
@@ -686,19 +686,19 @@ function waitUntil(expectF, cond, op) {
   }
 
   function loop(promise) {
-    exports.sleepFor(1000); // brief sleep
     // Simple recursive loop until condition has been met
     return promise
       .then(function(response) {
         var isDone = done(response);
         logger.debugf("Is waiting done for condition? %s", isDone);
 
-        return !isDone
-          ? loop(op())
-          : response;
+        if (isDone) return response;
+        return new Promise(function(resolve) { setTimeout(resolve, 1000); })
+          .then(function() { return loop(op()); });
       })
       .catch(function() {
-        return loop(op());
+        return new Promise(function(resolve) { setTimeout(resolve, 1000); })
+          .then(function() { return loop(op()); });
       });
   }
 
@@ -709,8 +709,7 @@ function waitUntil(expectF, cond, op) {
 }
 
 exports.sleepFor = function(sleepDuration) {
-  var now = new Date().getTime();
-  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
+  return new Promise(function(resolve) { setTimeout(resolve, sleepDuration); });
 };
 
 function getClusterMembers(port) {

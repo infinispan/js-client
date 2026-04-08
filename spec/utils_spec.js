@@ -149,6 +149,6 @@ describe('Address normalizer', function() {
   });
   it('throws an error when giving something unexpected', function() {
     expect(function() { return utils.normalizeAddresses('blah'); })
-        .toThrow('Unknown server addresses: blah');
+        .toThrowError('Unknown server addresses: blah');
   });
 });

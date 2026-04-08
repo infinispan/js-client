@@ -9,11 +9,11 @@ else
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_VERSION="${SERVER_VERSION:-"14.0.27.Final"}"
+SERVER_VERSION="${SERVER_VERSION:-"16.1.3"}"
 SERVER_HOME=${SCRIPT_DIR}/server/original-server
 SERVER_ZIP=${SCRIPT_DIR}/server/${SERVER_VERSION}.zip
 CLUSTER_SIZE_MAIN="$SERVER_HOME/bin/cli.sh -c http://admin:pass@localhost:11322 -f batch "
-ZIP_ROOT="http://downloads.jboss.org/infinispan"
+ZIP_ROOT="https://github.com/infinispan/infinispan/releases/download"
 DOWNLOAD_URL="${DOWNLOAD_URL:-"$ZIP_ROOT/$SERVER_VERSION/infinispan-server-$SERVER_VERSION.zip"}"
 
 CONF_DIR_TO_COPY_FROM="spec/configs/"

@@ -1,16 +1,16 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd
-                            urn:infinispan:server:13.0 https://infinispan.org/schemas/infinispan-server-13.0.xsd"
-        xmlns="urn:infinispan:config:13.0"
-        xmlns:server="urn:infinispan:server:13.0">
+        xsi:schemaLocation="urn:infinispan:config:16.1 https://infinispan.org/schemas/infinispan-config-16.0.xsd
+                            urn:infinispan:server:16.1 https://infinispan.org/schemas/infinispan-server-16.0.xsd"
+        xmlns="urn:infinispan:config:16.1"
+        xmlns:server="urn:infinispan:server:16.1">
 
    <cache-container name="default" statistics="true" default-cache="default">
 <!--      <security>-->
 <!--         <authorization/>-->
 <!--      </security>-->
       <metrics accurate-size="true"/>
-      <local-cache name="default">
+      <local-cache name="default" statistics="true">
          <locking acquire-timeout="30000" concurrency-level="1000" />
          <encoding media-type="text/plain"/>
       </local-cache>
@@ -32,7 +32,7 @@
       </local-cache>
    </cache-container>
 
-   <server xmlns="urn:infinispan:server:13.0">
+   <server xmlns="urn:infinispan:server:16.1">
       <interfaces>
          <interface name="public">
             <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
@@ -66,7 +66,7 @@
          <endpoint socket-binding="default" security-realm="default">
             <hotrod-connector name="hotrod">
                <authentication>
-                  <sasl mechanisms="PLAIN DIGEST-MD5 SCRAM-SHA-1 SCRAM-SHA-256 SCRAM-SHA-384 SCRAM-SHA-512"
+                  <sasl mechanisms="PLAIN SCRAM-SHA-256 SCRAM-SHA-384 SCRAM-SHA-512"
                         server-name="infinispan"/>
                </authentication>
             </hotrod-connector>

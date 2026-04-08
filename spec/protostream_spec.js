@@ -106,12 +106,12 @@ describe('Protostream encoding', function () {
 );
 
 describe("Put/Get protostream object to/from Infinispan", function () {
-    it("Puts protostream on Infinispan", async function (done) {
+    it("Puts protostream on Infinispan", async function () {
         var root = protobuf.parse(myMsg).root;
         var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
-    try {
-            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
-            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
+        var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+        var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
+        try {
             var payload = { awesomeField: "AwesomeString" };
             var errMsg = AwesomeMessage.verify(payload);
             expect(errMsg === null).toBeTruthy();
@@ -128,36 +128,27 @@ describe("Put/Get protostream object to/from Infinispan", function () {
             await client.put("myKey3",true);
             await client.put("myKey4",new ArrayBuffer(8));
             expect(await client.size()).toBe(5);
-
+        } finally {
             protoMetaClient.disconnect();
             client.disconnect();
-            done();
-        } catch (error) {
-            protoMetaClient.disconnect();
-            client.disconnect();
-            done(new Error(error));
         }
     }
     );
 
-    it("Gets protostream on Infinispan", async function (done) {
+    it("Gets protostream on Infinispan", async function () {
+        var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+        var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
         try {
-            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
-            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "text/plain", valueType: "application/x-protostream" } });
             client.registerProtostreamRoot(root);
             var myObj=await client.get("myKey");
             var myObj1=await client.get("myKey1");
             var myObj2=await client.get("myKey2");
             var myObj3=await client.get("myKey3");
-            var myObj4=await client.get("myKey4"); 
-            protoMetaClient.disconnect();
+            var myObj4=await client.get("myKey4");
             await client.clear();
-            client.disconnect();
-            done();
-        } catch (error) {
+        } finally {
             protoMetaClient.disconnect();
             client.disconnect();
-            done(new Error(error));
         }
     }
     );
@@ -168,10 +159,10 @@ describe('Querying in application/x-protostream format',function () {
     var AwesomeMessage = root.lookupType(".awesomepackage.AwesomeMessage");
     var root2 = protobuf.parse(myMsg3).root;
     var AwesomeUser = root2.lookupType(".awesomepackage.AwesomeUser");
-    it("Queries the server without projection", async function (done) {
-        try{
-            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
-            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
+    it("Queries the server without projection", async function () {
+        var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+        var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
+        try {
             await protoMetaClient.put("awesomepackage/AwesomeMessage.proto", myMsg2);
             await client.clear();
             for(let i=0;i<10;i++){
@@ -186,21 +177,17 @@ describe('Querying in application/x-protostream format',function () {
             expect(queryResp2[0].awesomeField).toEqual('AwesomeString1');
             var queryResp3 = await client.query({queryString:`from awesomepackage.AwesomeMessage a where a.awesome_field='AwesomeString100'`});
             expect(queryResp3.length).toEqual(0);
-            protoMetaClient.disconnect();
             await client.clear();
-            client.disconnect();
-            done();
-        }catch (error) {
+        } finally {
             protoMetaClient.disconnect();
             client.disconnect();
-            done(new Error(error));
         }
     });
 
-    it("Queries the server with projection", async function (done) {
-        try{
-            var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
-            var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
+    it("Queries the server with projection", async function () {
+        var protoMetaClient = await ispn.client(t.local, { authentication: t.authOpts.authentication, cacheName: '___protobuf_metadata', dataFormat: { keyType: "text/plain", valueType: "text/plain" } });
+        var client = await t.client(t.local, { authentication: t.authOpts.authentication, cacheName: 'protoStreamCache', dataFormat: { keyType: "application/x-protostream", valueType: "application/x-protostream" } });
+        try {
             await protoMetaClient.put("awesomepackage/AwesomeUser.proto", myMsg3);
             client.registerProtostreamRoot(root2);
             client.registerProtostreamType(".awesomepackage.AwesomeUser",1000044);
@@ -222,14 +209,10 @@ describe('Querying in application/x-protostream format',function () {
             var query3 = await client.query({queryString:`select u.name from awesomepackage.AwesomeUser u where u.age>20`});
             expect(query3.length).toBe(0);
 
-            protoMetaClient.disconnect();
             await client.clear();
-            client.disconnect();
-            done();
-        }catch (error) {
+        } finally {
             protoMetaClient.disconnect();
             client.disconnect();
-            done(new Error(error));
         }
     });
     

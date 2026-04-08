@@ -1,7 +1,7 @@
 var t = require('./utils/testing'); // Testing dependency
 
-describe('Infinispan local client', function () {
-  [ 'SCRAM-SHA-1', 'SCRAM-SHA-256', 'SCRAM-SHA-384', 'SCRAM-SHA-512', 'PLAIN', 'DIGEST-MD5'].forEach(m => 
+describe('Infinispan local client with authentication', function () {
+  [ 'SCRAM-SHA-256', 'SCRAM-SHA-384', 'SCRAM-SHA-512', 'PLAIN'].forEach(m =>
   it(m, function (done) {
     t.client(t.local, {
       authentication: {

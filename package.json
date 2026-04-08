@@ -9,9 +9,9 @@
   },
   "scripts": {
     "lint": "eslint --ignore-path .gitignore .",
-    "test": "./node_modules/.bin/jasmine-node spec"
+    "test": "jasmine"
   },
-  "author": "Galder Zamarreño",
+  "author": "Infinispan Community",
   "license": "Apache-2.0",
   "keywords": [
     "infinispan",
@@ -24,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/infinispan/js-client"
+    "url": "git+https://github.com/infinispan/js-client.git"
   },
   "dependencies": {
     "buffer-xor": "^2.0.2",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "eslint": "^8.26.0",
-    "jasmine-node": "^1.16.0",
+    "jasmine": "^6.1.0",
     "long": "^5.2.3"
   }
 }

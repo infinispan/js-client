@@ -137,7 +137,7 @@ describe('Variable number encode/decode', function() {
   it('can encode 2^32 - 1', function() { encodeDecodeVNum(Math.pow(2, 32) - 1); });
   it('fails to encode 2^32 as a VInt because it is out of bounds', function() {
     var encode = f.actions([codec.encodeVInt(Math.pow(2, 32))], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrow('must be less than 2^32');
+    expect(function() { encode(t.newByteBuf()) }).toThrowError('must be less than 2^32');
   });
   it('can encode 2^32', function() { encodeDecodeVLong(Math.pow(2, 32)); });
   it('can encode 2^35 - 1', function() { encodeDecodeVLong(Math.pow(2, 35) - 1); });
@@ -150,16 +150,16 @@ describe('Variable number encode/decode', function() {
   it('fails to encode 2^53 as a VLong because it is out of bounds', function() {
     var encode = f.actions([codec.encodeVLong(Math.pow(2, 53))], codec.bytesEncoded);
     expect(function() { encode(t.newByteBuf()) })
-        .toThrow('must be less than 2^53 (javascript safe integer limitation)');
+        .toThrowError('must be less than 2^53 (javascript safe integer limitation)');
   });
   it('fails to encode a number when it is not a number', function() {
     var encode = f.actions([codec.encodeVInt('blah')], codec.bytesEncoded);
     expect(function() { encode(t.newByteBuf()) })
-        .toThrow('must be a number, must be >= 0, must be less than 2^32');
+        .toThrowError('must be a number, must be >= 0, must be less than 2^32');
   });
   it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeVInt(-1)], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrow('must be >= 0');
+    expect(function() { encode(t.newByteBuf()) }).toThrowError('must be >= 0');
   });
 
   function encodeDecodeVNum(num) {
@@ -186,19 +186,19 @@ describe('Basic encode/decode', function() {
   it('fails to encode a byte when it is not a number', function() {
     var invalidByteEncode = f.actions([codec.encodeUByte('blah')], codec.bytesEncoded);
     expect(function() { invalidByteEncode(t.newByteBuf()) })
-        .toThrow('must be a number, must be >= 0');
+        .toThrowError('must be a number, must be >= 0');
   });
   it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeUByte(-1)], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrow('must be >= 0');
+    expect(function() { encode(t.newByteBuf()) }).toThrowError('must be >= 0');
   });
   it('fails to encode a byte when the value is too big (256 or higher)', function() {
     var overLimitByteEncode = f.actions([codec.encodeUByte(0x100)], codec.bytesEncoded);
-    expect(function() { overLimitByteEncode(t.newByteBuf()) }).toThrow();
+    expect(function() { overLimitByteEncode(t.newByteBuf()) }).toThrowError();
   });
   it('fails to decode if past the buffer end', function() {
     var bytebuf = t.newByteBuf();
-    expect(function() { f.actions([codec.decodeUByte()])(t.newByteBuf()) }).toThrow();
+    expect(function() { f.actions([codec.decodeUByte()])(t.newByteBuf()) }).toThrowError();
   });
   it('can encode a byte with limit value 255', function() {
     assert(0xFF, 1, codec.encodeUByte(0xFF), codec.decodeUByte());

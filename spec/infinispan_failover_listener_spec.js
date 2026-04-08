@@ -2,7 +2,7 @@ var _ = require('underscore');
 
 var t = require('./utils/testing'); // Testing dependency
 
-describe('Infinispan clustered clients', function() {
+describe('Infinispan clustered clients with listeners', function() {
   t.configureLogging();
 
   it('can failover when nodes crash', function(done) {

@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 var t = require('./utils/testing'); // Testing dependency
 
 describe('Infinispan local client working with expiry operations', function() {
@@ -140,62 +138,66 @@ describe('Infinispan local client working with expiry operations', function() {
       .then(t.assert(t.containsKey('listen-expiry'), t.toBeFalsy))
       .catch(t.failed(done));
   });
-  // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
-  it('disconnects client', function(done) {
-    // Guarantee that even if one of the disconnect fails, all disconnects have been called
+  afterAll(function(done) {
     Promise.all([client, client1, client2, client3])
       .then(function(clients) {
-        return Promise.all(_.map(clients, function(client) {
+        return Promise.all(clients.map(function(client) {
           return client.disconnect();
         }));
       })
       .catch(t.failed(done))
       .finally(done);
-});
+  });
 
 });
+
+function delay(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+function pollUntilExpired(client, key, timeout) {
+  var start = Date.now();
+  function check() {
+    if (Date.now() - start > timeout) {
+      throw new Error('`' + key + '` key should be expired (timed out after ' + timeout + 'ms)');
+    }
+    return client.containsKey(key).then(function(exists) {
+      if (!exists) return;
+      return delay(50).then(check);
+    });
+  }
+  return check();
+}
 
 // timeout in ms
 function waitLifespanExpire(key, timeout) {
   return function(client) {
-    var contains = true;
-    waitsFor(function() {
-      client.containsKey(key).then(function(success) {
-        contains = success;
-      });
-
-      return !contains;
-    }, '`' + key + '` key should be expired', timeout);
-
-    return client;
-  }
+    return pollUntilExpired(client, key, timeout).then(function() {
+      return client;
+    });
+  };
 }
 
 function waitForExpiryEvent(key) {
   return function(client) {
-    t.sleepFor(200); // sleep required, waitFor() does not work with event
-    client.containsKey(key).then(function(success) {
-      expect(success).toBeFalsy();
+    return delay(200).then(function() {
+      return client.containsKey(key).then(function(success) {
+        expect(success).toBeFalsy();
+        return client;
+      });
     });
-    return client;
-  }
+  };
 }
 
 // timeout in ms
 function waitIdleTimeExpire(key, timeout) {
   return function(client) {
-    var contains = true;
-    t.sleepFor(200); // sleep required
-    waitsFor(function() {
-      client.containsKey(key).then(function(success) {
-        contains = success;
-      });
-
-      return !contains;
-    }, '`' + key + '` key should be expired', timeout);
-
-    return client;
-  }
+    return delay(200).then(function() {
+      return pollUntilExpired(client, key, timeout);
+    }).then(function() {
+      return client;
+    });
+  };
 }
 
 function assertError(fun, expectErrorFun) {

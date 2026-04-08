@@ -1,0 +1,41 @@
+# Tests
+spec/
+spec-manual/
+
+# Server configs and scripts
+server/
+run-servers.sh
+run-testsuite.sh
+smoke-tests.sh
+make-ssl.sh
+set-npm-auth-token.sh
+release.sh
+gen-jsdoc.sh
+
+# CI/CD
+.github/
+
+# Documentation source
+documentation/
+
+# Memory profiling
+memory-profiling/
+
+# Build artifacts
+out/
+reports/
+tmp-tests.log
+
+# Config files
+.eslintrc
+.flowconfig
+.gitignore
+CLAUDE.md
+
+# IDE
+.idea/
+*.iml
+
+# Misc
+.claude/
+batch
