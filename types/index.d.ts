@@ -661,6 +661,106 @@ export function client(args: {
          */
         removeListener: (listenerId: string) => Promise<any>;
         /**
+         * Create a distributed counter.
+         *
+         * @param {String} name Counter name.
+         * @param {CounterConfig} config Counter configuration.
+         * @returns {Promise.<Boolean>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterCreate: (name: string, config: {
+            type: 'strong' | 'weak';
+            storage?: 'persistent' | 'volatile';
+            initialValue?: number;
+            lowerBound?: number;
+            upperBound?: number;
+            concurrencyLevel?: number;
+        }) => Promise<boolean>;
+        /**
+         * Get the current value of a counter.
+         *
+         * @param {String} name Counter name.
+         * @returns {Promise.<?Number>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterGet: (name: string) => Promise<number | undefined>;
+        /**
+         * Add a value to the counter and return the new value.
+         *
+         * @param {String} name Counter name.
+         * @param {Number} value Value to add.
+         * @returns {Promise.<?Number>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterAddAndGet: (name: string, value: number) => Promise<number | undefined>;
+        /**
+         * Reset the counter to its initial value.
+         *
+         * @param {String} name Counter name.
+         * @returns {Promise.<Boolean>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterReset: (name: string) => Promise<boolean>;
+        /**
+         * Compare and swap the counter value.
+         *
+         * @param {String} name Counter name.
+         * @param {Number} expect Expected current value.
+         * @param {Number} update New value to set.
+         * @returns {Promise.<?Number>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterCompareAndSwap: (name: string, expect: number, update: number) => Promise<number | undefined>;
+        /**
+         * Check if a counter is defined.
+         *
+         * @param {String} name Counter name.
+         * @returns {Promise.<Boolean>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterIsDefined: (name: string) => Promise<boolean>;
+        /**
+         * Get the configuration of a counter.
+         *
+         * @param {String} name Counter name.
+         * @returns {Promise.<?Object>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterGetConfiguration: (name: string) => Promise<{
+            type: 'strong' | 'weak';
+            storage: 'persistent' | 'volatile';
+            initialValue: number;
+            lowerBound?: number;
+            upperBound?: number;
+            concurrencyLevel?: number;
+        } | undefined>;
+        /**
+         * Remove a counter from the cluster.
+         *
+         * @param {String} name Counter name.
+         * @returns {Promise.<Boolean>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterRemove: (name: string) => Promise<boolean>;
+        /**
+         * Set a value to the counter and return the previous value.
+         *
+         * @param {String} name Counter name.
+         * @param {Number} value Value to set.
+         * @returns {Promise.<?Number>}
+         * @memberof Client#
+         * @since 0.14
+         */
+        counterGetAndSet: (name: string, value: number) => Promise<number | undefined>;
+        /**
          * Add script to server(s).
          *
          * @param {String} scriptName Name of the script to store.
