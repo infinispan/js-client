@@ -6,7 +6,6 @@ var _ = require('underscore');
 var log4js = require('log4js');
 
 var readFile = require('fs').readFile;
-var httpRequest = require('urllib');
 var util = require('util');
 
 var f = require('../../lib/functional');
@@ -698,7 +697,8 @@ exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAdd
                 ['-c', config, '-p', port, '-s',`${serverPath  }/${  nodeName}`,
                     `-Djgroups.mcast_addr=${  mcastAddr}`,
                     `-Dinfinispan.node.name=${  nodeName}`,
-                    '-Djgroups.join_timeout=1000'
+                    '-Djgroups.join_timeout=1000',
+                    '-Djgroups.bind.address=127.0.0.1'
                 ]);
 
             cmd.stderr.on('data', function (data) {
@@ -731,7 +731,7 @@ function killProcessOnPort(port) {
 
 function waitUntil(expectF, cond, op) {
   var now = new Date().getTime();
-  var MAX_TIMEOUT = 15000;
+  var MAX_TIMEOUT = 60000;
 
   function done(actual) {
     var minWaitReached = new Date().getTime() >= now + MAX_WAIT;

@@ -530,8 +530,10 @@ describe('Infinispan TLS/SSL client', function() {
    */
   function toBeAnyOf(expecteds, actual, done) {
     for (var i = 0, l = expecteds.length; i < l; i++) {
-      if (_.isEqual(actual.message, expecteds[i]))
+      if (_.isEqual(actual.message, expecteds[i])) {
+        done();
         return;
+      }
     }
     done(new Error(`[${  actual.message  }] is not any of: [${  expecteds  }]`));
   }
@@ -545,8 +547,10 @@ describe('Infinispan TLS/SSL client', function() {
    */
   function toContainAnyOf(expecteds, actual, done) {
     for (var i = 0, l = expecteds.length; i < l; i++) {
-      if (actual.message.includes(expecteds[i]))
+      if (actual.message.includes(expecteds[i])) {
+        done();
         return;
+      }
     }
     done(new Error(`[${  actual.message  }] does not contain any of: [${  expecteds  }]`));
   }

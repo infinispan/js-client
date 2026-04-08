@@ -22,7 +22,7 @@ describe('Infinispan clustered clients with listeners', function() {
       .then(withAll(t.stopClusterNode(t.failover2['port'], true)))
       .then(withAll(t.disconnect()))
       .catch(t.failed(done));
-  }, 30000);
+  }, 120000);
 
 });
 

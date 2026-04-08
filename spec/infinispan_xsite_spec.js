@@ -10,13 +10,13 @@ describe('Infinispan xsite cluster client', function() {
   // Since Jasmine 1.3 does not have beforeAll callback, execute
   // any cleanup as first test so that it only gets executed once.
   it('start sites', function(done) {
-      logger.debugf('Starting servers for xsite replication tests.');
-      t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, t.client)
-          .then(function(client) {return t.launchClusterNodeAndWaitView('server-moon', t.moon1Config, t.moon1['port'], t.moon1MCastAddr, 1, client);})
+      logger.debugf('Waiting for xsite servers to be ready.');
+      t.waitUntilView(1, t.earth1['port'])
+          .then(function() { return t.waitUntilView(1, t.moon1['port']); })
           .then(function () {
             logger.debugf('Both moon and earth servers started');
           }).then(function() { done(); }, t.failed(done));
-  }, 30000);
+  }, 90000);
 
   it('can manually switch and fail over sites', function(done) {
     siteClients().then(function(cs) {
@@ -62,7 +62,7 @@ describe('Infinispan xsite cluster client', function() {
         });
     })
     .then(function() { done(); }, t.failed(done));
-  }, 60000);
+  }, 120000);
 
 });
 

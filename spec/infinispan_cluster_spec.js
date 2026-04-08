@@ -1,6 +1,5 @@
 var _ = require('underscore');
 
-var f = require('../lib/functional');
 var t = require('./utils/testing'); // Testing dependency
 var tests = require('./tests'); // Shared tests
 

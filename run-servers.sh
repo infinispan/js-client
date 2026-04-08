@@ -140,7 +140,7 @@ function startServer()
 #deleting the testable server directory
 rm -drf server/${SERVER_DIR}
 
-export JAVA_OPTS="-Xms1024m -Xmx2048m -XX:MetaspaceSize=254M -XX:MaxMetaspaceSize=1024m"
+export JAVA_OPTS="-Xms512m -Xmx1024m -XX:MetaspaceSize=128M -XX:MaxMetaspaceSize=512m"
 
 startServer "$1" infinispan.xml false 11222 "server-local"
 startServer "$1" infinispan-clustered.xml false 11322 "server-one"
@@ -153,9 +153,9 @@ prepareServerDir "$1" infinispan-clustered.xml false "server-failover-one"
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-two"
 prepareServerDir "$1" infinispan-clustered.xml false "server-failover-three"
 
-#Preparing server dirs for xsite tests (2 servers)
-prepareServerDir "$1" infinispan-xsite-EARTH.xml false "server-earth"
-prepareServerDir "$1" infinispan-xsite-MOON.xml false "server-moon"
+#Starting servers for xsite tests (2 servers)
+startServer "$1" infinispan-xsite-EARTH.xml false 11522 "server-earth"
+startServer "$1" infinispan-xsite-MOON.xml false 11532 "server-moon"
 
 waitForClusters
 echo "Infinispan test servers started."
