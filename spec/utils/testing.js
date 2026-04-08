@@ -710,7 +710,7 @@ function waitUntil(expectF, cond, op) {
       throw err;
     }
     if (new Date().getTime() - now > MAX_TIMEOUT) {
-      throw new Error('waitUntil timed out after ' + MAX_TIMEOUT + 'ms');
+      throw new Error(`waitUntil timed out after ${MAX_TIMEOUT}ms`);
     }
   }
 
@@ -790,16 +790,16 @@ function digestRequest(method, url, username, password) {
         var hash = function(data) {
           return crypto.createHash(hashAlgo).update(data).digest('hex');
         };
-        var ha1 = hash(username + ':' + params.realm + ':' + password);
-        var ha2 = hash(method.toUpperCase() + ':' + parsedUrl.pathname + parsedUrl.search);
+        var ha1 = hash(`${username}:${params.realm}:${password}`);
+        var ha2 = hash(`${method.toUpperCase()}:${parsedUrl.pathname}${parsedUrl.search}`);
         var response = qop
-            ? hash(ha1 + ':' + params.nonce + ':' + nc + ':' + cnonce + ':' + qop + ':' + ha2)
-            : hash(ha1 + ':' + params.nonce + ':' + ha2);
-        var authHeader = 'Digest username="' + username + '", realm="' + params.realm
-            + '", nonce="' + params.nonce + '", uri="' + parsedUrl.pathname + parsedUrl.search
-            + '", algorithm=' + algorithm + ', response="' + response + '"';
-        if (params.opaque) authHeader += ', opaque="' + params.opaque + '"';
-        if (qop) authHeader += ', qop=' + qop + ', nc=' + nc + ', cnonce="' + cnonce + '"';
+            ? hash(`${ha1}:${params.nonce}:${nc}:${cnonce}:${qop}:${ha2}`)
+            : hash(`${ha1}:${params.nonce}:${ha2}`);
+        var authHeader = `Digest username="${username}", realm="${params.realm}`
+            + `", nonce="${params.nonce}", uri="${parsedUrl.pathname}${parsedUrl.search}`
+            + `", algorithm=${algorithm}, response="${response}"`;
+        if (params.opaque) authHeader += `, opaque="${params.opaque}"`;
+        if (qop) authHeader += `, qop=${qop}, nc=${nc}, cnonce="${cnonce}"`;
 
         var req2 = http.request({
           hostname: parsedUrl.hostname,
