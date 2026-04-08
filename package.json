@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "lint": "eslint --ignore-path .gitignore .",
+    "lint": "eslint --ignore-path .gitignore lib spec index.js",
     "test": "jasmine"
   },
   "author": "Infinispan Community",

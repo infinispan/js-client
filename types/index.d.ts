@@ -131,6 +131,15 @@ export function client(args: {
             port: number;
         }[];
     }[];
+    /**
+     * - Near cache configuration. When set, enables client-side caching with server-side invalidation.
+     */
+    nearCache?: {
+        /**
+         * - Maximum number of entries to store in the near cache.
+         */
+        maxEntries: number;
+    } | null;
 }): Promise<ReturnType<{
     (addrs: any, clientOpts: any): {
         connect: () => any;
@@ -784,6 +793,14 @@ export function client(args: {
         toString: () => string;
         registerProtostreamType: (typeName: any, descriptorId: any) => any;
         registerProtostreamRoot: (root: any) => any;
+        /**
+         * Get the number of entries in the near cache.
+         *
+         * @returns {Number} Number of entries in the near cache, or 0 if near caching is not enabled.
+         * @memberof Client#
+         * @since 0.14
+         */
+        nearCacheSize: () => number;
     };
     /**
      * Cluster information.
