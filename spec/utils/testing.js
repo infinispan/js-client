@@ -167,6 +167,12 @@ exports.ping = function() {
   };
 };
 
+exports.nearCacheSize = function() {
+  return function(client) {
+    return Promise.resolve(client.nearCacheSize());
+  };
+};
+
 exports.disconnect = function() {
   return function(client) {
     return client.disconnect();
