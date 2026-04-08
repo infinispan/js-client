@@ -13,11 +13,13 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: npm
 
     steps:
       - name: Validate version format
@@ -52,9 +54,7 @@ jobs:
         run: npm version ${{ github.event.inputs.version }} -m "Release %s"
 
       - name: Publish to npm
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: npm publish --provenance --access public
 
       - name: Push version commit and tag
         run: |
