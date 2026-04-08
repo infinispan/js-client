@@ -61,7 +61,7 @@ exports.json = {
 
 var CLUSTER_NODES = ['server-one', 'server-two', 'server-three'];
 
-var MAX_WAIT = 7500;
+var MAX_WAIT = 3000;
 
 var logger = u.logger('testing');
 
@@ -95,6 +95,9 @@ exports.protocol25 = function() { return protocols.version25(); };
 
 exports.protocol29 = function(clientOpts) { return protocols.version29(clientOpts); };
 exports.protocol30 = function(clientOpts) { return protocols.version30(clientOpts); };
+exports.protocol31 = function(clientOpts) { return protocols.version31(clientOpts); };
+exports.protocol40 = function(clientOpts) { return protocols.version40(clientOpts); };
+exports.protocol41 = function(clientOpts) { return protocols.version41(clientOpts); };
 
 exports.put = function(k, v, opts) {
   return function(client) { return client.put(k, v, opts); };
@@ -641,30 +644,31 @@ exports.waitUntilView = function(expectNumMembers, port) {
   );
 };
 exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAddr, expectNumMembers, client) {
-    return new Promise(function (fulfill, reject) {
-        var spawn = require('child_process').spawn;
-        var path = require('path');
+    return killProcessOnPort(port).then(function() {
+        return new Promise(function (fulfill) {
+            var spawn = require('child_process').spawn;
+            var path = require('path');
 
-        var serverPath = path.resolve(`server/${  exports.serverDirName  }/`);
-        var standaloneShPath = `${serverPath  }/bin/server.sh`;
-        var cmd = spawn(
-            standaloneShPath,
-            ['-c', config, '-p', port, '-s',`${serverPath  }/${  nodeName}`,
-                `-Djgroups.mcast_addr=${  mcastAddr}`,
-                `-Dinfinispan.node.name=${  nodeName}`,
-                '-Djgroups.join_timeout=1000'
-            ]);
+            var serverPath = path.resolve(`server/${  exports.serverDirName  }/`);
+            var standaloneShPath = `${serverPath  }/bin/server.sh`;
+            var cmd = spawn(
+                standaloneShPath,
+                ['-c', config, '-p', port, '-s',`${serverPath  }/${  nodeName}`,
+                    `-Djgroups.mcast_addr=${  mcastAddr}`,
+                    `-Dinfinispan.node.name=${  nodeName}`,
+                    '-Djgroups.join_timeout=1000'
+                ]);
 
-        cmd.stderr.on('data', function (data) {
-            logger.debugf('Stderr [%s]: %s', nodeName, data);
-            reject(data);
+            cmd.stderr.on('data', function (data) {
+                logger.debugf('Stderr [%s]: %s', nodeName, data);
+            });
+
+            cmd.on('exit', function (code) {
+                logger.debugf('Child process exited with code %d', code);
+            });
+
+            fulfill();
         });
-
-        cmd.on('exit', function (code) {
-            logger.debugf('Child process exited with code %d', code);
-        });
-
-        fulfill();
     }).then(function() {
         logger.debugf(`wait until view ${  expectNumMembers}`);
         return exports.waitUntilView(expectNumMembers, port);
@@ -674,21 +678,41 @@ exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAdd
     });
 };
 
+function killProcessOnPort(port) {
+    return new Promise(function(resolve) {
+        var exec = require('child_process').exec;
+        exec(`fuser -k ${port}/tcp 2>/dev/null`, function() {
+            setTimeout(resolve, 500);
+        });
+    });
+}
+
 function waitUntil(expectF, cond, op) {
   var now = new Date().getTime();
+  var MAX_TIMEOUT = 15000;
 
   function done(actual) {
-    var expired = new Date().getTime() < now + MAX_WAIT;
+    var minWaitReached = new Date().getTime() >= now + MAX_WAIT;
     logger.debugf(
-        'Expired waiting for condition? %s', expired
+        'Min wait reached? %s', minWaitReached
     );
-    return cond(actual) && !expired;
+    return cond(actual) && minWaitReached;
+  }
+
+  function checkTimeout(err) {
+    if (err && err.message && err.message.indexOf('waitUntil timed out') >= 0) {
+      throw err;
+    }
+    if (new Date().getTime() - now > MAX_TIMEOUT) {
+      throw new Error('waitUntil timed out after ' + MAX_TIMEOUT + 'ms');
+    }
   }
 
   function loop(promise) {
     // Simple recursive loop until condition has been met
     return promise
       .then(function(response) {
+        checkTimeout();
         var isDone = done(response);
         logger.debugf('Is waiting done for condition? %s', isDone);
 
@@ -696,7 +720,8 @@ function waitUntil(expectF, cond, op) {
         return new Promise(function(resolve) { setTimeout(resolve, 1000); })
           .then(function() { return loop(op()); });
       })
-      .catch(function() {
+      .catch(function(err) {
+        checkTimeout(err);
         return new Promise(function(resolve) { setTimeout(resolve, 1000); })
           .then(function() { return loop(op()); });
       });
@@ -715,7 +740,7 @@ exports.sleepFor = function(sleepDuration) {
 function getClusterMembers(port) {
 
   return function() {
-    var opUrl ='/cache-managers/clustered/';
+    var opUrl ='/container';
 
     return invokeDmrHttpGet('GET', opUrl, port)
       .then(function(response) {
@@ -727,28 +752,82 @@ function getClusterMembers(port) {
   };
 }
 
+function digestRequest(method, url, username, password) {
+  var http = require('http');
+  var crypto = require('crypto');
+  var parsedUrl = new (require('url').URL)(url);
+
+  return new Promise(function(resolve, reject) {
+    var req1 = http.request({
+      hostname: parsedUrl.hostname,
+      port: parsedUrl.port,
+      path: parsedUrl.pathname + parsedUrl.search,
+      method: method,
+      headers: {'Content-Type': 'application/json'}
+    }, function(res1) {
+      var body1 = '';
+      res1.on('data', function(chunk) { body1 += chunk; });
+      res1.on('end', function() {
+        if (res1.statusCode !== 401) {
+          return resolve({statusCode: res1.statusCode, data: body1});
+        }
+        var wwwAuth = res1.headers['www-authenticate'] || '';
+        var params = {};
+        wwwAuth.replace(/(\w+)=(?:"([^"]+)"|([^\s,]+))/g, function(_, key, v1, v2) {
+          params[key] = v1 || v2;
+        });
+        var algorithm = params.algorithm || 'MD5';
+        var hashAlgo = algorithm === 'SHA-256' ? 'sha256' : 'md5';
+        var nc = '00000001';
+        var cnonce = crypto.randomBytes(8).toString('hex');
+        var qop = params.qop ? params.qop.split(',')[0].trim() : '';
+        var hash = function(data) {
+          return crypto.createHash(hashAlgo).update(data).digest('hex');
+        };
+        var ha1 = hash(username + ':' + params.realm + ':' + password);
+        var ha2 = hash(method.toUpperCase() + ':' + parsedUrl.pathname + parsedUrl.search);
+        var response = qop
+            ? hash(ha1 + ':' + params.nonce + ':' + nc + ':' + cnonce + ':' + qop + ':' + ha2)
+            : hash(ha1 + ':' + params.nonce + ':' + ha2);
+        var authHeader = 'Digest username="' + username + '", realm="' + params.realm
+            + '", nonce="' + params.nonce + '", uri="' + parsedUrl.pathname + parsedUrl.search
+            + '", algorithm=' + algorithm + ', response="' + response + '"';
+        if (params.opaque) authHeader += ', opaque="' + params.opaque + '"';
+        if (qop) authHeader += ', qop=' + qop + ', nc=' + nc + ', cnonce="' + cnonce + '"';
+
+        var req2 = http.request({
+          hostname: parsedUrl.hostname,
+          port: parsedUrl.port,
+          path: parsedUrl.pathname + parsedUrl.search,
+          method: method,
+          headers: {'Content-Type': 'application/json', 'Authorization': authHeader}
+        }, function(res2) {
+          var body2 = '';
+          res2.on('data', function(chunk) { body2 += chunk; });
+          res2.on('end', function() {
+            resolve({statusCode: res2.statusCode, data: body2});
+          });
+        });
+        req2.on('error', reject);
+        req2.end();
+      });
+    });
+    req1.on('error', reject);
+    req1.end();
+  });
+}
+
 function invokeDmrHttp(op, port) {
-   return httpRequest.request(`http://localhost:${port}/rest/v2`,
-                              {method:'POST',
-                              digestAuth: 'admin:pass',
-                              headers:{
-                                 'Content-Type': 'application/json',
-                                 'body': op
-                               }}).then(res => res.statusCode==200 ? JSON.parse(res.data) : {},
-                                        error => (util.format('Error (%s)', error)));
+  return digestRequest('POST', `http://localhost:${port}/rest/v2`, 'admin', 'pass')
+      .then(res => res.statusCode == 200 ? JSON.parse(res.data) : {},
+            error => (util.format('Error (%s)', error)));
 }
 
 function invokeDmrHttpGet(method, opUrl, port) {
-
-   logger.debugf(`URL http://localhost:${port}/rest/v2${opUrl}`);
-   return httpRequest.request(`http://localhost:${port}/rest/v2${opUrl}`, {
-                   method: method,
-                   digestAuth: 'admin:pass',
-                   headers: {
-                       'Content-Type' : 'application/json'
-                     }
-               }).then( res => res.statusCode==200 ? JSON.parse(res.data) : {},
-                        error => (util.format('Error (%s)', error)));
+  logger.debugf(`URL http://localhost:${port}/rest/v2${opUrl}`);
+  return digestRequest(method, `http://localhost:${port}/rest/v2${opUrl}`, 'admin', 'pass')
+      .then(res => res.statusCode == 200 ? JSON.parse(res.data) : {},
+            error => (util.format('Error (%s)', error)));
 }
 
 function readFileAsync(path) {

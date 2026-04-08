@@ -8,7 +8,7 @@ describe('Infinispan local client', function() {
   var client = t.client(t.local, t.authOpts);
   beforeEach(function(done) { client
       .then(t.assert(t.clear()))
-      .catch(t.failed(done)).finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
 
   it('can put -> get -> remove a key/value pair', function(done) {
@@ -22,8 +22,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.containsKey('key'), t.toBeFalsy))
     .then(t.assert(t.remove('key'), t.toBeFalsy))
     .then(t.assert(t.size(), t.toBe(0)))
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
 
   it('can use conditional operations on a key/value pair', function(done) { client
@@ -44,8 +43,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.conditional(t.removeWithVersion, t.getM, 'cond', 'v2'), t.toBeTruthy))
     .then(t.assert(t.get('cond'), t.toBeUndefined))
     .then(t.assert(t.getM('cond'), t.toBeUndefined))
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
   it('can return previous values', function(done) { client
     .then(t.assert(t.putIfAbsent('prev', 'v0', t.prev()), t.toBeUndefined))
@@ -62,8 +60,7 @@ describe('Infinispan local client', function() {
     .then(t.assert(t.notRemoveWithVersion('_', t.prev()), t.toBeUndefined)) // key not found
     .then(t.assert(t.notRemoveWithVersion('prev', t.prev()), t.toBe('v4'))) // key found but invalid version
     .then(t.assert(t.conditional(t.removeWithVersion, t.getM, 'prev', 'v4', t.prev()), t.toBe('v4')))
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
   it('can use multi-key operations', function(done) {
     var pairs = [{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}, {key: 'multi3', value: 'v3'}];
@@ -73,13 +70,11 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.size(), t.toBe(3)))
       .then(t.assert(t.getAll(keys), t.toEqualPairs('key', [{key: 'multi1', value: 'v1'}, {key: 'multi2', value: 'v2'}])))
       .then(t.assert(t.getAll(['_']), t.toEqual([])))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can ping a server', function(done) { client
     .then(t.assert(t.ping(), t.toBeUndefined))
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
   it('fails when non-configured cache is accessed', function(done) {
       t.client(t.local, {cacheName: 'unknownCache'})
@@ -95,16 +90,14 @@ describe('Infinispan local client', function() {
     client
       .then(t.assert(t.put('key', value)))
       .then(t.assert(t.get('key'), t.toEqual(value)))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can put -> get a really big value', function(done) {
     var value = t.randomStr(1024 * 1024);
     client
       .then(t.assert(t.put('key', value)))
       .then(t.assert(t.get('key'), t.toEqual(value)))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can put -> get -> remove a key/value pair on a named cache', function(done) {
     t.client(t.local, {cacheName: 'namedCache', authentication: t.authOpts.authentication})
@@ -112,8 +105,7 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.get('key'), t.toBe('value')))
       .then(t.assert(t.remove('key'), t.toBeTruthy))
       .then(t.disconnect())
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can put -> get -> remove a key/value pair on a named cache with disabled ssl', function(done) {
     t.client(t.local, {cacheName: 'namedCache',
@@ -123,8 +115,7 @@ describe('Infinispan local client', function() {
         .then(t.assert(t.get('key'), t.toBe('value')))
         .then(t.assert(t.remove('key'), t.toBeTruthy))
         .then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
   });
   it('can get key/value pairs with their immortal metadata', function(done) {
     var immortal = { created : -1, lifespan: -1, lastUsed: -1, maxIdle: -1 };
@@ -134,8 +125,7 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.getM('meta'), t.toContain(f.merge({ value: 'v0' }, immortal))))
       .then(t.assert(t.conditional(t.replaceV, t.getM, 'meta', 'v0', 'v1'), t.toBeTruthy))
       .then(t.assert(t.getM('meta'), t.toContain(f.merge({ value: 'v1' }, immortal))))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can get key/value pairs with their expirable metadata', function(done) { client
       .then(t.assert(t.put('life-meta', 'value', {lifespan: '60s'})))
@@ -144,8 +134,7 @@ describe('Infinispan local client', function() {
       .then(t.assert(t.getM('cond-exp-meta'), t.toContain({ value: 'v0', maxIdle : 2700})))
       .then(t.assert(t.replace('cond-exp-meta', 'v1', {lifespan: '1d', maxIdle: '1h'})))
       .then(t.assert(t.getM('cond-exp-meta'), t.toContain({ value: 'v1', lifespan: 86400, maxIdle : 3600})))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can listen for only create events', function(done) { client
       .then(t.on('create', t.expectEvent('listen-create', done, true, 'value')))
@@ -210,31 +199,23 @@ describe('Infinispan local client', function() {
       .catch(t.failed(done));
   });
   it('fails when trying to attach to non-existent listener', function(done) {
-      var errorTookPlace = false;
       client.then(function (client) {
-          var clientAddListenerCreate = client.addListener(
-              'create', function(key) { console.log(`[Event] Created key: ${  key}`); });
-          clientAddListenerCreate.then(
-              function(_) {
-                  return client.addListener(
-                      'modify', function(key) { console.log(`[Event] Modified key: ${  key}`); },
-                      {listenerId: 'blblbl'}).catch(function(error) {
-                        errorTookPlace = true;
-                        expect(error.message).toBe('No server connection for listener (listenerId=blblbl)');
-                        return done();
-                  }).finally(function() {
-                      if (!errorTookPlace) {
-                          return done(new Error('The attachment of event with unknown listenerId should fail, but has succeeded.'));
-                      } else {
-                          Promise.all([clientAddListenerCreate]).then(
-                                  function(values) {
-                                      var listenerId = values[0];
-                                      return client.removeListener(listenerId);
-                                  });
-                      }
-                  });
+          return client.addListener(
+              'create', function(key) { console.log(`[Event] Created key: ${  key}`); })
+          .then(function(listenerId) {
+              return client.addListener(
+                  'modify', function(key) { console.log(`[Event] Modified key: ${  key}`); },
+                  {listenerId: 'blblbl'})
+              .then(function() {
+                  throw new Error('The attachment of event with unknown listenerId should fail, but has succeeded.');
+              }, function(error) {
+                  expect(error.message).toBe('No server connection for listener (listenerId=blblbl)');
+              })
+              .finally(function() {
+                  return client.removeListener(listenerId);
               });
-      }).catch(t.failed(done)).finally(done);
+          });
+      }).then(function() { done(); }, t.failed(done));
   });
 
     it('can listen for custom events for created events', function(done) {
@@ -282,16 +263,14 @@ describe('Infinispan local client', function() {
           .then(t.assert(t.clear()))
           .then(t.assert(t.putAll(pairs, {lifespan: '1d', maxIdle: '1h'}), t.toBeUndefined))
           .then(t.seqIterator('key', 3, expected, {metadata: true})) // Iterate all data, 3 elements at time, sequential
-          .catch(t.failed(done))
-          .finally(done);
+          .then(function() { done(); }, t.failed(done));
     });
 
   it('can failover to a secondary node if first node is not available', function(done) {
     t.client([{port: 1234, host: '127.0.0.1'}, t.local])
         .then(t.assert(t.ping(), t.toBeUndefined))
         .then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
   });
   it('can query statistic values', function(done) { client
       .then(t.assertStats(t.put('stats-key', 'stats-value'), t.toBeStatIncr('stores')))
@@ -299,12 +278,12 @@ describe('Infinispan local client', function() {
       .then(t.assertStats(t.get('stats-miss-key'), t.toBeStatIncr('misses')))
       .then(t.assertStats(t.remove('stats-miss-key'), t.toBeStatIncr('removeMisses')))
       .then(t.assertStats(t.remove('stats-key'), t.toBeStatIncr('removeHits')))
-      .catch(t.failed(done)).finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can retrieve topology information', function(done) { client
     .then(t.assert(t.getTopologyId(), t.toBe(0)))
     .then(t.assert(t.getMembers(), t.toEqual([t.local])))
-    .catch(t.failed(done)).finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
   it('can execute a script remotely to store and retrieve data',
      tests.execPutGet(
@@ -315,25 +294,25 @@ describe('Infinispan local client', function() {
      client
        .then(t.loadAndExec('spec/utils/typed-put-get-unicode.js', 'typed-put-get-unicode.js'))
        .then(t.assert(t.exec('typed-put-get-unicode.js'), t.toBe('բարեվ')))
-       .catch(t.failed(done)).finally(done);
+       .then(function() { done(); }, t.failed(done));
   });
   it('can execute a script remotely that returns size', function(done) {
     client
       .then(t.loadAndExec('spec/utils/typed-size.js'))
       .then(t.assert(t.exec('typed-size.js'), t.toBe('0')))
-      .catch(t.failed(done)).finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can execute a script remotely to get node address from cacheManager', function(done) {
     client
       .then(t.loadAndExec('spec/utils/typed-cachemanager-put-get.js'))
       .then(t.assert(t.exec('typed-cachemanager-put-get.js'), t.toBe('a')))
-      .catch(t.failed(done)).finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can execute a script remotely that returns undefined', function(done) {
     client
       .then(t.loadAndExec('spec/utils/typed-null-return.js'))
       .then(t.assert(t.exec('typed-null-return.js'), t.toBe('')))
-      .catch(t.failed(done)).finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can listen for events generated by executing a script', function(done) {
     client
@@ -347,7 +326,6 @@ describe('Infinispan local client', function() {
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
       .then(t.disconnect())
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
 });

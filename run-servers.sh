@@ -68,12 +68,13 @@ function prepareServerDir()
          cp -r ${SERVER_HOME}/* $SERVER_TMP
          echo "Server copied to temporary directory."
 
-         $SERVER_TMP/bin/cli.sh user create admin -p pass
+         $SERVER_TMP/bin/cli.sh user create admin -p pass -g admin
          echo "Admin user added."
     fi
 
     cp -r ${SERVER_HOME}/server ${SERVER_TMP}/${dirName}
     cp "${SERVER_TMP}/server/conf/users.properties" "${SERVER_TMP}/${dirName}/conf/users.properties"
+    cp "${SERVER_TMP}/server/conf/groups.properties" "${SERVER_TMP}/${dirName}/conf/groups.properties"
     cp "${CONF_DIR_TO_COPY_FROM}/${confPath}" ${SERVER_TMP}/${dirName}/conf
     echo ${SERVER_TMP}
 

@@ -20,7 +20,7 @@ export function client(args: {
     /**
      * - Version of client/server protocol.
      */
-    version?: (2.9 | 2.5 | 2.2) | null;
+    version?: ('4.1' | '4.0' | '3.1' | '3.0' | '2.9' | '2.5' | '2.2') | null;
     /**
      * - Optional cache name.
      */
