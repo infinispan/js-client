@@ -86,7 +86,7 @@ describe('Infinispan local client', function() {
           .then(function() {
               done(new Error('Exception should be thrown while accessing not-configured cache.'));
          }).catch(function(error) {
-              expect(error).toBe("org.infinispan.server.hotrod.CacheNotFoundException: Cache with name 'unknownCache' not found amongst the configured caches");
+              expect(error).toBe('org.infinispan.server.hotrod.CacheNotFoundException: Cache with name \'unknownCache\' not found amongst the configured caches');
               done();
           });
   });
@@ -171,12 +171,12 @@ describe('Infinispan local client', function() {
           .then(t.on('notSupportedEvent', t.expectEvent('wrongNameCreate', done, true, 'value')))
           .catch(function(error){
               errorTookPlace = true;
-              expect(error.message).toBe("The event 'notSupportedEvent' is not supported");
+              expect(error.message).toBe('The event \'notSupportedEvent\' is not supported');
               return done();
           })
           .finally(function() {
               if (!errorTookPlace) {
-                  return done(new Error("The registration of unknown event should fail!"));
+                  return done(new Error('The registration of unknown event should fail!'));
               }
           });
   });
@@ -213,21 +213,20 @@ describe('Infinispan local client', function() {
       var errorTookPlace = false;
       client.then(function (client) {
           var clientAddListenerCreate = client.addListener(
-              'create', function(key) { console.log('[Event] Created key: ' + key); });
-          var clientAddListeners = clientAddListenerCreate.then(
-              function(listenerId) {
+              'create', function(key) { console.log(`[Event] Created key: ${  key}`); });
+          clientAddListenerCreate.then(
+              function(_) {
                   return client.addListener(
-                      'modify', function(key) { console.log('[Event] Modified key: ' + key); },
+                      'modify', function(key) { console.log(`[Event] Modified key: ${  key}`); },
                       {listenerId: 'blblbl'}).catch(function(error) {
                         errorTookPlace = true;
-                        expect(error.message).toBe("No server connection for listener (listenerId=blblbl)");
+                        expect(error.message).toBe('No server connection for listener (listenerId=blblbl)');
                         return done();
                   }).finally(function() {
                       if (!errorTookPlace) {
-                          return done(new Error("The attachment of event with unknown listenerId should fail, but has succeeded."))
+                          return done(new Error('The attachment of event with unknown listenerId should fail, but has succeeded.'));
                       } else {
-                          var clientRemoveListener =
-                              Promise.all([clientAddListenerCreate]).then(
+                          Promise.all([clientAddListenerCreate]).then(
                                   function(values) {
                                       var listenerId = values[0];
                                       return client.removeListener(listenerId);
@@ -240,7 +239,7 @@ describe('Infinispan local client', function() {
 
     it('can listen for custom events for created events', function(done) {
       var expected = 'KeyValueWithPrevious{key=listen-custom-create, value=value, prev=null}';
-      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      var opts = { converterFactory : { name: 'key-value-with-previous-converter-factory' } };
       client
         .then(t.on('create', t.expectCustomEvent(expected, done), opts))
         .then(t.assert(t.putIfAbsent('listen-custom-create', 'value'), t.toBeTruthy))
@@ -248,7 +247,7 @@ describe('Infinispan local client', function() {
     });
     it('can listen for custom events for modified events', function(done) {
       var expected = 'KeyValueWithPrevious{key=listen-custom-modify, value=v1, prev=v0}';
-      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      var opts = { converterFactory : { name: 'key-value-with-previous-converter-factory' } };
       client
         .then(t.on('modify', t.expectCustomEvent(expected, done), opts))
         .then(t.assert(t.putIfAbsent('listen-custom-modify', 'v0'), t.toBeTruthy))
@@ -257,7 +256,7 @@ describe('Infinispan local client', function() {
     });
     it('can listen for custom events for removed events', function(done) {
       var expected = 'KeyValueWithPrevious{key=listen-custom-remove, value=null, prev=v1}';
-      var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+      var opts = { converterFactory : { name: 'key-value-with-previous-converter-factory' } };
       client
         .then(t.on('remove', t.expectCustomEvent(expected, done), opts))
         .then(t.assert(t.putIfAbsent('listen-custom-remove', 'v0'), t.toBeTruthy))

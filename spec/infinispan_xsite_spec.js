@@ -10,11 +10,11 @@ describe('Infinispan xsite cluster client', function() {
   // Since Jasmine 1.3 does not have beforeAll callback, execute
   // any cleanup as first test so that it only gets executed once.
   it('start sites', function(done) {
-      logger.debugf("Starting servers for xsite replication tests.");
+      logger.debugf('Starting servers for xsite replication tests.');
       t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, t.client)
           .then(function(client) {return t.launchClusterNodeAndWaitView('server-moon', t.moon1Config, t.moon1['port'], t.moon1MCastAddr, 1, client);})
           .then(function () {
-            logger.debugf("Both moon and earth servers started");
+            logger.debugf('Both moon and earth servers started');
           }).catch(t.failed(done)).finally(done);
   }, 15000);
 
@@ -66,15 +66,26 @@ describe('Infinispan xsite cluster client', function() {
 
 });
 
+/**
+ * Returns a handler that gets a cache entry and asserts its value matches the expected value.
+ * @param {string} k - Cache key to retrieve.
+ * @param {*} expected - Expected value for the cache entry.
+ * @param {object} client - Infinispan client instance to use.
+ * @returns {Function} Handler function that performs the get and assertion.
+ */
 function assertGet(k, expected, client) {
   return function() {
     return client.get(k)
       .then(function(v) {
         expect(v).toBe(expected);
-      })
-  }
+      });
+  };
 }
 
+/**
+ * Creates connection options configured for the moon site cluster with cross-site failover.
+ * @returns {object} Connection options with cache name, authentication, and moon cluster config.
+ */
 function clusterSiteMoon() {
   return {
     cacheName: t.xsiteCacheName,
@@ -88,6 +99,10 @@ function clusterSiteMoon() {
   };
 }
 
+/**
+ * Creates clients connected to both the earth and moon sites for cross-site testing.
+ * @returns {Promise<Array<object>>} Promise resolving to an array of two client instances.
+ */
 function siteClients() {
   return Promise.all([
     t.client(t.earth1, clusterSiteMoon()),

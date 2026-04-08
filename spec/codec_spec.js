@@ -113,6 +113,11 @@ describe('Object encode/decode', function() {
   });
 });
 
+/**
+ * Calculates the encoded byte size of a string including its variable-length prefix.
+ * @param {string} str - The string to measure.
+ * @returns {number} Total encoded size in bytes.
+ */
 function strSize(str) {
   var len = Buffer.byteLength(str);
   return len + t.vNumSize(len);
@@ -137,7 +142,7 @@ describe('Variable number encode/decode', function() {
   it('can encode 2^32 - 1', function() { encodeDecodeVNum(Math.pow(2, 32) - 1); });
   it('fails to encode 2^32 as a VInt because it is out of bounds', function() {
     var encode = f.actions([codec.encodeVInt(Math.pow(2, 32))], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrowError('must be less than 2^32');
+    expect(function() { encode(t.newByteBuf()); }).toThrowError('must be less than 2^32');
   });
   it('can encode 2^32', function() { encodeDecodeVLong(Math.pow(2, 32)); });
   it('can encode 2^35 - 1', function() { encodeDecodeVLong(Math.pow(2, 35) - 1); });
@@ -149,22 +154,32 @@ describe('Variable number encode/decode', function() {
   it('can encode 2^53 - 1', function() { encodeDecodeVLong(Math.pow(2, 53) - 1); });
   it('fails to encode 2^53 as a VLong because it is out of bounds', function() {
     var encode = f.actions([codec.encodeVLong(Math.pow(2, 53))], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) })
+    expect(function() { encode(t.newByteBuf()); })
         .toThrowError('must be less than 2^53 (javascript safe integer limitation)');
   });
   it('fails to encode a number when it is not a number', function() {
     var encode = f.actions([codec.encodeVInt('blah')], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) })
+    expect(function() { encode(t.newByteBuf()); })
         .toThrowError('must be a number, must be >= 0, must be less than 2^32');
   });
   it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeVInt(-1)], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrowError('must be >= 0');
+    expect(function() { encode(t.newByteBuf()); }).toThrowError('must be >= 0');
   });
 
+  /**
+   * Encodes and decodes a number as both VInt and VLong, asserting round-trip correctness.
+   * @param {number} num - The number to encode and decode.
+   * @returns {void}
+   */
   function encodeDecodeVNum(num) {
     assert([num, num], t.vNumSize(num) * 2, multiVNumEncode(num), multiVNumDecode);
   }
+  /**
+   * Encodes and decodes a number as a VLong, asserting round-trip correctness.
+   * @param {number} num - The number to encode and decode.
+   * @returns {void}
+   */
   function encodeDecodeVLong(num) {
     assert(num, t.vNumSize(num), singleVLongEncode(num), singleVLongDecode);
   }
@@ -174,7 +189,7 @@ describe('Basic encode/decode', function() {
   it('can resize buffer multiple times to write numbers', function() {
     var numbers = [0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9];
     var encoders = _.map(numbers, function (num) { return codec.encodeUByte(num); });
-    var decoders = _.map(numbers, function (num) { return codec.decodeUByte(); });
+    var decoders = _.map(numbers, function () { return codec.decodeUByte(); });
     var encodeActions = f.actions(encoders, codec.bytesEncoded);
     var decodeActions = f.actions(decoders, codec.allDecoded(10));
     var bytebuf = t.assertEncode(t.newByteBuf(1), encodeActions, 10);
@@ -185,20 +200,20 @@ describe('Basic encode/decode', function() {
   });
   it('fails to encode a byte when it is not a number', function() {
     var invalidByteEncode = f.actions([codec.encodeUByte('blah')], codec.bytesEncoded);
-    expect(function() { invalidByteEncode(t.newByteBuf()) })
+    expect(function() { invalidByteEncode(t.newByteBuf()); })
         .toThrowError('must be a number, must be >= 0');
   });
   it('fails to encode a number when it is negative', function() {
     var encode = f.actions([codec.encodeUByte(-1)], codec.bytesEncoded);
-    expect(function() { encode(t.newByteBuf()) }).toThrowError('must be >= 0');
+    expect(function() { encode(t.newByteBuf()); }).toThrowError('must be >= 0');
   });
   it('fails to encode a byte when the value is too big (256 or higher)', function() {
     var overLimitByteEncode = f.actions([codec.encodeUByte(0x100)], codec.bytesEncoded);
-    expect(function() { overLimitByteEncode(t.newByteBuf()) }).toThrowError();
+    expect(function() { overLimitByteEncode(t.newByteBuf()); }).toThrowError();
   });
   it('fails to decode if past the buffer end', function() {
-    var bytebuf = t.newByteBuf();
-    expect(function() { f.actions([codec.decodeUByte()])(t.newByteBuf()) }).toThrowError();
+    t.newByteBuf();
+    expect(function() { f.actions([codec.decodeUByte()])(t.newByteBuf()); }).toThrowError();
   });
   it('can encode a byte with limit value 255', function() {
     assert(0xFF, 1, codec.encodeUByte(0xFF), codec.decodeUByte());
@@ -211,11 +226,28 @@ describe('Basic encode/decode', function() {
   });
 });
 
+/**
+ * Encodes and decodes a value, asserting the result matches the expected output.
+ * @param {*} expected - Expected decoded value or array of values.
+ * @param {number} size - Expected encoded byte size.
+ * @param {Function|Array<Function>} encoder - Encoder action(s).
+ * @param {Function|Array<Function>} decoder - Decoder action(s).
+ * @param {number} [bufferSize] - Optional initial buffer size.
+ * @returns {void}
+ */
 function assert(expected, size, encoder, decoder, bufferSize) {
   var ret = encodeDecode(size, encoder, decoder, bufferSize);
   expect(ret).toEqual(_.isArray(expected) ? expected : [expected]);
 }
 
+/**
+ * Encodes data into a buffer and decodes it back, returning the decoded values.
+ * @param {number} size - Expected encoded byte size.
+ * @param {Function|Array<Function>} encoder - Encoder action(s).
+ * @param {Function|Array<Function>} decoder - Decoder action(s).
+ * @param {number} [bufferSize] - Optional initial buffer size.
+ * @returns {Array<*>} Array of decoded values.
+ */
 function encodeDecode(size, encoder, decoder, bufferSize) {
   var enc = f.actions(_.isArray(encoder) ? encoder : [encoder], codec.bytesEncoded);
   var bytebuf = t.assertEncode(t.newByteBuf(bufferSize), enc, size);

@@ -46,7 +46,7 @@ describe('Infinispan local client working with expiry operations', function() {
               .then(t.assert(t.containsKey('life-absent'), t.toBeTruthy))
               .then(function() {
                 return client;
-              })
+              });
       })
       .then(function(client){
         return client3
@@ -57,7 +57,7 @@ describe('Infinispan local client working with expiry operations', function() {
             .then(t.assert(t.replace('life-replace', 'v1', {lifespan: '100000000ns'})))
             .then(function() {
               return client;
-            })
+            });
       })
       .then(t.assert(t.get('life-replace'), t.toBe('v1')))
       .then(waitLifespanExpire('life-replace', 1000))
@@ -116,8 +116,8 @@ describe('Infinispan local client working with expiry operations', function() {
   });
 
   it('can listen for custom expired events', function(done) {
-    var expected = "KeyValueWithPrevious{key=listen-expiry, value=value, prev=null}";
-    var opts = { converterFactory : { name: "key-value-with-previous-converter-factory" } };
+    var expected = 'KeyValueWithPrevious{key=listen-expiry, value=value, prev=null}';
+    var opts = { converterFactory : { name: 'key-value-with-previous-converter-factory' } };
     client.then(t.on('expiry', t.expectCustomEvent(expected, done), opts))
         .then(t.assert(t.putIfAbsent('listen-expiry', 'value', {lifespan: '100ms'})))
         .then(waitForExpiryEvent('listen-expiry'))
@@ -151,15 +151,31 @@ describe('Infinispan local client working with expiry operations', function() {
 
 });
 
+/**
+ * Returns a promise that resolves after the specified delay.
+ * @param {number} ms - Delay in milliseconds.
+ * @returns {Promise<void>} Promise that resolves after the delay.
+ */
 function delay(ms) {
   return new Promise(function(resolve) { setTimeout(resolve, ms); });
 }
 
+/**
+ * Polls the cache until the given key has expired or the timeout is reached.
+ * @param {object} client - Infinispan client instance.
+ * @param {string} key - Cache key to check for expiry.
+ * @param {number} timeout - Maximum time in milliseconds to wait for expiry.
+ * @returns {Promise<void>} Promise that resolves when the key has expired.
+ */
 function pollUntilExpired(client, key, timeout) {
   var start = Date.now();
+  /**
+   * Checks whether the key still exists and retries after a short delay.
+   * @returns {Promise<void>} Promise that resolves when the key no longer exists.
+   */
   function check() {
     if (Date.now() - start > timeout) {
-      throw new Error('`' + key + '` key should be expired (timed out after ' + timeout + 'ms)');
+      throw new Error(`\`${  key  }\` key should be expired (timed out after ${  timeout  }ms)`);
     }
     return client.containsKey(key).then(function(exists) {
       if (!exists) return;
@@ -169,7 +185,12 @@ function pollUntilExpired(client, key, timeout) {
   return check();
 }
 
-// timeout in ms
+/**
+ * Returns a client handler that waits for a key's lifespan to expire.
+ * @param {string} key - Cache key to wait for expiry.
+ * @param {number} timeout - Maximum time in milliseconds to wait.
+ * @returns {Function} Handler function receiving and returning the client.
+ */
 function waitLifespanExpire(key, timeout) {
   return function(client) {
     return pollUntilExpired(client, key, timeout).then(function() {
@@ -178,6 +199,11 @@ function waitLifespanExpire(key, timeout) {
   };
 }
 
+/**
+ * Returns a client handler that waits for an expiry event and asserts the key no longer exists.
+ * @param {string} key - Cache key to verify has expired.
+ * @returns {Function} Handler function receiving and returning the client.
+ */
 function waitForExpiryEvent(key) {
   return function(client) {
     return delay(200).then(function() {
@@ -189,7 +215,12 @@ function waitForExpiryEvent(key) {
   };
 }
 
-// timeout in ms
+/**
+ * Returns a client handler that waits for a key's max idle time to expire.
+ * @param {string} key - Cache key to wait for expiry.
+ * @param {number} timeout - Maximum time in milliseconds to wait.
+ * @returns {Function} Handler function receiving and returning the client.
+ */
 function waitIdleTimeExpire(key, timeout) {
   return function(client) {
     return delay(200).then(function() {
@@ -200,6 +231,12 @@ function waitIdleTimeExpire(key, timeout) {
   };
 }
 
+/**
+ * Returns a client handler that invokes a function and asserts it throws an expected error.
+ * @param {Function} fun - Function to invoke that is expected to throw.
+ * @param {Function} expectErrorFun - Assertion function called with the error message.
+ * @returns {Function} Handler function receiving and returning the client.
+ */
 function assertError(fun, expectErrorFun) {
   return function(client) {
     var failed = false;
@@ -214,7 +251,7 @@ function assertError(fun, expectErrorFun) {
       throw new Error('Expected function to fail');
 
     return client;
-  }
+  };
 }
 
 
