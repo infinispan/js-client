@@ -78,10 +78,15 @@ describe('Infinispan cluster client', function() {
       .catch(t.failed(done)).finally(done);
   });
 
+  /**
+   * Creates an assertion function that parses the actual value as JSON and compares it.
+   * @param {*} value - Expected value to compare against after JSON parsing.
+   * @returns {Function} Assertion function receiving the actual JSON string.
+   */
   function toEqualJson(value) {
     return function(actual) {
       expect(JSON.parse(actual)).toEqual(value);
-    }
+    };
   }
 
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
@@ -91,6 +96,10 @@ describe('Infinispan cluster client', function() {
       .finally(done);
   });
 
+  /**
+   * Returns a client handler that verifies round-robin load balancing for key-less operations.
+   * @returns {Function} Handler that performs putAll operations and checks distribution stats.
+   */
   function routeRoundRobin() {
     // Key-less operations should be executed in round-robin fashion.
     // This test verifies that if two putAll operations are executed,
@@ -100,8 +109,8 @@ describe('Infinispan cluster client', function() {
       var statsBefore = getStats(client, t.cluster);
 
       var data = _.map(_.range(t.clusterSize()), function(i) {
-        return [{key: 'round-robin-' + i + '0', value: i + '0'},
-                {key: 'round-robin-' + i + '1', value: i + '1'}]
+        return [{key: `round-robin-${  i  }0`, value: `${i  }0`},
+                {key: `round-robin-${  i  }1`, value: `${i  }1`}];
       });
 
       var puts = statsBefore.then(function() {
@@ -120,9 +129,13 @@ describe('Infinispan cluster client', function() {
         });
         return client;
       });
-    }
+    };
   }
 
+  /**
+   * Returns a client handler that verifies consistent hashing routes puts to owner nodes.
+   * @returns {Function} Handler that puts keys and checks store stats per node.
+   */
   function routeConsistentHash() {
     return function(client) {
       var members = client.getTopologyInfo().getMembers();
@@ -139,7 +152,7 @@ describe('Infinispan cluster client', function() {
 
       var puts = statsBefore.then(function() {
         return pmap(keys, function(key) {
-          return client.put(key, "value");
+          return client.put(key, 'value');
         });
       });
 
@@ -154,9 +167,15 @@ describe('Infinispan cluster client', function() {
         });
         return client;
       });
-    }
+    };
   }
 
+  /**
+   * Retrieves stats from all cluster nodes and asserts they are consistent.
+   * @param {object} c - Infinispan client instance.
+   * @param {Array<object>} cluster - Array of cluster member addresses.
+   * @returns {Promise<object>} Promise resolving to the first node's stats.
+   */
   function getStats(c, cluster) {
     var stats = pmap(cluster, function() {
       return c.stats();
@@ -169,6 +188,13 @@ describe('Infinispan cluster client', function() {
     });
   }
 
+  /**
+   * Maps over a collection with an async iteratee and returns a Promise of all results.
+   * @param {Array|object} obj - Collection to map over.
+   * @param {Function} iteratee - Async function to apply to each element.
+   * @param {*} [context] - Optional context for the iteratee.
+   * @returns {Promise<Array>} Promise resolving to an array of results.
+   */
   function pmap(obj, iteratee, context) {
     return Promise.all(_.map(obj, iteratee, context));
   }

@@ -27,7 +27,7 @@ describe('Infinispan TLS/SSL client', function() {
   );
 
   it('fails to operate if default server name (SNI) does not match default server realm',
-     testError(expectContainsAnyErrors(["self signed certificate in certificate chain", "self-signed certificate in certificate chain"]),
+     testError(expectContainsAnyErrors(['self signed certificate in certificate chain', 'self-signed certificate in certificate chain']),
                sslSniDefault())
   );
 
@@ -83,6 +83,13 @@ describe('Infinispan TLS/SSL client', function() {
                 sslAuthWithMissingTrustCertificate())
   );
 
+  /**
+   * Creates a test function that connects via SSL, puts/gets a value, and disconnects.
+   * @param {string} infix - Key infix used to generate unique key/value pairs.
+   * @param {object} addr - Server address to connect to.
+   * @param {object} sslOpts - SSL and authentication connection options.
+   * @returns {Function} Jasmine async test function.
+   */
   function testSsl(infix, addr, sslOpts) {
     var k = util.format('ssl-%s-key', infix);
     var v = util.format('ssl-%s-value', infix);
@@ -93,9 +100,13 @@ describe('Infinispan TLS/SSL client', function() {
         .then(t.disconnect())
         .catch(t.failed(done))
         .finally(done);
-    }
+    };
   }
 
+  /**
+   * Creates SSL options using a trusted CA certificate.
+   * @returns {object} Connection options with SSL trust and PLAIN authentication.
+   */
   function sslTrust() {
     return {
       ssl: {
@@ -109,9 +120,13 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options using a PKCS12 crypto store for trust.
+   * @returns {object} Connection options with crypto store SSL and PLAIN authentication.
+   */
   function sslTrustCryptoStore() {
     return {
       ssl: {
@@ -128,9 +143,13 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with client certificate authentication.
+   * @returns {object} Connection options with SSL client auth and PLAIN authentication.
+   */
   function sslAuth() {
     return {
         ssl: {
@@ -148,9 +167,13 @@ describe('Infinispan TLS/SSL client', function() {
           userName: 'admin',
           password: 'pass'
         }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with SNI hostname set to a trusted server name.
+   * @returns {object} Connection options with SNI trust and PLAIN authentication.
+   */
   function sslSniTrusted() {
     return {
       ssl: {
@@ -164,9 +187,13 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options for SNI trust when multiple trusted SNI identities exist.
+   * @returns {object} Connection options with SNI trust and PLAIN authentication.
+   */
   function sslSniTrustedInCaseOfMultipleTrustedSni() {
     return {
         ssl: {
@@ -180,9 +207,13 @@ describe('Infinispan TLS/SSL client', function() {
           userName: 'admin',
           password: 'pass'
         }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with a default SNI hostname that does not match the server realm.
+   * @returns {object} Connection options with untrusted SNI and PLAIN authentication.
+   */
   function sslSniDefault() {
     return {
       ssl: {
@@ -196,10 +227,14 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
-  function sslSniDefaultWithTrustedCertificate() {
+  /**
+   * Creates SSL options with a trusted certificate but no explicit SNI hostname.
+   * @returns {object} Connection options with SSL trust and PLAIN authentication.
+   */
+  function sslSniDefaultWithTrustedCertificate() { // eslint-disable-line no-unused-vars
     return {
       ssl: {
         enabled: true,
@@ -211,15 +246,19 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with an untrusted SNI hostname and untrusted CA certificate.
+   * @returns {object} Connection options with untrusted SNI and PLAIN authentication.
+   */
   function sslSniUntrusted() {
     return {
       ssl: {
         enabled: true,
         trustCerts: ['out/ssl/untrust-ca/untrust-ca.pem'],
-        sniHostName: "untrust"
+        sniHostName: 'untrust'
       },
       authentication: {
         enabled: true,
@@ -227,49 +266,78 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates a test function that expects an SSL connection to fail with an error.
+   * @param {Function} errF - Error assertion function receiving done callback.
+   * @param {object} sslOpts - SSL and authentication connection options.
+   * @returns {Function} Jasmine async test function.
+   */
   function testError(errF, sslOpts) {
     return function(done) {
       t.client(t.ssl, sslOpts)
         .then(shouldFail())
         .catch(errF(done))
         .finally(done);
-    }
+    };
   }
 
+  /**
+   * Returns a handler that disconnects the client and throws, indicating unexpected success.
+   * @returns {Function} Handler that rejects with an error after disconnecting.
+   */
   function shouldFail() {
     return function(client) {
       var disconnect = client.disconnect();
       return disconnect.finally(function() {
         throw Error('Expected operation to fail');
       });
-    }
+    };
   }
 
-  function expectError(msg) {
+  /**
+   * Creates an assertion function that checks an error message matches exactly.
+   * @param {string} msg - Expected error message.
+   * @returns {Function} Assertion function receiving an error.
+   */
+  function expectError(msg) { // eslint-disable-line no-unused-vars
     return function(err) {
       expect(err.message).toBe(msg);
-    }
+    };
   }
 
+  /**
+   * Creates an error handler that asserts the error message contains any of the expected strings.
+   * @param {Array<string>} msg - Array of expected substrings.
+   * @returns {Function} Curried function receiving done callback then error.
+   */
   function expectContainsAnyErrors(msg) {
     return function(done) {
       return function(err) {
         toContainAnyOf(msg, err, done);
-      }
-    }
+      };
+    };
   }
 
+  /**
+   * Creates an error handler that asserts the error message matches any of the expected values.
+   * @param {Array<string>} msgs - Array of expected error messages.
+   * @returns {Function} Curried function receiving done callback then error.
+   */
   function expectAnyExactErrors(msgs) {
     return function(done) {
       return function(err) {
         toBeAnyOf(msgs, err, done);
-      }
-    }
+      };
+    };
   }
 
+  /**
+   * Creates SSL options with a crypto store but no passphrase, expected to fail.
+   * @returns {object} Connection options with incomplete crypto store configuration.
+   */
   function sslStoreNoPassphrase() {
     return {
       ssl: {
@@ -284,9 +352,13 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with an empty crypto store (no path), expected to fail.
+   * @returns {object} Connection options with incomplete crypto store configuration.
+   */
   function sslStoreNoPath() {
     return {
       ssl: {
@@ -299,9 +371,13 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with SSL enabled but no crypto store or trust certs, expected to fail.
+   * @returns {object} Connection options with minimal SSL configuration.
+   */
   function sslStoreNoCryptoStore() {
     return {
       ssl: {
@@ -313,14 +389,18 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
-  function sslSniWithNoCert() {
+  /**
+   * Creates SSL options with SNI hostname but no trust certificate.
+   * @returns {object} Connection options with SNI but no trust certs.
+   */
+  function sslSniWithNoCert() { // eslint-disable-line no-unused-vars
     return {
       ssl: {
         enabled: true,
-        sniHostName: "untrust"
+        sniHostName: 'untrust'
       },
       authentication: {
         enabled: true,
@@ -328,10 +408,14 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
-  function sslAuthWithMissingKey() {
+  /**
+   * Creates SSL options with client auth but missing the private key.
+   * @returns {object} Connection options with incomplete client auth configuration.
+   */
+  function sslAuthWithMissingKey() { // eslint-disable-line no-unused-vars
     return {
       ssl: {
         enabled: true,
@@ -347,10 +431,14 @@ describe('Infinispan TLS/SSL client', function() {
           password: 'pass'
         }
       }
-    }
+    };
   }
 
-  function sslAuthWithMissingPassphrase() {
+  /**
+   * Creates SSL options with client auth but missing the passphrase.
+   * @returns {object} Connection options with incomplete client auth configuration.
+   */
+  function sslAuthWithMissingPassphrase() { // eslint-disable-line no-unused-vars
     return {
       ssl: {
         enabled: true,
@@ -366,10 +454,14 @@ describe('Infinispan TLS/SSL client', function() {
           password: 'pass'
         }
       }
-    }
+    };
   }
 
-  function sslAuthWithMissingCert() {
+  /**
+   * Creates SSL options with client auth but missing the client certificate.
+   * @returns {object} Connection options with incomplete client auth configuration.
+   */
+  function sslAuthWithMissingCert() { // eslint-disable-line no-unused-vars
     return {
       ssl: {
         enabled: true,
@@ -385,10 +477,14 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
-  function sslAuthWithMissingInfo() {
+  /**
+   * Creates SSL options with client auth but missing all auth details.
+   * @returns {object} Connection options with empty client auth configuration.
+   */
+  function sslAuthWithMissingInfo() { // eslint-disable-line no-unused-vars
     return {
       ssl: {
         enabled: true,
@@ -401,9 +497,13 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Creates SSL options with client auth but missing the trusted CA certificate.
+   * @returns {object} Connection options without trust certs.
+   */
   function sslAuthWithMissingTrustCertificate() {
     return {
       ssl: {
@@ -420,23 +520,37 @@ describe('Infinispan TLS/SSL client', function() {
         userName: 'admin',
         password: 'pass'
       }
-    }
+    };
   }
 
+  /**
+   * Asserts that the actual error message matches any of the expected values.
+   * @param {Array<string>} expecteds - Array of acceptable error messages.
+   * @param {Error} actual - The actual error object.
+   * @param {Function} done - Jasmine done callback, called with error on failure.
+   * @returns {void}
+   */
   function toBeAnyOf(expecteds, actual, done) {
     for (var i = 0, l = expecteds.length; i < l; i++) {
       if (_.isEqual(actual.message, expecteds[i]))
         return;
     }
-    done(new Error('[' + actual.message + '] is not any of: [' + expecteds + ']'));
+    done(new Error(`[${  actual.message  }] is not any of: [${  expecteds  }]`));
   }
 
+  /**
+   * Asserts that the actual error message contains any of the expected substrings.
+   * @param {Array<string>} expecteds - Array of acceptable substrings.
+   * @param {Error} actual - The actual error object.
+   * @param {Function} done - Jasmine done callback, called with error on failure.
+   * @returns {void}
+   */
   function toContainAnyOf(expecteds, actual, done) {
     for (var i = 0, l = expecteds.length; i < l; i++) {
       if (actual.message.includes(expecteds[i]))
         return;
     }
-    done(new Error('[' + actual.message + '] does not contain any of: [' + expecteds + ']'));
+    done(new Error(`[${  actual.message  }] does not contain any of: [${  expecteds  }]`));
   }
 
 });

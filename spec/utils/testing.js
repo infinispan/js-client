@@ -14,7 +14,7 @@ var ispn = require('../../lib/infinispan');
 var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
-exports.serverDirName = "infinispan-server";
+exports.serverDirName = 'infinispan-server';
 
 exports.authOpts = {
   authentication: {
@@ -97,31 +97,31 @@ exports.protocol29 = function(clientOpts) { return protocols.version29(clientOpt
 exports.protocol30 = function(clientOpts) { return protocols.version30(clientOpts); };
 
 exports.put = function(k, v, opts) {
-  return function(client) { return client.put(k, v, opts); }
+  return function(client) { return client.put(k, v, opts); };
 };
 
 exports.get = function(k) {
-  return function(client) { return client.get(k); }
+  return function(client) { return client.get(k); };
 };
 
 exports.getM = function(k) {
-  return function(client) { return client.getWithMetadata(k); }
+  return function(client) { return client.getWithMetadata(k); };
 };
 
 exports.putIfAbsent = function(k, v, opts) {
-  return function(client) { return client.putIfAbsent(k, v, opts); }
+  return function(client) { return client.putIfAbsent(k, v, opts); };
 };
 
 exports.replace = function(k, v, opts) {
-  return function(client) { return client.replace(k, v, opts); }
+  return function(client) { return client.replace(k, v, opts); };
 };
 
 exports.remove = function(k, opts) {
-  return function(client) { return client.remove(k, opts);  }
+  return function(client) { return client.remove(k, opts);  };
 };
 
 exports.containsKey = function(k) {
-  return function(client) { return client.containsKey(k); }
+  return function(client) { return client.containsKey(k); };
 };
 
 exports.conditional = function(writeFun, getFun, k, old, v, opts) {
@@ -131,50 +131,50 @@ exports.conditional = function(writeFun, getFun, k, old, v, opts) {
       expect(versioned.version).toBeDefined();
       return writeFun(k, versioned.version, v, opts)(client);
     });
-  }
+  };
 };
 
 exports.replaceV = function(k, version, v, opts) {
   return function(client) {
     return client.replaceWithVersion(k, v, version, opts);
-  }
+  };
 };
 
 exports.putAll = function(pairs, opts) {
-  return function(client) { return client.putAll(pairs, opts); }
+  return function(client) { return client.putAll(pairs, opts); };
 };
 
 exports.size = function() {
-  return function(client) { return client.size(); }
+  return function(client) { return client.size(); };
 };
 
 exports.stats = function() {
-  return function(client) { return client.stats(); }
+  return function(client) { return client.stats(); };
 };
 
 exports.clear = function() {
   return function(client) {
     return client.clear();
-  }
+  };
 };
 
 exports.ping = function() {
   return function(client) {
     return client.ping();
-  }
+  };
 };
 
 exports.disconnect = function() {
   return function(client) {
     return client.disconnect();
-  }
+  };
 };
 
 exports.on = function(event, listener, opts) {
   return function(client) {
     return client.addListener(event, listener(client), opts)
       .then(function() { return client; });
-  }
+  };
 };
 
 exports.onMany = function(eventListeners) {
@@ -190,7 +190,7 @@ exports.onMany = function(eventListeners) {
         .then(function(listenerIds) {
           _.map(listenerIds, function(lid) { expect(lid).toBe(listenerId); });
           return client;
-        })
+        });
     });
   };
 };
@@ -198,13 +198,13 @@ exports.onMany = function(eventListeners) {
 exports.authMech = function() {
   return function(client) {
     return client.authMechList();
-  }
+  };
 };
 
 exports.exec = function(scriptName, params) {
   return function(client) {
     return client.execute(scriptName, params);
-  }
+  };
 };
 
 exports.loadAndExec = function(path, name) {
@@ -215,21 +215,21 @@ exports.loadAndExec = function(path, name) {
         var scriptName = f.existy(name) ? name : path.split('/').pop();
         return c.addScript(scriptName, vals[1].toString())
           .then(function() { return c; } );
-      })
-  }
+      });
+  };
 };
 
 exports.getTopologyId = function() {
   return function(client) {
     return Promise.resolve(client.getTopologyInfo().getTopologyId());
-  }
+  };
 };
 
 exports.getMembers = function() {
   return function(client) {
     return Promise.resolve(
         _.sortBy(client.getTopologyInfo().getMembers(), 'port'));
-  }
+  };
 };
 
 exports.assert = function(fun, expectFun) {
@@ -239,23 +239,23 @@ exports.assert = function(fun, expectFun) {
         expectFun(value);
         return client;
       });
-    }
+    };
   }
   return function(client) {
     return fun(client).then(function() { return client; });
-  }
+  };
 };
 
 exports.assertStats = function(fun, statsFun) {
   return function(client) {
-    var before = client.stats().then(function(before) {return before});
+    var before = client.stats().then(function(before) {return before;});
     var put = before.then(function() { return fun(client); });
     var after = put.then(function() { return client.stats(); });
     return Promise.all([before, after]).then(function(stats) {
       statsFun(stats[0], stats[1]);
       return client;
     });
-  }
+  };
 };
 
 exports.resetStats = function(client) {
@@ -279,13 +279,13 @@ exports.resetStats = function(client) {
 exports.clusterSize = function() { return exports.cluster.length; };
 
 exports.toBe = function(value) {
-  return function(actual) { expect(actual).toBe(value); }
+  return function(actual) { expect(actual).toBe(value); };
 };
 
 exports.toEqual = function(value) {
   return function(actual) {
     var laundered = JSON.stringify({value: 'native-value'});
-    var relaundered = JSON.parse(laundered);
+    JSON.parse(laundered);
 
     // logger.tracef('Match actual=%s and expected=%s? %s'
     //     , u.str(relaundered)
@@ -298,17 +298,17 @@ exports.toEqual = function(value) {
         , u.str(actual), u.str(value), match
     );
     expect(actual).toEqual(value);
-  }
+  };
 };
 
 exports.toContain = function(value) {
   return function(actual) {
     if (_.isObject(value)) expect(actual).toEqual(jasmine.objectContaining(value));
     else expect(actual).toContain(value);
-  }
+  };
 };
 
-exports.toBeDefined = function(actual) { expect(actual).toBeDefined() };
+exports.toBeDefined = function(actual) { expect(actual).toBeDefined(); };
 exports.toBeUndefined = function(actual) { expect(actual).toBeUndefined(); };
 exports.toBeTruthy = function(actual) { expect(actual).toBeTruthy(); };
 exports.toBeFalsy = function(actual) { expect(actual).toBeFalsy(); };
@@ -353,14 +353,14 @@ exports.expectEvent = function(key, done, removeAfterEvent, value) {
             client.removeListener(listenerId)
               .finally(exports.failed(done)(err));
           });
-      }
+      };
     } else {
       return function(eventKey, listenerId) {
         expect(eventKey).toEqual(key);
         removeListener(client, listenerId, removeAfterEvent, done);
-      }
+      };
     }
-  }
+  };
 };
 
 exports.expectEventKeyOnly = function(key, done) {
@@ -369,13 +369,13 @@ exports.expectEventKeyOnly = function(key, done) {
       return function (eventKey, listenerId) {
         expect(eventKey).toBe(key);
         removeListener(client, listenerId, true, done);
-      }
+      };
     } else {
       return function(eventKey) {
         expect(eventKey).toBe(key);
-      }
+      };
     }
-  }
+  };
 };
 
 exports.expectCustomEvent = function(custom, done) {
@@ -383,8 +383,8 @@ exports.expectCustomEvent = function(custom, done) {
     return function(eventCustom, listenerId) {
       expect(eventCustom).toEqual(custom);
       removeListener(client, listenerId, true, done);
-    }
-  }
+    };
+  };
 };
 
 function removeListener(client, listenerId, removeAfterEvent, done) {
@@ -402,12 +402,12 @@ function assertListenerVersioned(key, value, version) {
       .then(function(getM) {
         expect(getM.value).toEqual(value);
         expectToBeBuffer(getM.version, version);
-      })
-  }
+      });
+  };
 }
 
 exports.expectEvents = function(keys, done, disconnect) {
-  logger.debugf("Expect events for keys: %s", keys);
+  logger.debugf('Expect events for keys: %s', keys);
   return function(client) {
     var remain = keys;
     return function(eventKey, eventVersion, listenerId) {
@@ -416,7 +416,7 @@ exports.expectEvents = function(keys, done, disconnect) {
       });
       expect(match.length).toBe(1);
       remain = _.without(remain, eventKey);
-      logger.debugf("Received event key=%s, still remaining [%s]", eventKey, remain);
+      logger.debugf('Received event key=%s, still remaining [%s]', eventKey, remain);
       if (_.isEmpty(remain)) {
         var removed = removeListener(client, listenerId, true, done);
         if (disconnect) {
@@ -425,8 +425,8 @@ exports.expectEvents = function(keys, done, disconnect) {
           });
         }
       }
-    }
-  }
+    };
+  };
 };
 
 exports.failed = function(done) {
@@ -436,8 +436,8 @@ exports.failed = function(done) {
 };
 
 exports.randomStr = function(size) {
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var text = '';
+  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
   for (var i = 0; i < size; i++)
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -455,16 +455,16 @@ exports.findKeyForServers = function(client, addrs) {
   } while (!_.isEqual(addrs, owners) && attempts >= 0);
 
   if (attempts < 0)
-    throw new Error("Could not find any key owned by: " + u.showArrayAddress(addrs));
+    throw new Error(`Could not find any key owned by: ${  u.showArrayAddress(addrs)}`);
 
-  logger.debugf("Generated key=%s hashing to %s", key, u.showArrayAddress(addrs));
+  logger.debugf('Generated key=%s hashing to %s', key, u.showArrayAddress(addrs));
   return key;
 };
 
 exports.getAll = function(keys) {
   return function(client) {
     return client.getAll(keys);
-  }
+  };
 };
 
 exports.invalidVersion = function() {
@@ -474,27 +474,27 @@ exports.invalidVersion = function() {
 exports.notReplaceWithVersion = function(k, opts) {
   return function(client) {
     return client.replaceWithVersion(k, 'ignore', exports.invalidVersion(), opts);
-  }
+  };
 };
 
 exports.removeWithVersion = function(k, version, opts) {
   return function(client) {
     return client.removeWithVersion(k, version, opts);
-  }
+  };
 };
 
 exports.notRemoveWithVersion = function(k, opts) {
   return function(client) {
     return client.removeWithVersion(k, exports.invalidVersion(), opts);
-  }
+  };
 };
 
 exports.expectIteratorDone = function(it) {
   return function() {
     return it.next().then(function(entry) {
       expect(entry.done).toBeTruthy();
-    })
-  }
+    });
+  };
 };
 
 exports.seqIterator = function(sortByF, batchSize, expected, opts) {
@@ -506,7 +506,7 @@ exports.seqIterator = function(sortByF, batchSize, expected, opts) {
               return it.next().then(function(entry) {
                 array.push(entry);
                 return array;
-              })
+              });
             });
           }, Promise.resolve([]));
 
@@ -514,21 +514,21 @@ exports.seqIterator = function(sortByF, batchSize, expected, opts) {
           .then(function(array) { exports.toContainAllEntries(expected)(sortByF, array); })
           .then(function() { return it.close(); }) // Close iterator
           .then(function() { return client; });
-    })
-  }
+    });
+  };
 };
 
 exports.toEqualPairs = function(sortByF, value) {
   return function(actual) {
     expect(_.sortBy(actual, sortByF)).toEqual(value);
-  }
+  };
 };
 
 exports.toContainAllEntries = function(expected) {
   return function(sortByF, actual) {
     var sorted = _.sortBy(actual, sortByF);
     return exports.toContainAll(expected)(sorted);
-  }
+  };
 };
 
 exports.toContainAll = function(expected) {
@@ -539,13 +539,13 @@ exports.toContainAll = function(expected) {
       var expectedEntry = e[1];
       exports.toContain(expectedEntry)(actualEntry);
     });
-  }
+  };
 };
 
 exports.toBeStatIncr = function(stat) {
   return function(before, after) {
     expect(after[stat]).toBe(before[stat] + 1);
-  }
+  };
 };
 
 exports.prev = function() {
@@ -568,25 +568,25 @@ exports.getHotrodProtocolVersion = function() {
 
 exports.stopClusterNode = function(port, waitStop) {
   return function() {
-    var opUrl = "/server?action=stop";
+    var opUrl = '/server?action=stop';
 
     if (waitStop) {
       return invokeDmrHttpGet('POST', opUrl, port).then(function() {
         return waitUntilStopped(port);
       }).catch(function (err) {
-        console.log('Error stopping ' +  err);
-        return Promise.resolve('unable to stop server in port ' + port);
+        console.log(`Error stopping ${   err}`);
+        return Promise.resolve(`unable to stop server in port ${  port}`);
       });
     }
 
     return invokeDmrHttpGet('POST', opUrl, port);
-  }
+  };
 };
 
 function waitUntilStopped(port) {
   return waitUntil(
     function(resp) { expect(resp).toEqual(0); },
-    function(resp) { return _.isEqual(resp, 0) },
+    function(resp) { return _.isEqual(resp, 0); },
     getServerStatus(port)
   );
 }
@@ -595,19 +595,19 @@ function getServerStatus(port) {
   return function() {
     return new Promise(function(fulfil, reject) {
       var spawn = require('child_process').spawn;
-      var child = spawn('fuser', [port + '/tcp']);
+      var child = spawn('fuser', [`${port  }/tcp`]);
       var count = 0;
 
       child.stdout.on('data', function(chunk) {
-          chunk.toString().split('\n').forEach(function(line) {
+          chunk.toString().split('\n').forEach(function(_) {
               count++;
           });
       });
 
-      child.stdout.on('end', function(chunk) {
+      child.stdout.on('end', function(_) {
         fulfil(count);
       });
-    })
+    });
   };
 }
 
@@ -615,24 +615,24 @@ exports.stopAndWaitView = function(nodeStop, expectNumMembers, nodeView) {
   return function() {
     return exports.stopClusterNode(nodeStop, true)()
       .then(function() { return exports.waitUntilView(expectNumMembers, nodeView); });
-  }
+  };
 };
 
 exports.waitUntilView = function(expectNumMembers, port) {
-  logger.debugf("Wait until view of %d nodes on '%s'", expectNumMembers, port);
+  logger.debugf('Wait until view of %d nodes on \'%s\'', expectNumMembers, port);
   return waitUntil(
     function(members) {
       logger.debugf(
-          "Final check, check the expect %d nodes and got %d",
+          'Final check, check the expect %d nodes and got %d',
           expectNumMembers, members
       );
       expect(members).toEqual(expectNumMembers);
-      logger.debugf("Check passed");
+      logger.debugf('Check passed');
     },
     function(members) {
       var success = _.isEqual(expectNumMembers, members);
       logger.debugf(
-          "Expected %d nodes, got %d, success=%s",
+          'Expected %d nodes, got %d, success=%s',
           expectNumMembers, members, success
       );
       return success;
@@ -645,13 +645,13 @@ exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAdd
         var spawn = require('child_process').spawn;
         var path = require('path');
 
-        var serverPath = path.resolve('server/' + exports.serverDirName + "/");
-        var standaloneShPath = serverPath + '/bin/server.sh';
+        var serverPath = path.resolve(`server/${  exports.serverDirName  }/`);
+        var standaloneShPath = `${serverPath  }/bin/server.sh`;
         var cmd = spawn(
             standaloneShPath,
-            ['-c', config, '-p', port, '-s',serverPath + "/" + nodeName,
-                '-Djgroups.mcast_addr=' + mcastAddr,
-                '-Dinfinispan.node.name=' + nodeName,
+            ['-c', config, '-p', port, '-s',`${serverPath  }/${  nodeName}`,
+                `-Djgroups.mcast_addr=${  mcastAddr}`,
+                `-Dinfinispan.node.name=${  nodeName}`,
                 '-Djgroups.join_timeout=1000'
             ]);
 
@@ -666,7 +666,7 @@ exports.launchClusterNodeAndWaitView = function(nodeName, config, port, mcastAdd
 
         fulfill();
     }).then(function() {
-        logger.debugf('wait until view ' + expectNumMembers)
+        logger.debugf(`wait until view ${  expectNumMembers}`);
         return exports.waitUntilView(expectNumMembers, port);
     }).then(function() {
         logger.debugf('return client');
@@ -680,7 +680,7 @@ function waitUntil(expectF, cond, op) {
   function done(actual) {
     var expired = new Date().getTime() < now + MAX_WAIT;
     logger.debugf(
-        "Expired waiting for condition? %s", expired
+        'Expired waiting for condition? %s', expired
     );
     return cond(actual) && !expired;
   }
@@ -690,7 +690,7 @@ function waitUntil(expectF, cond, op) {
     return promise
       .then(function(response) {
         var isDone = done(response);
-        logger.debugf("Is waiting done for condition? %s", isDone);
+        logger.debugf('Is waiting done for condition? %s', isDone);
 
         if (isDone) return response;
         return new Promise(function(resolve) { setTimeout(resolve, 1000); })
@@ -715,7 +715,7 @@ exports.sleepFor = function(sleepDuration) {
 function getClusterMembers(port) {
 
   return function() {
-    var opUrl ="/cache-managers/clustered/";
+    var opUrl ='/cache-managers/clustered/';
 
     return invokeDmrHttpGet('GET', opUrl, port)
       .then(function(response) {

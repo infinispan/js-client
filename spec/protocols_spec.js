@@ -9,13 +9,28 @@ var t = require('./utils/testing'); // Testing dependency
 var singleExpiryDecode = f.actions([codec.decodeUByte(), codec.decodeVLong()], codec.allDecoded(2));
 var constantExpiryDecode = f.actions([codec.decodeUByte()], codec.allDecoded(1));
 
+/**
+ * Encodes a lifespan time unit into the combined expiry byte.
+ * @param {number} unit - Time unit code for lifespan.
+ * @returns {number} Combined expiry byte with lifespan unit and default max idle.
+ */
 function lifespan(unit) { return unit << 4 | 0x07; }
+/**
+ * Encodes a max idle time unit into the combined expiry byte.
+ * @param {number} unit - Time unit code for max idle.
+ * @returns {number} Combined expiry byte with default lifespan and max idle unit.
+ */
 function maxIdle(unit) { return 0x70 | unit; }
 
+/**
+ * Creates a function that wraps a value into a named object property.
+ * @param {string} name - Property name for the resulting object.
+ * @returns {Function} Function that takes a value and returns an object with the named property.
+ */
 function object(name) {
   return function(value) {
     return _.object([name], [value]);
-  }
+  };
 }
 
 describe('Protocols', function() {
@@ -55,6 +70,12 @@ describe('Protocols', function() {
     expect(p2.getValueMediaType()).toEqual('application/json');
   });
 
+  /**
+   * Tests encoding and decoding of all time unit variants for a given expiry type.
+   * @param {string} name - Expiry type name ('lifespan' or 'maxIdle').
+   * @param {Function} converter - Function that maps a time unit code to the combined byte.
+   * @returns {void}
+   */
   function encodeDecodeUnits(name, converter) {
     var exp = object(name);
     encodeDecodeSingleNumericExpiry(exp('777777777d'), 777777777, converter(0x06));
@@ -68,12 +89,25 @@ describe('Protocols', function() {
     encodeDecodeSingleConstantExpiry(exp(-1), converter(0x08));
   }
 
+  /**
+   * Encodes and decodes a single numeric expiry value, asserting correctness.
+   * @param {object} expiry - Expiry object with the duration string.
+   * @param {number} duration - Expected numeric duration value after decoding.
+   * @param {number} unit - Expected time unit byte after decoding.
+   * @returns {void}
+   */
   function encodeDecodeSingleNumericExpiry(expiry, duration, unit) {
     var encoder = f.actions(p.encodeExpiry(expiry), codec.bytesEncoded);
     var bytebuf = t.assertEncode(t.newByteBuf(), encoder, t.vNumSize(duration) + 1);
     expect(singleExpiryDecode({buf: bytebuf.buf, offset: 0})).toEqual([unit, duration]);
   }
 
+  /**
+   * Encodes and decodes a constant expiry value (0 or -1), asserting correctness.
+   * @param {object} expiry - Expiry object with the constant duration value.
+   * @param {number} unit - Expected time unit byte after decoding.
+   * @returns {void}
+   */
   function encodeDecodeSingleConstantExpiry(expiry, unit) {
     var encoder = f.actions(p.encodeExpiry(expiry), codec.bytesEncoded);
     var bytebuf = t.assertEncode(t.newByteBuf(), encoder, 1);
