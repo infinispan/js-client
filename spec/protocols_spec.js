@@ -47,6 +47,36 @@ describe('Protocols', function() {
       t.client(t.local_notsecured, {version: '1.1'});
     }, 'Unknown protocol version: 1.1', done);
   });
+  it('can instantiate protocol 3.1', function() {
+    var p31 = t.protocol31({
+      dataFormat : {
+        keyType: 'text/plain',
+        valueType: 'text/plain'
+      }
+    });
+    expect(p31.version).toEqual(31);
+    expect(p31.getKeyMediaType()).toEqual('text/plain');
+  });
+  it('can instantiate protocol 4.0', function() {
+    var p40 = t.protocol40({
+      dataFormat : {
+        keyType: 'text/plain',
+        valueType: 'text/plain'
+      }
+    });
+    expect(p40.version).toEqual(40);
+    expect(p40.getKeyMediaType()).toEqual('text/plain');
+  });
+  it('can instantiate protocol 4.1', function() {
+    var p41 = t.protocol41({
+      dataFormat : {
+        keyType: 'application/json',
+        valueType: 'application/json'
+      }
+    });
+    expect(p41.version).toEqual(41);
+    expect(p41.getKeyMediaType()).toEqual('application/json');
+  });
   it('can handle different protocols at the same time', function() {
     var p1 = t.protocol29({
       dataFormat : {

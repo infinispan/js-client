@@ -8,7 +8,7 @@ exports.execPutGet = function(path, prefix, client, expectFun) {
       .then(t.loadAndExec(path, scriptName))
       .then(t.assert(t.exec(scriptName, params), expectFun))
       .then(t.assert(t.get(`${prefix  }-typed-key`), t.toBe(`${prefix  }-typed-value`)))
-      .catch(t.failed(done)).finally(done);
+      .then(function() { done(); }, t.failed(done));
   };
 };
 
@@ -22,7 +22,6 @@ exports.execPutGet = function(path, prefix, client, expectFun) {
       .then(t.assert(t.clear()))
       .then(t.assert(t.putAll(pairs), t.toBeUndefined))
       .then(t.seqIterator('key', batchSize, pairs))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   };
 };

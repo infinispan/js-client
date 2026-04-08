@@ -7,7 +7,7 @@ describe('Infinispan local client under stress load', function() {
 
   beforeEach(function(done) { client
     .then(t.assert(t.clear()))
-    .catch(t.failed(done)).finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
 
   it('can do multiple puts continuously and only wait at the end', function(done) {
@@ -17,16 +17,14 @@ describe('Infinispan local client under stress load', function() {
       });
 
       return Promise.all(puts)
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
     });
   });
 
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
     .then(t.disconnect())
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
 
 });

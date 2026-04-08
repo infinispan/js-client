@@ -6,7 +6,7 @@ describe('Infinispan JSON client', function() {
     beforeEach(function (done) {
       client
         .then(t.assert(t.clear()))
-        .catch(t.failed(done)).finally(done);
+        .then(function() { done(); }, t.failed(done));
     });
 
     it('can put -> get -> remove a key/value pair', function (done) {
@@ -15,8 +15,7 @@ describe('Infinispan JSON client', function() {
         .then(t.assert(t.get({k: 'jkey'}), t.toEqual({v: 'jvalue'})))
         .then(t.assert(t.containsKey({k: 'jkey'}), t.toBeTruthy))
         .then(t.assert(t.remove({k: 'jkey'}), t.toBeTruthy))
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
     });
     it('can use conditional operations on a key/value pair', function (done) {
       client
@@ -28,8 +27,7 @@ describe('Infinispan JSON client', function() {
         .then(t.assert(t.conditional(
           t.removeWithVersion, t.getM, {k: 'jcond'}, {v: 'jv2'}), t.toBeTruthy)
         )
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
     });
     it('can return previous values', function (done) {
       client
@@ -45,8 +43,7 @@ describe('Infinispan JSON client', function() {
         .then(t.assert(
           t.conditional(t.removeWithVersion, t.getM, {k: 'jprev'}, {v: 'jv4'}, t.prev())
           , t.toEqual({v: 'jv4'})))
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
     });
     it('can use multi-key operations', function (done) {
       var pairs = [
@@ -67,8 +64,7 @@ describe('Infinispan JSON client', function() {
               value: {mv: 'jv1'}
             }, {key: {mk: 'jmulti2'}, value: {mv: 'jv2'}}]
           )))
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
     });
     it('can listen for only create events', function (done) {
       client
@@ -130,8 +126,7 @@ describe('Infinispan JSON client', function() {
           .then(t.seqIterator(function (obj) {
             return obj.key.k;
           }, 1, pairs))
-          .catch(t.failed(done))
-          .finally(done);
+          .then(function() { done(); }, t.failed(done));
       });
 
     // it('can execute a script remotely to store and retrieve data', function(done) {
@@ -175,8 +170,7 @@ describe('Infinispan JSON client', function() {
   // Since Jasmine 1.3 does not have afterAll callback, this disconnect test must be last
   it('disconnects client', function(done) { client
       .then(t.disconnect())
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
 
 });

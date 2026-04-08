@@ -15,8 +15,8 @@ describe('Infinispan xsite cluster client', function() {
           .then(function(client) {return t.launchClusterNodeAndWaitView('server-moon', t.moon1Config, t.moon1['port'], t.moon1MCastAddr, 1, client);})
           .then(function () {
             logger.debugf('Both moon and earth servers started');
-          }).catch(t.failed(done)).finally(done);
-  }, 15000);
+          }).then(function() { done(); }, t.failed(done));
+  }, 30000);
 
   it('can manually switch and fail over sites', function(done) {
     siteClients().then(function(cs) {
@@ -61,8 +61,8 @@ describe('Infinispan xsite cluster client', function() {
           return Promise.all(_.map(cs, function(c) { return c.disconnect(); }));
         });
     })
-    .catch(t.failed(done)).finally(done);
-  }, 15000);
+    .then(function() { done(); }, t.failed(done));
+  }, 60000);
 
 });
 

@@ -98,8 +98,7 @@ describe('Infinispan TLS/SSL client', function() {
         .then(t.assert(t.put(k, v)))
         .then(t.assert(t.get(k), t.toBe(v)))
         .then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
     };
   }
 
@@ -279,8 +278,7 @@ describe('Infinispan TLS/SSL client', function() {
     return function(done) {
       t.client(t.ssl, sslOpts)
         .then(shouldFail())
-        .catch(errF(done))
-        .finally(done);
+        .then(function() { done(); }, errF(done));
     };
   }
 

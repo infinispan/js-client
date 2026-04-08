@@ -6,9 +6,11 @@ describe('Infinispan local client working with expiry operations', function() {
   var client2 = t.client(t.cluster2, t.authOpts);
   var client3 = t.client(t.cluster3, t.authOpts);
 
-  beforeEach(function(done) { client
-      .then(t.assert(t.clear()))
-      .catch(t.failed(done)).finally(done);
+  beforeEach(function(done) {
+    Promise.all([
+      client.then(t.assert(t.clear())),
+      client1.then(t.assert(t.clear()))
+    ]).then(function() { done(); }, t.failed(done));
   });
 
   it('can validate incorrect duration definitions', function(done) { client
@@ -17,8 +19,7 @@ describe('Infinispan local client working with expiry operations', function() {
     .then(assertError(t.replace('_', '_', {lifespan: 1}), t.toContain('Positive duration provided without time unit')))
     .then(assertError(t.putAll([{key: '_', value: '_'}], {lifespan: '1z'}), t.toContain('Unknown duration unit')))
     .then(assertError(t.replaceV('_', '_', '_', {lifespan: 1}), t.toContain('Positive duration provided without time unit')))
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
   it('removes keys when their lifespan has expired', function(done) { client
     .then(t.assert(t.put('life', 'value', {lifespan: '100ms'})))
@@ -32,8 +33,7 @@ describe('Infinispan local client working with expiry operations', function() {
     .then(t.assert(t.replace('life-replace', 'v1', {lifespan: '100000000ns'})))
     .then(t.assert(t.get('life-replace'), t.toBe('v1')))
     .then(waitLifespanExpire('life-replace', 1000))
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   });
   xit('removes keys when their lifespan has expired in cluster', function(done) { client1
       .then(t.assert(t.put('life', 'value', {lifespan: '100ms'})))
@@ -61,8 +61,7 @@ describe('Infinispan local client working with expiry operations', function() {
       })
       .then(t.assert(t.get('life-replace'), t.toBe('v1')))
       .then(waitLifespanExpire('life-replace', 1000))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('removes keys when their max idle time has expired', function(done) {
     var pairs = [{key: 'idle-multi1', value: 'v1'}, {key: 'idle-multi2', value: 'v2'}];
@@ -76,8 +75,7 @@ describe('Infinispan local client working with expiry operations', function() {
         .then(t.assert(t.containsKey('idle-multi2'), t.toBeTruthy))
         .then(waitIdleTimeExpire('idle-multi1', 1000))
         .then(waitIdleTimeExpire('idle-multi2', 1000))
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
   });
   it('removes keys when their max idle time has expired in cluster', function(done) {
     var pairs = [{key: 'idle-multi1', value: 'v1'}, {key: 'idle-multi2', value: 'v2'}];
@@ -105,8 +103,7 @@ describe('Infinispan local client working with expiry operations', function() {
             });
       })
       .then(t.assert(t.containsKey('idle-multi2'), t.toBeFalsy))
-      .catch(t.failed(done))
-      .finally(done);
+      .then(function() { done(); }, t.failed(done));
   });
   it('can listen for expired events', function(done) { client
     .then(t.on('expiry', t.expectEvent('listen-expiry', done, true)))
@@ -137,16 +134,6 @@ describe('Infinispan local client working with expiry operations', function() {
       })
       .then(t.assert(t.containsKey('listen-expiry'), t.toBeFalsy))
       .catch(t.failed(done));
-  });
-  afterAll(function(done) {
-    Promise.all([client, client1, client2, client3])
-      .then(function(clients) {
-        return Promise.all(clients.map(function(client) {
-          return client.disconnect();
-        }));
-      })
-      .catch(t.failed(done))
-      .finally(done);
   });
 
 });

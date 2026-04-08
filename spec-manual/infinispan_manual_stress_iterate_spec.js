@@ -9,7 +9,7 @@ describe('Infinispan local client under iterate stress load', function () {
   beforeEach(function (done) {
     client
         .then(t.assert(t.clear()))
-        .catch(t.failed(done)).finally(done);
+        .then(function() { done(); }, t.failed(done));
   });
 
   it('can do many iterates continuously', function (done) {
@@ -48,10 +48,9 @@ describe('Infinispan local client under iterate stress load', function () {
 
       // TODO multi iterate should return same result
 
-      return Promise.all(f.cat([multiIterate], multiInsert))
-          .catch(t.failed(done))
-          .finally(done);
+      return Promise.all(f.cat([multiIterate], multiInsert));
     })
+    .then(function() { done(); }, t.failed(done));
   }, 180000);
 
   function test (cl) {
@@ -79,8 +78,7 @@ describe('Infinispan local client under iterate stress load', function () {
   it('disconnects client', function (done) {
     client
         .then(t.disconnect())
-        .catch(t.failed(done))
-        .finally(done);
+        .then(function() { done(); }, t.failed(done));
   });
 
 });

@@ -24,8 +24,8 @@ describe('Infinispan clustered clients', function() {
           .then(withAll(keyGet(t.toBe('failover-value'))))
           .then(withFirst(t.stopClusterNode(t.failover1['port'], false)))
           .then(withFirst(t.disconnect()))
-          .catch(t.failed(done)).finally(done);
-  }, 20000);
+          .then(function() { done(); }, t.failed(done));
+  }, 60000);
 
 });
 

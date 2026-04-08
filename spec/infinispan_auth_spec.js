@@ -13,7 +13,6 @@ describe('Infinispan local client with authentication', function () {
     })
     .then(t.assert(t.put('key', 'value')))
     .then(t.disconnect())
-    .catch(t.failed(done))
-    .finally(done);
+    .then(function() { done(); }, t.failed(done));
   }));
 });

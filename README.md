@@ -107,16 +107,10 @@ To run the testsuite once execute:
 $ ./run-testsuite.sh
 ```
 
-To run tests continuously execute:
-
-```bash
-$ ./node_modules/.bin/jasmine-node spec --autotest --watch lib --captureExceptions
-```
-
 To run individual tests execute:
 
 ```bash
-$ node node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js --captureExceptions
+$ npx jasmine spec/infinispan_local_spec.js
 ```
 
 To help with testing, you can quickly run the smoke tests via:
@@ -150,7 +144,7 @@ sudo route add -net 232.0.0.0/5 192.168.1.3
 The testsuite now contains manual stress tests that take several minutes to run.
 To run these tests, execute:
 
-    $ ./node_modules/.bin/jasmine-node spec-manual --captureExceptions
+    $ npx jasmine spec-manual/*_spec.js
 
 
 # Memory profiling
@@ -173,11 +167,11 @@ Within Chrome, the Developer Tools UI contains a `Memory` tab where heap dumps c
 
 To debug tests with IDE:
 
-    node --inspect-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/codec_spec.js
+    node --inspect-brk node_modules/.bin/jasmine spec/codec_spec.js
 
 Or:
 
-    node --inspect-brk node_modules/jasmine-node/lib/jasmine-node/cli.js spec/infinispan_local_spec.js
+    node --inspect-brk node_modules/.bin/jasmine spec/infinispan_local_spec.js
 
 And then start a remote Node.js debugger from IDE on port 9229.
 
