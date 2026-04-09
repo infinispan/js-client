@@ -47,19 +47,19 @@ describe('Infinispan local client', function() {
   });
   it('can return previous values', function(done) { client
     .then(t.assert(t.putIfAbsent('prev', 'v0', t.prev()), t.toBeUndefined))
-    .then(t.assert(t.putIfAbsent('prev', 'v1', t.prev()), t.toBe('v0')))
-    .then(t.assert(t.remove('prev', t.prev()), t.toBe('v0')))
+    .then(t.assert(t.putIfAbsent('prev', 'v1', t.prev()), t.toBePrevOf('v0')))
+    .then(t.assert(t.remove('prev', t.prev()), t.toBePrevOf('v0')))
     .then(t.assert(t.remove('prev', t.prev()), t.toBeUndefined))
     .then(t.assert(t.put('prev', 'v1', t.prev()), t.toBeUndefined))
-    .then(t.assert(t.put('prev', 'v2', t.prev()), t.toBe('v1')))
-    .then(t.assert(t.replace('prev', 'v3', t.prev()), t.toBe('v2')))
+    .then(t.assert(t.put('prev', 'v2', t.prev()), t.toBePrevOf('v1')))
+    .then(t.assert(t.replace('prev', 'v3', t.prev()), t.toBePrevOf('v2')))
     .then(t.assert(t.replace('_', 'v3', t.prev()), t.toBeUndefined))
-    .then(t.assert(t.conditional(t.replaceV, t.getM, 'prev', 'v3', 'v4', t.prev()), t.toBe('v3')))
+    .then(t.assert(t.conditional(t.replaceV, t.getM, 'prev', 'v3', 'v4', t.prev()), t.toBePrevOf('v3')))
     .then(t.assert(t.notReplaceWithVersion('_', t.prev()), t.toBeUndefined)) // key not found
-    .then(t.assert(t.notReplaceWithVersion('prev', t.prev()), t.toBe('v4'))) // key found but invalid version
+    .then(t.assert(t.notReplaceWithVersion('prev', t.prev()), t.toBePrevOf('v4'))) // key found but invalid version
     .then(t.assert(t.notRemoveWithVersion('_', t.prev()), t.toBeUndefined)) // key not found
-    .then(t.assert(t.notRemoveWithVersion('prev', t.prev()), t.toBe('v4'))) // key found but invalid version
-    .then(t.assert(t.conditional(t.removeWithVersion, t.getM, 'prev', 'v4', t.prev()), t.toBe('v4')))
+    .then(t.assert(t.notRemoveWithVersion('prev', t.prev()), t.toBePrevOf('v4'))) // key found but invalid version
+    .then(t.assert(t.conditional(t.removeWithVersion, t.getM, 'prev', 'v4', t.prev()), t.toBePrevOf('v4')))
     .then(function() { done(); }, t.failed(done));
   });
   it('can use multi-key operations', function(done) {
