@@ -560,6 +560,33 @@ exports.prev = function() {
   return { previous: true };
 };
 
+/**
+ * Extracts the plain value from a previous-value response.
+ * On protocol < 4.0, prev is the raw value (string or object).
+ * On protocol 4.0+, prev is {value, version, created, lifespan, lastUsed, maxIdle}.
+ * @param {*} prev The previous value response.
+ * @returns {*} The extracted value.
+ */
+exports.prevValue = function(prev) {
+  if (!f.existy(prev)) return undefined;
+  if (_.isObject(prev) && prev.version !== undefined) return prev.value;
+  return prev;
+};
+
+exports.toBePrevOf = function(value) {
+  return function(actual) {
+    var extracted = exports.prevValue(actual);
+    expect(extracted).toBe(value);
+  };
+};
+
+exports.toEqualPrevOf = function(value) {
+  return function(actual) {
+    var extracted = exports.prevValue(actual);
+    expect(extracted).toEqual(value);
+  };
+};
+
 exports.counterCreate = function(name, config) {
   return function(client) { return client.counterCreate(name, config); };
 };
