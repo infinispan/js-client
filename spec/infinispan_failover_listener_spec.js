@@ -5,7 +5,7 @@ describe('Infinispan clustered clients with listeners', function() {
 
   it('can failover when nodes crash', function(done) {
     var keys = ['before-failover-listener', 'middle-failover-listener', 'after-failover-listener'];
-    t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1['port'], t.failoverMCastAddr, 1, t.client)
+    t.launchClusterNodeAndWaitView('server-failover-one', t.failoverConfig, t.failover1, t.failoverMCastAddr, 1, t.client)
        .then(function() {
          return t.client(t.failover1, t.authOpts);
        })
@@ -13,13 +13,13 @@ describe('Infinispan clustered clients with listeners', function() {
       .then(t.assert(t.clear()))
       .then(t.on('create', t.expectEvents(keys, done, true)))
       .then(t.assert(t.putIfAbsent(keys[0], 'value'), t.toBeTruthy))
-      .then(function(client) {return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2['port'], t.failoverMCastAddr, 2, client);}) //11432
+      .then(function(client) {return t.launchClusterNodeAndWaitView('server-failover-two', t.failoverConfig, t.failover2, t.failoverMCastAddr, 2, client);}) //11432
       .then(expectClientView([t.failover1, t.failover2]))
       .then(t.assert(t.putIfAbsent(keys[1], 'value'), t.toBeTruthy))
-      .then(withAll(t.stopAndWaitView(t.failover1['port'], 1, t.failover2['port'])))
+      .then(withAll(t.stopAndWaitView(t.failover1, 1, t.failover2)))
       .then(expectClientView([t.failover2]))
       .then(t.assert(t.putIfAbsent(keys[2], 'value'), t.toBeTruthy))
-      .then(withAll(t.stopClusterNode(t.failover2['port'], true)))
+      .then(withAll(t.stopClusterNode(t.failover2, true)))
       .then(withAll(t.disconnect()))
       .catch(t.failed(done));
   }, 120000);

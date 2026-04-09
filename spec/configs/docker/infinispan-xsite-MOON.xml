@@ -9,14 +9,19 @@
 
     <jgroups>
         <stack name="bridge" extends="tcp">
+            <TCPPING initial_hosts="${jgroups.bridge.hosts:}"
+                     stack.combine="REPLACE"
+                     stack.position="MPING"
+                     xmlns="urn:org:jgroups"/>
             <FD_SOCK2 port_range="50"
                       ispn:stack.combine="COMBINE"
                       xmlns="urn:org:jgroups"/>
-            <MPING mcast_port="${jgroups.bridge.mcast_port:47655}"
-                   ispn:stack.combine="COMBINE"
-                   xmlns="urn:org:jgroups"/>
         </stack>
-        <stack name="cluster" extends="udp">
+        <stack name="cluster" extends="tcp">
+            <dns.DNS_PING dns_query="${jgroups.dns.query:moon-dns-ping}"
+                          stack.combine="REPLACE"
+                          stack.position="MPING"
+                          xmlns="urn:org:jgroups"/>
             <FD_SOCK2 port_range="50"
                       ispn:stack.combine="COMBINE"
                       xmlns="urn:org:jgroups"/>
@@ -49,7 +54,7 @@
     <server xmlns="urn:infinispan:server:16.1">
         <interfaces>
             <interface name="public">
-                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+                <inet-address value="${infinispan.bind.address:0.0.0.0}"/>
             </interface>
         </interfaces>
 

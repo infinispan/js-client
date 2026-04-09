@@ -9,18 +9,23 @@
 
     <jgroups>
         <stack name="bridge" extends="tcp">
+            <TCPPING initial_hosts="${jgroups.bridge.hosts:}"
+                     stack.combine="REPLACE"
+                     stack.position="MPING"
+                     xmlns="urn:org:jgroups"/>
             <FD_SOCK2 port_range="50"
                       ispn:stack.combine="COMBINE"
                       xmlns="urn:org:jgroups"/>
-            <MPING mcast_port="${jgroups.bridge.mcast_port:47655}"
-                   ispn:stack.combine="COMBINE"
-                   xmlns="urn:org:jgroups"/>
         </stack>
-        <stack name="cluster" extends="udp">
+        <stack name="cluster" extends="tcp">
+            <dns.DNS_PING dns_query="${jgroups.dns.query:earth-dns-ping}"
+                          stack.combine="REPLACE"
+                          stack.position="MPING"
+                          xmlns="urn:org:jgroups"/>
             <FD_SOCK2 port_range="50"
                       ispn:stack.combine="COMBINE"
                       xmlns="urn:org:jgroups"/>
-            <relay.RELAY2 site="MOON"
+            <relay.RELAY2 site="EARTH"
                           xmlns="urn:org:jgroups"/>
             <remote-sites default-stack="bridge">
                 <remote-site name="EARTH"/>
@@ -30,7 +35,7 @@
     </jgroups>
 
     <cache-container name="clustered">
-        <transport cluster="cluster-moon" stack="cluster"/>
+        <transport cluster="cluster-earth" stack="cluster"/>
         <security>
             <authorization/>
         </security>
@@ -38,9 +43,7 @@
         <distributed-cache name="xsiteCache" segments="20" remote-timeout="30000">
             <locking acquire-timeout="30000" concurrency-level="1000"/>
             <backups>
-                <backup site="EARTH" strategy="SYNC" timeout="3000">
-                    <state-transfer chunk-size="098" timeout="7654" max-retries="321" wait-time="0101"/>
-                </backup>
+                <backup site="MOON" strategy="SYNC" timeout="3000"/>
             </backups>
             <encoding media-type="text/plain"/>
         </distributed-cache>
@@ -49,7 +52,7 @@
     <server xmlns="urn:infinispan:server:16.1">
         <interfaces>
             <interface name="public">
-                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+                <inet-address value="${infinispan.bind.address:0.0.0.0}"/>
             </interface>
         </interfaces>
 

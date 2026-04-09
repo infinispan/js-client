@@ -5,12 +5,16 @@
         xmlns="urn:infinispan:config:16.1"
         xmlns:server="urn:infinispan:server:16.1">
 
+    <jgroups>
+        <stack name="docker-tcp" extends="tcp">
+            <dns.DNS_PING dns_query="${jgroups.dns.query:cluster-dns-ping}"
+                          stack.combine="REPLACE"
+                          stack.position="MPING"/>
+        </stack>
+    </jgroups>
+
     <cache-container name="clustered" default-cache="default" statistics="true">
-<!--        <security>-->
-<!--            <authorization/>-->
-<!--        </security>-->
-        <transport cluster="${infinispan.cluster.name:cluster}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
-        <!--<global-state/>-->
+        <transport cluster="${infinispan.cluster.name:cluster}" stack="docker-tcp" node-name="${infinispan.node.name:}"/>
         <metrics accurate-size="true"/>
         <distributed-cache name="default" segments="20" remote-timeout="30000" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="1000" />
@@ -21,7 +25,7 @@
     <server xmlns="urn:infinispan:server:16.1">
         <interfaces>
             <interface name="public">
-                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+                <inet-address value="${infinispan.bind.address:0.0.0.0}"/>
             </interface>
         </interfaces>
 
@@ -32,14 +36,6 @@
         <security>
             <security-realms>
                 <security-realm name="default">
-                    <!-- Uncomment to enable TLS on the realm -->
-                    <!-- server-identities>
-                       <ssl>
-                          <keystore path="application.keystore" relative-to="infinispan.server.config.path"
-                                    password="password" alias="server" key-password="password"
-                                    generate-self-signed-certificate-host="localhost"/>
-                       </ssl>
-                    </server-identities-->
                     <properties-realm groups-attribute="Roles">
                         <user-properties path="users.properties" relative-to="infinispan.server.config.path" plain-text="true"/>
                         <group-properties path="groups.properties" relative-to="infinispan.server.config.path" />
@@ -48,7 +44,7 @@
             </security-realms>
         </security>
 
-	<endpoints>
+        <endpoints>
             <endpoint socket-binding="default" security-realm="default">
                 <hotrod-connector name="hotrod">
                     <authentication>

@@ -1,7 +1,7 @@
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:16.1 https://infinispan.org/schemas/infinispan-config-16.0.xsd
-                            urn:infinispan:server:16.1 https://infinispan.org/schemas/infinispan-server-16.0.xsd"
+        xsi:schemaLocation="urn:infinispan:config:16.1 https://infinispan.org/schemas/infinispan-config-16.1.xsd
+                            urn:infinispan:server:16.1 https://infinispan.org/schemas/infinispan-server-16.1.xsd"
         xmlns="urn:infinispan:config:16.1"
         xmlns:server="urn:infinispan:server:16.1">
 
