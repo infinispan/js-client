@@ -600,6 +600,15 @@ exports.toEqualPrevOf = function(value) {
   };
 };
 
+exports.prevWithMeta = function(expectFun) {
+  return function(actual) {
+    expect(actual).toBeDefined();
+    expect(actual.version).toBeDefined();
+    expect(actual.value).toBeDefined();
+    if (f.existy(expectFun)) expectFun(actual);
+  };
+};
+
 exports.counterCreate = function(name, config) {
   return function(client) { return client.counterCreate(name, config); };
 };
