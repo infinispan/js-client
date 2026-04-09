@@ -111,7 +111,8 @@ describe('Infinispan TLS/SSL client', function() {
       ssl: {
         enabled: true,
         secureProtocol: 'TLS_client_method',
-        trustCerts: ['out/ssl/ca/ca.pem']
+        trustCerts: ['out/ssl/ca/ca.pem'],
+        sniHostName: t.isDocker ? 'localhost' : undefined
       },
       authentication: {
         enabled: true,
@@ -134,7 +135,8 @@ describe('Infinispan TLS/SSL client', function() {
         cryptoStore: {
           path: 'out/ssl/client/client.p12',
           passphrase: 'secret'
-        }
+        },
+        sniHostName: t.isDocker ? 'localhost' : undefined
       },
       authentication: {
         enabled: true,
@@ -158,7 +160,8 @@ describe('Infinispan TLS/SSL client', function() {
             key: 'out/ssl/client/client.pk',
             passphrase: 'secret',
             cert: 'out/ssl/client/client.pem'
-          }
+          },
+          sniHostName: t.isDocker ? 'localhost' : undefined
         },
         authentication: {
           enabled: true,

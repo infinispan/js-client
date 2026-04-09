@@ -1,0 +1,8 @@
+FROM quay.io/infinispan/server:16.1.3
+
+# Install Nashorn script engine for server-side JavaScript execution
+RUN /opt/infinispan/bin/cli.sh install org.openjdk.nashorn:nashorn-core:15.4 && \
+    /opt/infinispan/bin/cli.sh install org.ow2.asm:asm:9.4 && \
+    /opt/infinispan/bin/cli.sh install org.ow2.asm:asm-commons:9.4 && \
+    /opt/infinispan/bin/cli.sh install org.ow2.asm:asm-tree:9.4 && \
+    /opt/infinispan/bin/cli.sh install org.ow2.asm:asm-util:9.4

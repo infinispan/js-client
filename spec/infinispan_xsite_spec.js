@@ -11,8 +11,8 @@ describe('Infinispan xsite cluster client', function() {
   // any cleanup as first test so that it only gets executed once.
   it('start sites', function(done) {
       logger.debugf('Waiting for xsite servers to be ready.');
-      t.waitUntilView(1, t.earth1['port'])
-          .then(function() { return t.waitUntilView(1, t.moon1['port']); })
+      t.waitUntilView(1, t.earth1)
+          .then(function() { return t.waitUntilView(1, t.moon1); })
           .then(function () {
             logger.debugf('Both moon and earth servers started');
           }).then(function() { done(); }, t.failed(done));
@@ -33,7 +33,7 @@ describe('Infinispan xsite cluster client', function() {
         })
         .then(assertGet('xsite-key', 'xsite-value', cs[0]))
         .then(assertGet('xsite-key', 'xsite-value', cs[1]))
-        .then(t.stopClusterNode(t.earth1['port'], true))
+        .then(t.stopClusterNode(t.earth1, true))
         // Client connected to surviving site should find data
         .then(assertGet('xsite-key', 'xsite-value', cs[1]))
         // Client connected to crashed site should failover
@@ -44,8 +44,8 @@ describe('Infinispan xsite cluster client', function() {
         })
         // Re-launch site stopped site and stop alive site
         .then(assertGet('xsite-key', 'xsite-value', cs[0]))
-        .then(function(client) { return t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1['port'], t.earth1MCastAddr, 1, client); })
-        .then(t.stopClusterNode(t.moon1['port'], true))
+        .then(function(client) { return t.launchClusterNodeAndWaitView('server-earth', t.earth1Config, t.earth1, t.earth1MCastAddr, 1, client); })
+        .then(t.stopClusterNode(t.moon1, true))
         // Client connected to failed over site should come back to original site
         .then(assertGet('xsite-key', undefined, cs[0]))
         .then(function() {
@@ -56,7 +56,7 @@ describe('Infinispan xsite cluster client', function() {
         })
         .then(assertGet('xsite-key-2', 'xsite-value-2', cs[0]))
           //Stopping the rest of the servers to finish the test
-        .then(t.stopClusterNode(t.earth1['port'], true))
+        .then(t.stopClusterNode(t.earth1, true))
         .finally(function() {
           return Promise.all(_.map(cs, function(c) { return c.disconnect(); }));
         });

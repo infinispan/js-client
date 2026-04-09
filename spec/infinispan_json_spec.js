@@ -32,17 +32,17 @@ describe('Infinispan JSON client', function() {
     it('can return previous values', function (done) {
       client
         .then(t.assert(t.putIfAbsent({k: 'jprev'}, {v: 'jv0'}, t.prev()), t.toBeUndefined))
-        .then(t.assert(t.putIfAbsent({k: 'jprev'}, {v: 'jv1'}, t.prev()), t.toEqual({v: 'jv0'})))
-        .then(t.assert(t.remove({k: 'jprev'}, t.prev()), t.toEqual({v: 'jv0'})))
+        .then(t.assert(t.putIfAbsent({k: 'jprev'}, {v: 'jv1'}, t.prev()), t.toEqualPrevOf({v: 'jv0'})))
+        .then(t.assert(t.remove({k: 'jprev'}, t.prev()), t.toEqualPrevOf({v: 'jv0'})))
         .then(t.assert(t.put({k: 'jprev'}, {v: 'jv1'}, t.prev()), t.toBeUndefined))
-        .then(t.assert(t.put({k: 'jprev'}, {v: 'jv2'}, t.prev()), t.toEqual({v: 'jv1'})))
-        .then(t.assert(t.replace({k: 'jprev'}, {v: 'jv3'}, t.prev()), t.toEqual({v: 'jv2'})))
+        .then(t.assert(t.put({k: 'jprev'}, {v: 'jv2'}, t.prev()), t.toEqualPrevOf({v: 'jv1'})))
+        .then(t.assert(t.replace({k: 'jprev'}, {v: 'jv3'}, t.prev()), t.toEqualPrevOf({v: 'jv2'})))
         .then(t.assert(
           t.conditional(t.replaceV, t.getM, {k: 'jprev'}, {v: 'jv3'}, {v: 'jv4'}, t.prev())
-          , t.toEqual({v: 'jv3'})))
+          , t.toEqualPrevOf({v: 'jv3'})))
         .then(t.assert(
           t.conditional(t.removeWithVersion, t.getM, {k: 'jprev'}, {v: 'jv4'}, t.prev())
-          , t.toEqual({v: 'jv4'})))
+          , t.toEqualPrevOf({v: 'jv4'})))
         .then(function() { done(); }, t.failed(done));
     });
     it('can use multi-key operations', function (done) {

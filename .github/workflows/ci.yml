@@ -35,8 +35,9 @@ jobs:
 
       - run: npm install
 
-      - name: Start Infinispan servers
-        run: ./run-servers.sh --ci
-
       - name: Run tests
-        run: npm test
+        run: ./run-docker-testsuite.sh
+
+      - name: Tear down containers
+        if: always()
+        run: docker compose --profile failover down --remove-orphans 2>/dev/null || true

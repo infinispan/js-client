@@ -1,0 +1,272 @@
+services:
+  # Standalone server for local tests
+  server-local:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-local
+    hostname: server-local
+    volumes:
+      - ./spec/configs/infinispan.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/default/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+
+  # Cluster nodes (3-node)
+  server-one:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-cluster-1
+    hostname: server-one
+    volumes:
+      - ./spec/configs/docker/infinispan-clustered.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-one
+        -Djgroups.dns.query=cluster-dns-ping
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - cluster-dns-ping
+
+  server-two:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-cluster-2
+    hostname: server-two
+    volumes:
+      - ./spec/configs/docker/infinispan-clustered.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-two
+        -Djgroups.dns.query=cluster-dns-ping
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - cluster-dns-ping
+
+  server-three:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-cluster-3
+    hostname: server-three
+    volumes:
+      - ./spec/configs/docker/infinispan-clustered.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-three
+        -Djgroups.dns.query=cluster-dns-ping
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - cluster-dns-ping
+
+  # SSL server
+  server-ssl:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-ssl
+    hostname: server-ssl
+    volumes:
+      - ./spec/configs/infinispan-ssl.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+      - ./out/ssl/server/server.p12:/opt/infinispan/server/conf/server.p12:ro
+      - ./out/ssl/client/client.p12:/opt/infinispan/server/conf/client.p12:ro
+      - ./out/ssl/sni-trust1/trust1.p12:/opt/infinispan/server/conf/trust1.p12:ro
+      - ./out/ssl/sni-trust2/trust2.p12:/opt/infinispan/server/conf/trust2.p12:ro
+      - ./out/ssl/sni-untrust/untrust.p12:/opt/infinispan/server/conf/untrust.p12:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dorg.infinispan.openssl=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -k -u admin:pass https://localhost:11622/rest/v2/cache-managers/local/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+
+  # Failover cluster nodes (started on demand by tests)
+  server-failover-one:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-failover-1
+    hostname: server-failover-one
+    profiles: ["failover"]
+    volumes:
+      - ./spec/configs/docker/infinispan-clustered.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-failover-one
+        -Djgroups.dns.query=failover-dns-ping
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - failover-dns-ping
+
+  server-failover-two:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-failover-2
+    hostname: server-failover-two
+    profiles: ["failover"]
+    volumes:
+      - ./spec/configs/docker/infinispan-clustered.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-failover-two
+        -Djgroups.dns.query=failover-dns-ping
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - failover-dns-ping
+
+  server-failover-three:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-failover-3
+    hostname: server-failover-three
+    profiles: ["failover"]
+    volumes:
+      - ./spec/configs/docker/infinispan-clustered.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-failover-three
+        -Djgroups.dns.query=failover-dns-ping
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - failover-dns-ping
+
+  # Cross-site replication servers
+  server-earth:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-earth
+    hostname: server-earth
+    volumes:
+      - ./spec/configs/docker/infinispan-xsite-EARTH.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-earth
+        -Djgroups.dns.query=earth-dns-ping
+        -Djgroups.bridge.hosts=server-earth[7800],server-moon[7800]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - earth-dns-ping
+
+  server-moon:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ispn-moon
+    hostname: server-moon
+    volumes:
+      - ./spec/configs/docker/infinispan-xsite-MOON.xml:/opt/infinispan/server/conf/infinispan.xml:ro
+    environment:
+      USER: admin
+      PASS: pass
+      JAVA_OPTIONS: >-
+        -Dinfinispan.bind.address=0.0.0.0
+        -Dinfinispan.node.name=server-moon
+        -Djgroups.dns.query=moon-dns-ping
+        -Djgroups.bridge.hosts=server-earth[7800],server-moon[7800]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u admin:pass http://localhost:11222/rest/v2/cache-managers/clustered/health/status || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      ispn:
+        aliases:
+          - moon-dns-ping
+
+networks:
+  ispn:
+    driver: bridge
