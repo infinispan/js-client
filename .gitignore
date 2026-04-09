@@ -27,6 +27,6 @@ infinispan-server-*
 nohup.out
 
 /build
-/server/infinispan-server/
+/server/
 batch
 CLAUDE.md
