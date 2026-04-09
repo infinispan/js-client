@@ -909,6 +909,72 @@ export function client(args: {
          * @since 0.14
          */
         nearCacheSize: () => number;
+        /**
+         * Admin operations for cache lifecycle, schema management, and indexing.
+         * @since 0.15
+         */
+        admin: {
+            /**
+             * Create a cache with the given configuration.
+             * @param name Cache name.
+             * @param config Cache configuration (XML or JSON).
+             * @param opts Optional settings.
+             * @since 0.15
+             */
+            createCache: (name: string, config?: string, opts?: { template?: string; flags?: string }) => Promise<any>;
+            /**
+             * Get an existing cache or create it with the given configuration.
+             * @param name Cache name.
+             * @param config Cache configuration (XML or JSON).
+             * @param opts Optional settings.
+             * @since 0.15
+             */
+            getOrCreateCache: (name: string, config?: string, opts?: { template?: string; flags?: string }) => Promise<any>;
+            /**
+             * Remove a cache.
+             * @param name Cache name.
+             * @since 0.15
+             */
+            removeCache: (name: string) => Promise<any>;
+            /**
+             * List all cache names.
+             * @since 0.15
+             */
+            cacheNames: () => Promise<string[]>;
+            /**
+             * Update a mutable configuration attribute on a cache.
+             * @param name Cache name.
+             * @param attribute Attribute path (e.g. 'memory.max-count').
+             * @param value New attribute value.
+             * @since 0.15
+             */
+            updateConfigurationAttribute: (name: string, attribute: string, value: string) => Promise<any>;
+            /**
+             * Rebuild indexes for a cache.
+             * @param name Cache name.
+             * @since 0.15
+             */
+            reindex: (name: string) => Promise<any>;
+            /**
+             * Update the index schema for a cache.
+             * @param name Cache name.
+             * @since 0.15
+             */
+            updateIndexSchema: (name: string) => Promise<any>;
+            /**
+             * Register (create or update) a Protobuf schema on the server.
+             * @param name Schema name (e.g. 'person.proto').
+             * @param schema Protobuf schema content.
+             * @since 0.15
+             */
+            registerSchema: (name: string, schema: string) => Promise<any>;
+            /**
+             * Remove a registered Protobuf schema.
+             * @param name Schema name.
+             * @since 0.15
+             */
+            removeSchema: (name: string) => Promise<any>;
+        };
     };
     /**
      * Cluster information.
