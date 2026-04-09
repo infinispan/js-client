@@ -20,7 +20,7 @@ export function client(args: {
     /**
      * - Version of client/server protocol.
      */
-    version?: ('4.1' | '4.0' | '3.1' | '3.0' | '2.9' | '2.5' | '2.2') | null;
+    version?: ('auto' | '4.1' | '4.0' | '3.1' | '3.0' | '2.9' | '2.5' | '2.2') | null;
     /**
      * - Optional cache name.
      */
@@ -153,6 +153,14 @@ export function client(args: {
          * @since 0.3
          */
         disconnect: () => Promise<void>;
+        /**
+         * Returns the active protocol version string (e.g. '3.1', '4.1').
+         * When using auto-negotiation, this reflects the negotiated version.
+         *
+         * @returns {string} Protocol version string.
+         * @memberof Client#
+         */
+        getProtocolVersion: () => string;
         /**
          * Get the value associated with the given key parameter.
          *
