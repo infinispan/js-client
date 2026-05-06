@@ -6,6 +6,7 @@ You can then configure {hr_js} clients to connect to {brandname} Server, use dif
 
 include::{topics}/proc_installing_clients.adoc[leveloffset=+1]
 include::{topics}/proc_configuring_connections.adoc[leveloffset=+1]
+include::{topics}/proc_configuring_uri_connections.adoc[leveloffset=+2]
 include::{topics}/proc_configuring_connections_xsite.adoc[leveloffset=+2]
 include::{topics}/proc_switching_clusters.adoc[leveloffset=+2]
 include::{topics}/proc_configuring_authentication.adoc[leveloffset=+1]

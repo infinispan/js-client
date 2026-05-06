@@ -1,0 +1,106 @@
+[id='configuring-uri-connections_{context}']
+= Configuring connections with URIs
+Configure {hr_js} clients to connect to {brandname} Server using Hot Rod URIs.
+
+Hot Rod URIs encode the server address, credentials, and connection parameters in a single string, providing a convenient alternative to the object-based configuration.
+
+.URI format
+
+[source,text]
+----
+hotrod://[username:password@]host1[:port1][,host2[:port2]][?param=value&...]
+hotrods://[username:password@]host1[:port1][,host2[:port2]][?param=value&...]
+----
+
+Use `hotrod://` for plain connections and `hotrods://` to enable TLS.
+If you do not specify a port, the default port `11222` is used.
+
+When you include credentials in the URI, the client automatically enables authentication with the `PLAIN` SASL mechanism.
+You can override the mechanism with the `sasl_mechanism` query parameter or the `options` argument.
+
+.Precedence
+
+If you pass both a URI and an `options` object, the programmatic options take precedence over the URI values.
+This allows you to set a base configuration in the URI and override specific fields as needed.
+
+.Query parameters
+
+The following table lists the query parameters that you can use in Hot Rod URIs.
+
+[cols="1,1,2",options="header"]
+|===
+| Parameter | Alias | Description
+
+| `sasl_mechanism`
+|
+| SASL authentication mechanism, e.g. `SCRAM-SHA-256`.
+
+| `trust_store_file_name`
+| `trust_ca`
+| Path to a CA certificate file for TLS verification.
+
+| `key_store_file_name`
+| `client_cert`
+| Path to a client certificate file for mutual TLS.
+
+| `key_store_password`
+| `client_key`
+| Path to a client private key file for mutual TLS.
+
+| `sni_host_name`
+| `sni_host`
+| Server Name Indication (SNI) hostname for TLS.
+
+| `max_retries`
+|
+| Maximum number of operation retries.
+
+| `cache_name`
+|
+| Name of the cache to connect to.
+|===
+
+.Prerequisites
+
+* Install the {hr_js} client.
+* Have at least one running {brandname} Server instance.
+
+.Procedure
+
+. Connect to a single server with credentials.
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/connection-uri-basic.js[]
+----
+
+. Connect to multiple servers by separating addresses with commas.
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/connection-uri-multiple-servers.js[]
+----
+
+. Enable TLS with `hotrods://` and add certificate parameters.
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/connection-uri-tls.js[]
+----
+
+. Override URI settings with the `options` argument.
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/connection-uri-overrides.js[]
+----
+
+.URL encoding
+
+If your username or password contains special characters such as `@` or `:`, you must URL-encode them.
+For example, a user `admin@corp` with password `p@ss` becomes:
+
+[source,text]
+----
+hotrod://admin%40corp:p%40ss@localhost:11222
+----
