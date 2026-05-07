@@ -1,3 +1,19 @@
+/**
+ * Connect to an Infinispan Server using a Hot Rod URI.
+ *
+ * URI format: hotrod://[user:pass@]host1[:port1][,host2[:port2]][?params]
+ * Use hotrods:// to enable TLS.
+ *
+ * Supported query parameters:
+ *   sasl_mechanism, trust_store_file_name (alias trust_ca),
+ *   key_store_file_name (alias client_cert), key_store_password (alias client_key),
+ *   sni_host_name (alias sni_host), max_retries, cache_name.
+ *
+ * @param uri Hot Rod URI string.
+ * @param options Optional overrides (take precedence over URI values).
+ */
+export function client(uri: string, options?: Record<string, any>): Promise<any>;
+
 export function client(args: {
     /**
      * - Server host name.
