@@ -669,6 +669,34 @@ export function client(args: {
          */
         removeListener: (listenerId: string) => Promise<any>;
         /**
+         * Register a continuous query that watches for cache changes
+         * matching the given Ickle query.
+         *
+         * @param queryString Ickle query string.
+         * @param opts Optional CQ options.
+         * @returns A promise completed with a ContinuousQuery handle.
+         * @memberof Client#
+         * @since 0.16
+         */
+        addContinuousQuery: (queryString: string, opts?: {
+            /** Named parameter bindings for the Ickle query. */
+            params?: { [name: string]: string | number | boolean };
+        }) => Promise<{
+            /** Register a callback for continuous query events. */
+            on(event: 'joining' | 'leaving' | 'updated', callback: (key: Buffer, value: Buffer, projection?: any[]) => void): any;
+            /** Get the listener ID for this continuous query. */
+            getListenerId(): string;
+        }>;
+        /**
+         * Remove a continuous query.
+         *
+         * @param cq ContinuousQuery handle returned by addContinuousQuery.
+         * @returns A promise completed when the continuous query has been removed.
+         * @memberof Client#
+         * @since 0.16
+         */
+        removeContinuousQuery: (cq: { getListenerId(): string }) => Promise<any>;
+        /**
          * Create a distributed counter.
          *
          * @param {String} name Counter name.
