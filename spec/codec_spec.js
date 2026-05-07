@@ -254,3 +254,89 @@ function encodeDecode(size, encoder, decoder, bufferSize) {
   var dec = f.actions(_.isArray(decoder) ? decoder : [decoder], codec.allDecoded(decoder.length));
   return dec({buf: bytebuf.buf, offset: 0});
 }
+
+var protobuf = require('protobufjs');
+var path = require('path');
+
+describe('wrapScalar', function() {
+  var WrappedMessage;
+  beforeAll(function() {
+    var root = protobuf.loadSync(path.join(__dirname, '..', 'lib', 'protostream', 'message-wrapping.proto'));
+    WrappedMessage = root.lookupType('org.infinispan.protostream.WrappedMessage');
+  });
+
+  it('wraps a string value', function() {
+    var bytes = codec.wrapScalar('hello');
+    expect(bytes).toBeDefined();
+    expect(bytes.length).toBeGreaterThan(0);
+    var decoded = WrappedMessage.decode(bytes);
+    expect(decoded.wrappedString).toBe('hello');
+  });
+
+  it('wraps a number value', function() {
+    var bytes = codec.wrapScalar(42.5);
+    expect(bytes).toBeDefined();
+    var decoded = WrappedMessage.decode(bytes);
+    expect(decoded.wrappedDouble).toBe(42.5);
+  });
+
+  it('wraps a boolean value', function() {
+    var bytes = codec.wrapScalar(true);
+    expect(bytes).toBeDefined();
+    var decoded = WrappedMessage.decode(bytes);
+    expect(decoded.wrappedBool).toBe(true);
+  });
+});
+
+describe('decodeContinuousQueryResult', function() {
+  var ContinuousQueryResult;
+  beforeAll(function() {
+    var root = protobuf.loadSync(path.join(__dirname, '..', 'lib', 'protostream', 'query.proto'));
+    protobuf.loadSync(path.join(__dirname, '..', 'lib', 'protostream', 'message-wrapping.proto'), root);
+    ContinuousQueryResult = root.lookupType('org.infinispan.query.remote.client.ContinuousQueryResult');
+  });
+
+  it('decodes a JOINING result', function() {
+    var keyBytes = Buffer.from('my-key');
+    var valueBytes = Buffer.from('my-value');
+    var msg = ContinuousQueryResult.create({resultType: 1, key: keyBytes, value: valueBytes});
+    var encoded = ContinuousQueryResult.encode(msg).finish();
+    var result = codec.decodeContinuousQueryResult(encoded);
+    expect(result.resultType).toBe('joining');
+    expect(Buffer.from(result.key)).toEqual(keyBytes);
+    expect(Buffer.from(result.value)).toEqual(valueBytes);
+  });
+
+  it('decodes a LEAVING result', function() {
+    var keyBytes = Buffer.from('my-key');
+    var msg = ContinuousQueryResult.create({resultType: 0, key: keyBytes});
+    var encoded = ContinuousQueryResult.encode(msg).finish();
+    var result = codec.decodeContinuousQueryResult(encoded);
+    expect(result.resultType).toBe('leaving');
+    expect(Buffer.from(result.key)).toEqual(keyBytes);
+  });
+
+  it('decodes an UPDATED result', function() {
+    var keyBytes = Buffer.from('my-key');
+    var valueBytes = Buffer.from('new-value');
+    var msg = ContinuousQueryResult.create({resultType: 2, key: keyBytes, value: valueBytes});
+    var encoded = ContinuousQueryResult.encode(msg).finish();
+    var result = codec.decodeContinuousQueryResult(encoded);
+    expect(result.resultType).toBe('updated');
+    expect(Buffer.from(result.key)).toEqual(keyBytes);
+    expect(Buffer.from(result.value)).toEqual(valueBytes);
+  });
+});
+
+describe('decodeWrappedMessage', function() {
+  it('decodes a WrappedMessage with wrappedMessage field', function() {
+    var inner = Buffer.from([0x0a, 0x05, 0x68, 0x65, 0x6c, 0x6c, 0x6f]);
+    var wmRoot = protobuf.loadSync(path.join(__dirname, '..', 'lib', 'protostream', 'message-wrapping.proto'));
+    var WM = wmRoot.lookupType('org.infinispan.protostream.WrappedMessage');
+    var msg = WM.create({wrappedMessage: inner, wrappedTypeId: 4403});
+    var encoded = WM.encode(msg).finish();
+    var decoded = codec.decodeWrappedMessage(encoded);
+    expect(decoded.wrappedTypeId).toBe(4403);
+    expect(Buffer.from(decoded.wrappedMessage)).toEqual(inner);
+  });
+});
