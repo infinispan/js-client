@@ -1,0 +1,53 @@
+[id='continuous-queries_{context}']
+= Continuous queries
+
+Continuous queries let you receive real-time notifications when cache entries join, leave, or are updated relative to an Ickle query.
+Unlike regular listeners, continuous queries filter events on the server side, so your client only receives events for entries that match the query.
+
+== Registering a continuous query
+
+Register a continuous query with `addContinuousQuery()`, providing an Ickle query string and optional named parameters:
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+const cq = await client.addContinuousQuery(
+    'FROM tutorial.InstaPost p WHERE p.user = :userName',
+    {params: {userName: 'belen_esteban'}}
+);
+----
+
+== Handling events
+
+Subscribe to the three event types on the returned handle:
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+cq.on('joining', function(key, value, projection) {
+    console.log('Entry joined the result set');
+});
+
+cq.on('leaving', function(key, value, projection) {
+    console.log('Entry left the result set');
+});
+
+cq.on('updated', function(key, value, projection) {
+    console.log('Matching entry was updated');
+});
+----
+
+* **joining** -- fired when a new entry matches the query, or an existing entry is modified to match.
+* **leaving** -- fired when an entry no longer matches the query, either because it was removed or modified.
+* **updated** -- fired when an entry that already matches the query is modified but still matches.
+
+== Removing a continuous query
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+await client.removeContinuousQuery(cq);
+----
+
+== Requirements
+
+* The cache must use Protostream (`application/x-protostream`) encoding.
+* Protobuf schemas must be registered on the server before registering the continuous query.
+* The client must call `registerProtostreamRoot()` and `registerProtostreamType()` for the types used in the query.
