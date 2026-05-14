@@ -4,8 +4,8 @@ var t = require('./utils/testing');
 var ispn = require('../lib/infinispan');
 var protobuf = require('protobufjs');
 
-var personProto = 'package tutorial;\n'
-  + 'syntax = "proto3";\n'
+var personProto = 'syntax = "proto3";\n'
+  + 'package tutorial;\n'
   + '/**\n'
   + ' * @TypeId(1000042)\n'
   + ' */\n'
