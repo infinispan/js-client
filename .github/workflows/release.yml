@@ -62,7 +62,7 @@ jobs:
           git push origin v${{ github.event.inputs.version }}
 
       - name: Generate API docs
-        run: ./node_modules/.bin/jsdoc lib/*.js
+        run: npm run docs:api
 
       - name: Upload API docs artifact
         uses: actions/upload-artifact@v6

@@ -2,15 +2,10 @@
 spec/
 spec-manual/
 
-# Server configs and scripts
-server/
-run-servers.sh
-run-testsuite.sh
-smoke-tests.sh
-make-ssl.sh
-set-npm-auth-token.sh
-release.sh
-gen-jsdoc.sh
+# Build and test infrastructure
+scripts/
+docker-compose.yml
+Dockerfile.server
 
 # CI/CD
 .github/
@@ -38,4 +33,3 @@ CLAUDE.md
 
 # Misc
 .claude/
-batch

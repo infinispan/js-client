@@ -36,8 +36,8 @@ jobs:
       - run: npm install
 
       - name: Run tests
-        run: ./run-docker-testsuite.sh
+        run: npm run test:docker
 
       - name: Tear down containers
         if: always()
-        run: docker compose --profile failover down --remove-orphans 2>/dev/null || true
+        run: npm run docker:down 2>/dev/null || true
