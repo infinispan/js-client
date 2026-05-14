@@ -1,5 +1,11 @@
 # Hot Rod JS Client
 
+[![npm version](https://img.shields.io/npm/v/infinispan)](https://www.npmjs.com/package/infinispan)
+[![License](https://img.shields.io/npm/l/infinispan)](https://github.com/infinispan/js-client/blob/main/LICENSE)
+[![CI](https://github.com/infinispan/js-client/actions/workflows/ci.yml/badge.svg)](https://github.com/infinispan/js-client/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/node/v/infinispan)](https://www.npmjs.com/package/infinispan)
+[![npm downloads](https://img.shields.io/npm/dm/infinispan)](https://www.npmjs.com/package/infinispan)
+
 `infinispan` is an asynchronous event-driven Infinispan client for Node.js.
 The results of the asynchronous operations are represented using
 [Promise](https://www.promisejs.org) instances. Amongst many advantages,
@@ -53,100 +59,91 @@ The client is normally connected to one of the sites, but if its members fail to
 
 Find installation, configuration, and example usage in the Hot Rod JS Client Guide at [infinispan.org/documentation](https://infinispan.org/documentation/).
 
-You can also build the Hot Rod JS Client Guide as follows:
+You can also build the Hot Rod JS Client Guide locally:
 
-1. Clone the source repository.
 ```bash
-$ git clone git@github.com:infinispan/js-client.git
+npm run docs:user
 ```
 
-2. Build the HTML from the asciidoc source.
-```bash
-$ asciidoctor documentation/asciidoc/titles/js_client.asciidoc
-```
-
-3. Open `documentation/asciidoc/titles/js_client.html` in any browser.
+Open `out/docs/index.html` in any browser.
 
 # API docs
 
 Review [Hot Rod JS client API documentation](http://docs.jboss.org/infinispan/hotrod-clients/javascript/1.0/apidocs/module-infinispan.html).
 
-You can also build API docs from the source repository as follows:
+To generate API docs locally:
 
-1. Generate JSDoc formatted API docs.
 ```bash
-$ npm install jsdoc
-$ ./node_modules/.bin/jsdoc lib/*.js
+npm run docs:api
 ```
 
-2. Open `open out/index.html` in any browser.
+Open `out/index.html` in any browser.
 
 # Testing
 
-Before executing any tests, Infinispan Server instances need to be started
-up so that testsuite can run against those. To ease this process, a script
-has been created in the root directory to start all the expected server
-instances.
+Tests run against Infinispan Server instances in Docker containers.
 
-Go to the root of the repo and execute:
+## Prerequisites
 
-```bash
-$ npm install
-```
+- Docker and Docker Compose
+- Java (for SSL certificate generation via `keytool`)
+- Node.js 24+
 
-Next, start the Infinispan Servers via:
+## Running tests
 
 ```bash
-$ ./run-servers.sh
+npm install
+npm run test:docker
 ```
 
-To run the testsuite once execute:
+This starts all required containers, generates SSL certificates if needed,
+waits for the cluster to form, runs the full test suite, and tears down
+the containers on exit.
+
+To test against a specific Infinispan version:
 
 ```bash
-$ ./run-testsuite.sh
+INFINISPAN_VERSION=16.1.3 npm run test:docker
 ```
 
-To run individual tests execute:
+### Manual container lifecycle
+
+For iterative development, start containers once and run tests repeatedly:
 
 ```bash
-$ npx jasmine spec/infinispan_local_spec.js
+npm run docker:up
+npm test
+# ... make changes ...
+npm test
+npm run docker:down
 ```
 
-To help with testing, you can quickly run the smoke tests via:
+### Individual tests
+
+With containers running:
 
 ```bash
-$ ./smoke-tests.sh
+npx jasmine spec/infinispan_local_spec.js
 ```
 
-Both testsuite and smoke tests can be run with older protocol versions, e.g.
+### SSL certificates
+
+Certificates are generated automatically on first test run. To regenerate:
 
 ```bash
-$ protocol=2.5 ./smoke-tests.sh
+npm run ssl:generate
 ```
 
-## Note for Mac Users:
-You might experience MPING issues running an Infinispan cluster.
+## Manual stress tests
 
-```bash
-13:37:15,561 ERROR (jgroups-5,server-two) [org.jgroups.protocols.MPING]
-```
-
-If you run into the errors above, add the following to the routes of your host
-
-```bash
-sudo route add -net 224.0.0.0/5 127.0.0.1
-sudo route add -net 232.0.0.0/5 192.168.1.3
-```
-
-# Manual stress tests
-
-The testsuite now contains manual stress tests that take several minutes to run.
+The testsuite contains manual stress tests that take several minutes to run.
 To run these tests, execute:
 
-    $ npx jasmine spec-manual/*_spec.js
+```bash
+npx jasmine spec-manual/*_spec.js
+```
 
-
-# Memory profiling
+## Memory profiling
 
 The source code comes with some programs that allow the client's memory consumption to be profiled.
 Those programs rely on having access to the global garbage collector.
@@ -157,38 +154,20 @@ Example:
 node --expose-gc memory-profiling/infinispan_memory_many_get.js
 ```
 
-So of programs might only report the memory usage before/after.
+Some programs might only report the memory usage before/after.
 Others might generate heap dumps which can be visualized using Google Chrome.
 Within Chrome, the Developer Tools UI contains a `Memory` tab where heap dumps can be loaded.
 
-
-# Debugging
+## Debugging
 
 To debug tests with IDE:
 
-    node --inspect-brk node_modules/.bin/jasmine spec/codec_spec.js
-
-Or:
-
-    node --inspect-brk node_modules/.bin/jasmine spec/infinispan_local_spec.js
+```bash
+node --inspect-brk node_modules/.bin/jasmine spec/codec_spec.js
+```
 
 And then start a remote Node.js debugger from IDE on port 9229.
 
-# Tests, servers and ports
-
-Here's some more detailed information on which tests interact with which servers and on which ports.
-On top of that, you can find information on which tests are always running as opposed to those that are started (and stopped) by the tests themselves.
-
-| Test          | Server Profile  | Ports (Auto/Manual)                     |
-| :------------ | :-------------: | :-------------------------------------- |
-| local spec    | local           | `11222` (A)                             |
-| expiry spec   | local           | `11222` (A)                             |
-| cluster spec  | clustered       | `11322` (A), `11332` (A), `11342` (A)   |
-| failover spec | clustered       | `11422` (M), `11432` (M), `11442` (M)   |
-| ssl spec      | local           | `11232` (A), `12242` (A), `12252` (A)   |
-| xsite spec    | earth, moon     | `11522` (earth, M), `11532` (moon, M)   |
-
 # Reporting an issue
 
-This project does not use Github issues.
-Instead, please report them via JIRA (project [HRJS](https://issues.jboss.org/projects/HRJS/summary)).
+Report issues via [GitHub Issues](https://github.com/infinispan/js-client/issues).

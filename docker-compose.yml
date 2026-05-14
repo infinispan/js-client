@@ -1,9 +1,14 @@
+x-server-build: &server-build
+  build:
+    context: .
+    dockerfile: Dockerfile.server
+    args:
+      INFINISPAN_VERSION: ${INFINISPAN_VERSION:-16.1}
+
 services:
   # Standalone server for local tests
   server-local:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-local
     hostname: server-local
     volumes:
@@ -24,9 +29,7 @@ services:
 
   # Cluster nodes (3-node)
   server-one:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-cluster-1
     hostname: server-one
     volumes:
@@ -50,9 +53,7 @@ services:
           - cluster-dns-ping
 
   server-two:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-cluster-2
     hostname: server-two
     volumes:
@@ -76,9 +77,7 @@ services:
           - cluster-dns-ping
 
   server-three:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-cluster-3
     hostname: server-three
     volumes:
@@ -103,9 +102,7 @@ services:
 
   # SSL server
   server-ssl:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-ssl
     hostname: server-ssl
     volumes:
@@ -132,9 +129,7 @@ services:
 
   # Failover cluster nodes (started on demand by tests)
   server-failover-one:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-failover-1
     hostname: server-failover-one
     profiles: ["failover"]
@@ -159,9 +154,7 @@ services:
           - failover-dns-ping
 
   server-failover-two:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-failover-2
     hostname: server-failover-two
     profiles: ["failover"]
@@ -186,9 +179,7 @@ services:
           - failover-dns-ping
 
   server-failover-three:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-failover-3
     hostname: server-failover-three
     profiles: ["failover"]
@@ -214,9 +205,7 @@ services:
 
   # Cross-site replication servers
   server-earth:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-earth
     hostname: server-earth
     volumes:
@@ -241,9 +230,7 @@ services:
           - earth-dns-ping
 
   server-moon:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    <<: *server-build
     container_name: ispn-moon
     hostname: server-moon
     volumes:

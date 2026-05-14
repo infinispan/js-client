@@ -9,7 +9,13 @@
   },
   "scripts": {
     "lint": "eslint --ignore-path .gitignore lib spec index.js",
-    "test": "jasmine"
+    "test": "jasmine",
+    "test:docker": "node scripts/docker-test.js",
+    "docker:up": "docker compose -p ispn-test up -d --wait && docker compose -p ispn-test --profile failover create server-failover-one server-failover-two server-failover-three",
+    "docker:down": "docker compose -p ispn-test --profile failover down --remove-orphans",
+    "ssl:generate": "node scripts/make-ssl.js",
+    "docs:api": "jsdoc lib/*.js",
+    "docs:user": "node scripts/gen-asciidoc.js"
   },
   "author": "Infinispan Community",
   "license": "Apache-2.0",
@@ -28,7 +34,6 @@
   },
   "dependencies": {
     "buffer-xor": "^2.0.2",
-    "jsdoc": "^4.0.2",
     "log4js": "^6.4.6",
     "protobufjs": "^7.0.0",
     "underscore": "^1.13.3",
@@ -37,6 +42,7 @@
   "devDependencies": {
     "eslint": "^8.26.0",
     "jasmine": "^6.1.0",
+    "jsdoc": "^4.0.2",
     "long": "^5.2.3"
   }
 }
