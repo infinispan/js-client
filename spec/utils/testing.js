@@ -625,6 +625,38 @@ exports.counterGetAndSet = function(name, value) {
   return function(client) { return client.counterGetAndSet(name, value); };
 };
 
+exports.multimapGet = function(k) {
+  return function(client) { return client.multimapGet(k); };
+};
+
+exports.multimapPut = function(k, v, opts) {
+  return function(client) { return client.multimapPut(k, v, opts); };
+};
+
+exports.multimapRemoveKey = function(k) {
+  return function(client) { return client.multimapRemoveKey(k); };
+};
+
+exports.multimapRemoveEntry = function(k, v) {
+  return function(client) { return client.multimapRemoveEntry(k, v); };
+};
+
+exports.multimapSize = function() {
+  return function(client) { return client.multimapSize(); };
+};
+
+exports.multimapContainsKey = function(k) {
+  return function(client) { return client.multimapContainsKey(k); };
+};
+
+exports.multimapContainsValue = function(v) {
+  return function(client) { return client.multimapContainsValue(v); };
+};
+
+exports.multimapContainsEntry = function(k, v) {
+  return function(client) { return client.multimapContainsEntry(k, v); };
+};
+
 exports.expectToThrow = function(func, errorMessage, done) {
   expect(func).toThrowError(errorMessage);
   if (f.existy(done)) done();
