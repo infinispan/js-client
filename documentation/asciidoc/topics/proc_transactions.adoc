@@ -1,0 +1,77 @@
+[id='transactions_{context}']
+= Transactions
+
+Transactions let you group multiple cache operations into an atomic unit that is either committed or rolled back together.
+The {hr_js} client implements client-side transactions using the Hot Rod `PREPARE_TX`, `COMMIT_TX`, and `ROLLBACK_TX` protocol operations.
+
+== Transaction requirements
+
+Transactional caches on {brandname} Server must use `NON_XA` transaction mode with `PESSIMISTIC` locking:
+
+[source,xml,options="nowrap"]
+----
+<distributed-cache>
+  <encoding>
+    <key media-type="text/plain"/>
+    <value media-type="text/plain"/>
+  </encoding>
+  <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+</distributed-cache>
+----
+
+== How transactions work
+
+When you begin a transaction, the client buffers all `put()` and `remove()` operations locally.
+Calls to `get()` check the local buffer first, then fall back to the server.
+
+When you read a key from the server during a transaction, the client records the entry version.
+On commit, the server verifies that versions have not changed, providing conflict detection for read-then-write patterns.
+
+On commit, the client sends all buffered modifications to the server in a single `PREPARE_TX` request.
+The {hr_js} client uses one-phase commit for single-cache transactions, so no separate `COMMIT_TX` request is needed.
+
+On rollback, the client discards all buffered modifications and sends a `ROLLBACK_TX` request to the server.
+
+== Using transactions
+
+.Procedure
+
+. Get the transaction manager from the client.
+. Call `begin()` to start a transaction.
+. Perform cache operations (`put()`, `get()`, `remove()`).
+. Call `commit()` to apply changes atomically, or `rollback()` to discard them.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/transactions.js[]
+----
+
+.Available transaction operations
+[cols="1,3",options="header"]
+|===
+|Method |Description
+
+|`getTransactionManager()`
+|Returns the transaction manager for the client.
+
+|`begin()`
+|Starts a new transaction.
+All subsequent `put()`, `get()`, and `remove()` calls are associated with this transaction.
+
+|`commit()`
+|Commits the transaction.
+Sends all buffered modifications to the server atomically.
+Throws an error if the server rejects the transaction due to a version conflict.
+
+|`rollback()`
+|Rolls back the transaction.
+Discards all buffered modifications.
+
+|`isActive()`
+|Returns `true` if a transaction is currently in progress.
+|===
+
+[NOTE]
+====
+Connect to the transactional cache with `topologyUpdates: false` to prevent key-based routing, which is not compatible with transaction operations.
+====

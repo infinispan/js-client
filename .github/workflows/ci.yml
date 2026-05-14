@@ -36,7 +36,7 @@ jobs:
       - run: npm install
 
       - name: Run tests
-        run: npm run test:docker
+        run: npm test
 
       - name: Tear down containers
         if: always()

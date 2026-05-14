@@ -9,8 +9,7 @@
   },
   "scripts": {
     "lint": "eslint --ignore-path .gitignore lib spec index.js",
-    "test": "jasmine",
-    "test:docker": "node scripts/docker-test.js",
+    "test": "node scripts/docker-test.js",
     "docker:up": "docker compose -p ispn-test up -d --wait && docker compose -p ispn-test --profile failover create server-failover-one server-failover-two server-failover-three",
     "docker:down": "docker compose -p ispn-test --profile failover down --remove-orphans",
     "ssl:generate": "node scripts/make-ssl.js",
