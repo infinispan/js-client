@@ -228,3 +228,57 @@ Transactions let you group multiple cache operations into an atomic unit.
 The {hr_js} client buffers operations locally and sends them to the server on commit.
 
 For detailed information, see link:#transactions_{context}[Transactions].
+
+== Using operation flags
+
+You can pass Hot Rod protocol flags to control how operations are executed on the server.
+Flags are passed through the `flags` property in the options object and can be combined with bitwise OR.
+
+[source,javascript,options="nowrap"]
+----
+var infinispan = require('infinispan');
+
+// Skip loading from the cache store
+client.put('key', 'value', { flags: infinispan.flags.SKIP_CACHE_LOAD });
+
+// Combine multiple flags
+client.put('key', 'value', {
+  flags: infinispan.flags.SKIP_CACHE_LOAD | infinispan.flags.SKIP_INDEXING
+});
+
+// Combine flags with other options
+client.put('key', 'value', {
+  previous: true,
+  flags: infinispan.flags.SKIP_LISTENER_NOTIFICATION
+});
+----
+
+.Available flags
+[cols="1,1,3",options="header"]
+|===
+|Flag |Value |Description
+
+|`FORCE_RETURN_VALUE`
+|0x0001
+|Returns the previous value for write operations. You can also set this with the `previous: true` option.
+
+|`DEFAULT_LIFESPAN`
+|0x0002
+|Uses the cache-configured default lifespan for the entry.
+
+|`DEFAULT_MAXIDLE`
+|0x0004
+|Uses the cache-configured default max idle time for the entry.
+
+|`SKIP_CACHE_LOAD`
+|0x0008
+|Skips loading the entry from a configured cache store.
+
+|`SKIP_INDEXING`
+|0x0010
+|Skips indexing the entry, so it does not appear in query results.
+
+|`SKIP_LISTENER_NOTIFICATION`
+|0x0020
+|Suppresses cache listener notifications for the operation.
+|===
