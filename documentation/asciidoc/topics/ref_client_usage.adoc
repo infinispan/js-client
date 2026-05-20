@@ -221,3 +221,10 @@ include::code_examples/queries.js[]
 ----
 
 See link:{query_docs}[Querying {brandname} caches] for more information.
+
+== Using transactions
+
+Transactions let you group multiple cache operations into an atomic unit.
+The {hr_js} client buffers operations locally and sends them to the server on commit.
+
+For detailed information, see link:#transactions_{context}[Transactions].

@@ -13,45 +13,25 @@ var ispn = require('../../lib/infinispan');
 var u = require('../../lib/utils');
 var protocols = require('../../lib/protocols');
 
-exports.serverDirName = 'infinispan-server';
-
-exports.isDocker = process.env.ISPN_DOCKER === 'true';
-
 exports.authOpts = {
   authentication: {
     enabled: true,
-    saslMechanism: 'PLAIN',
+    saslMechanism: 'SCRAM-SHA-256',
     userName: 'admin',
     password: 'pass'
   }
 };
 
-if (exports.isDocker) {
-  // Docker mode: all containers listen on port 11222, IPs detected via env vars
-  exports.local = {port: 11222, host: process.env.ISPN_LOCAL_HOST};
-  exports.cluster1 = {port: 11222, host: process.env.ISPN_CLUSTER1_HOST};
-  exports.cluster2 = {port: 11222, host: process.env.ISPN_CLUSTER2_HOST};
-  exports.cluster3 = {port: 11222, host: process.env.ISPN_CLUSTER3_HOST};
-  exports.failover1 = {port: 11222, host: process.env.ISPN_FAILOVER1_HOST};
-  exports.failover2 = {port: 11222, host: process.env.ISPN_FAILOVER2_HOST};
-  exports.failover3 = {port: 11222, host: process.env.ISPN_FAILOVER3_HOST};
-  exports.ssl = {port: 11232, host: process.env.ISPN_SSL_HOST};
-  exports.earth1 = {port: 11222, host: process.env.ISPN_EARTH_HOST};
-  exports.moon1 = {port: 11222, host: process.env.ISPN_MOON_HOST};
-} else {
-  // Local mode: servers on localhost with different ports
-  exports.local = {port: 11222, host: '127.0.0.1'};
-  exports.cluster1 = {port: 11322, host: '127.0.0.1'};
-  exports.cluster2 = {port: 11332, host: '127.0.0.1'};
-  exports.cluster3 = {port: 11342, host: '127.0.0.1'};
-  exports.failover1 = {port: 11422, host: '127.0.0.1'};
-  exports.failover2 = {port: 11432, host: '127.0.0.1'};
-  exports.failover3 = {port: 11442, host: '127.0.0.1'};
-  // SSL invocations directed to 'localhost' for TLS server name matching
-  exports.ssl = {port: 11232, host: 'localhost'};
-  exports.earth1 = {port: 11522, host: '127.0.0.1'};
-  exports.moon1 = {port: 11532, host: '127.0.0.1'};
-}
+exports.local = {port: 11222, host: process.env.ISPN_LOCAL_HOST};
+exports.cluster1 = {port: 11222, host: process.env.ISPN_CLUSTER1_HOST};
+exports.cluster2 = {port: 11222, host: process.env.ISPN_CLUSTER2_HOST};
+exports.cluster3 = {port: 11222, host: process.env.ISPN_CLUSTER3_HOST};
+exports.failover1 = {port: 11222, host: process.env.ISPN_FAILOVER1_HOST};
+exports.failover2 = {port: 11222, host: process.env.ISPN_FAILOVER2_HOST};
+exports.failover3 = {port: 11222, host: process.env.ISPN_FAILOVER3_HOST};
+exports.ssl = {port: 11232, host: process.env.ISPN_SSL_HOST};
+exports.earth1 = {port: 11222, host: process.env.ISPN_EARTH_HOST};
+exports.moon1 = {port: 11222, host: process.env.ISPN_MOON_HOST};
 exports.cluster = [exports.cluster1, exports.cluster2, exports.cluster3];
 exports.failoverConfig = 'infinispan-clustered.xml';
 exports.failoverMCastAddr = '234.99.64.14';
@@ -701,22 +681,7 @@ function containerForAddr(addrOrPort) {
 
 exports.stopClusterNode = function(addrOrPort, waitStop) {
   return function() {
-    if (exports.isDocker) {
-      return stopDockerContainer(addrOrPort, waitStop);
-    }
-    var addr = resolveAddr(addrOrPort);
-    var opUrl = '/server?action=stop';
-
-    if (waitStop) {
-      return invokeDmrHttpGet('POST', opUrl, addr).then(function() {
-        return waitUntilStopped(addr);
-      }).catch(function (err) {
-        console.log(`Error stopping ${   err}`);
-        return Promise.resolve(`unable to stop server at ${addr.host}:${addr.port}`);
-      });
-    }
-
-    return invokeDmrHttpGet('POST', opUrl, addr);
+    return stopDockerContainer(addrOrPort, waitStop);
   };
 };
 
@@ -740,46 +705,6 @@ function stopDockerContainer(addrOrPort, waitStop) {
       }
     });
   });
-}
-
-function waitUntilStopped(addrOrPort) {
-  return waitUntil(
-    function(resp) { expect(resp).toEqual(0); },
-    function(resp) { return _.isEqual(resp, 0); },
-    getServerStatus(addrOrPort)
-  );
-}
-
-function getServerStatus(addrOrPort) {
-  if (exports.isDocker) {
-    var container = containerForAddr(addrOrPort);
-    return function() {
-      return new Promise(function(fulfil) {
-        var exec = require('child_process').exec;
-        exec(`docker inspect -f '{{.State.Running}}' ${container} 2>/dev/null`, function(err, stdout) {
-          fulfil(stdout && stdout.trim() === 'true' ? 1 : 0);
-        });
-      });
-    };
-  }
-  var addr = resolveAddr(addrOrPort);
-  return function() {
-    return new Promise(function(fulfil) {
-      var spawn = require('child_process').spawn;
-      var child = spawn('fuser', [`${addr.port}/tcp`]);
-      var count = 0;
-
-      child.stdout.on('data', function(chunk) {
-          chunk.toString().split('\n').forEach(function() {
-              count++;
-          });
-      });
-
-      child.stdout.on('end', function() {
-        fulfil(count);
-      });
-    });
-  };
 }
 
 exports.stopAndWaitView = function(nodeStop, expectNumMembers, nodeView) {
@@ -812,48 +737,12 @@ exports.waitUntilView = function(expectNumMembers, addrOrPort) {
   );
 };
 exports.launchClusterNodeAndWaitView = function(nodeName, config, addrOrPort, mcastAddr, expectNumMembers, client) {
-    if (exports.isDocker) {
-      return launchDockerNode(addrOrPort).then(function() {
-        logger.debugf(`wait until view ${  expectNumMembers}`);
-        return exports.waitUntilView(expectNumMembers, addrOrPort);
-      }).then(function() {
-        logger.debugf('return client');
-        return client;
-      });
-    }
-    var addr = resolveAddr(addrOrPort);
-    return killProcessOnPort(addr.port).then(function() {
-        return new Promise(function (fulfill) {
-            var spawn = require('child_process').spawn;
-            var path = require('path');
-
-            var serverPath = path.resolve(`server/${  exports.serverDirName  }/`);
-            var standaloneShPath = `${serverPath  }/bin/server.sh`;
-            var cmd = spawn(
-                standaloneShPath,
-                ['-c', config, '-p', addr.port, '-s',`${serverPath  }/${  nodeName}`,
-                    `-Djgroups.mcast_addr=${  mcastAddr}`,
-                    `-Dinfinispan.node.name=${  nodeName}`,
-                    '-Djgroups.join_timeout=1000',
-                    '-Djgroups.bind.address=127.0.0.1'
-                ]);
-
-            cmd.stderr.on('data', function (data) {
-                logger.debugf('Stderr [%s]: %s', nodeName, data);
-            });
-
-            cmd.on('exit', function (code) {
-                logger.debugf('Child process exited with code %d', code);
-            });
-
-            fulfill();
-        });
+    return launchDockerNode(addrOrPort).then(function() {
+      logger.debugf(`wait until view ${  expectNumMembers}`);
+      return exports.waitUntilView(expectNumMembers, addrOrPort);
     }).then(function() {
-        logger.debugf(`wait until view ${  expectNumMembers}`);
-        return exports.waitUntilView(expectNumMembers, addrOrPort);
-    }).then(function() {
-        logger.debugf('return client');
-        return client;
+      logger.debugf('return client');
+      return client;
     });
 };
 
@@ -893,15 +782,6 @@ function launchDockerNode(addrOrPort) {
       setTimeout(checkHealth, 2000);
     });
   });
-}
-
-function killProcessOnPort(port) {
-    return new Promise(function(resolve) {
-        var exec = require('child_process').exec;
-        exec(`fuser -k ${port}/tcp 2>/dev/null`, function() {
-            setTimeout(resolve, 500);
-        });
-    });
 }
 
 function waitUntil(expectF, cond, op) {
@@ -1036,8 +916,6 @@ function digestRequest(method, url, username, password) {
 
 function restHostPort(addrOrPort) {
   var addr = resolveAddr(addrOrPort);
-  if (!exports.isDocker) return `localhost:${addr.port}`;
-  // In Docker, REST is on port 11222 at the container's IP
   return `${addr.host}:11222`;
 }
 

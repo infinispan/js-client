@@ -4,6 +4,7 @@
 Take a look at some examples for using the {hr_js} client with {brandname}.
 
 include::{topics}/ref_client_usage.adoc[leveloffset=+1]
+include::{topics}/proc_transactions.adoc[leveloffset=+1]
 
 // Restore the parent context.
 ifdef::parent-context[:context: {parent-context}]

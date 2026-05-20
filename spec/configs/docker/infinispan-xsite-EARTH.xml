@@ -76,7 +76,7 @@
             <endpoint socket-binding="default" security-realm="default">
                 <hotrod-connector name="hotrod">
                     <authentication>
-                        <sasl mechanisms="PLAIN"/>
+                        <sasl mechanisms="PLAIN SCRAM-SHA-256 SCRAM-SHA-384 SCRAM-SHA-512"/>
                     </authentication>
                 </hotrod-connector>
                 <rest-connector name="rest"/>

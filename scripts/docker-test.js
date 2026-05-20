@@ -65,8 +65,6 @@ const containers = {
 for (const [envVar, container] of Object.entries(containers)) {
   process.env[envVar] = getContainerIp(container);
 }
-process.env.ISPN_DOCKER = 'true';
-
 console.log('Container IPs:');
 console.log(`  local:    ${process.env.ISPN_LOCAL_HOST}`);
 console.log(`  cluster:  ${process.env.ISPN_CLUSTER1_HOST}, ${process.env.ISPN_CLUSTER2_HOST}, ${process.env.ISPN_CLUSTER3_HOST}`);
