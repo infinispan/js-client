@@ -7,7 +7,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 var srcDir = path.join(ROOT, 'documentation', 'asciidoc');
-var outDir = path.join(ROOT, 'out', 'docs');
+var outDir = path.join(ROOT, 'out');
 
 fs.mkdirSync(outDir, { recursive: true });
 
