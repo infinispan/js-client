@@ -73,7 +73,7 @@ jobs:
       - name: Package docs
         run: |
           cd out
-          zip -r ../docs.zip apidocs docs
+          zip -9r ../docs.zip .
 
       - name: Upload docs artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
