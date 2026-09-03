@@ -13,7 +13,7 @@
     "docker:up": "docker compose -p ispn-test up -d --wait && docker compose -p ispn-test --profile failover create server-failover-one server-failover-two server-failover-three",
     "docker:down": "docker compose -p ispn-test --profile failover down --remove-orphans",
     "ssl:generate": "node scripts/make-ssl.js",
-    "docs:api": "jsdoc lib/*.js",
+    "docs:api": "jsdoc -d out/apidocs lib/*.js",
     "docs:user": "node scripts/gen-asciidoc.js"
   },
   "author": "Infinispan Community",

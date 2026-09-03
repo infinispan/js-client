@@ -13,6 +13,7 @@ fs.mkdirSync(outDir, { recursive: true });
 
 execSync([
   'asciidoctor',
+  '-r asciidoctor-tabs',
   '--doctype book',
   '--backend html5',
   '--safe-mode unsafe',
@@ -26,6 +27,8 @@ execSync([
   '-a experimental',
   '-a source-highlighter=highlight.js',
   '-a highlightjs-theme=github',
+  '-a docinfo=shared-head',
+  `-a docinfodir=${srcDir}/docinfo`,
   '-a imagesdir=../../topics/images',
   '-a stories=../stories',
   '-a topics=../topics',
@@ -41,7 +44,10 @@ execSync([
   '-a code_tutorials=https://github.com/infinispan/infinispan-simple-tutorials/',
   '-a query_docs=https://infinispan.org/docs/stable/titles/query/query.html',
   `-o "${outDir}/index.html"`,
-  `"${srcDir}/titles/js_client.asciidoc"`
+  `"${srcDir}/titles/index.asciidoc"`
 ].join(' '), { stdio: 'inherit' });
+
+fs.cpSync(path.join(srcDir, 'css'), path.join(outDir, 'css'), { recursive: true });
+fs.cpSync(path.join(srcDir, 'js'), path.join(outDir, 'js'), { recursive: true });
 
 console.log(`Documentation generated: ${outDir}/index.html`);

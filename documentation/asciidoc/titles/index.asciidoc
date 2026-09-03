@@ -19,7 +19,7 @@ include::{topics}/attributes/community-attributes.adoc[]
 :sectanchors:
 
 //Title
-= {hr_js} Client Guide
+= {brandname} Hot Rod JavaScript Client Guide
 
 {hr_js} clients provide asynchronous, event-driven access to {brandname} clusters for Node.js applications.
 The asynchronous operation results are represented with `Promise` instances, which allows the client to chain multiple invocations and centralize error handling.
