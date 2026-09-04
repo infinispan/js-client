@@ -3,4 +3,4 @@
 :docinfo: shared-head
 :docinfodir: docinfo
 
-include::titles/index.asciidoc[]
+include::titles/js-client.asciidoc[]
