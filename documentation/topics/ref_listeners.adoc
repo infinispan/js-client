@@ -1,0 +1,31 @@
+[id='listeners_{context}']
+= Registering event listeners
+
+Event listeners notify {hr_js} clients when cache updates occur, including when entries are created, modified, removed, or expired.
+
+[NOTE]
+====
+Events for entry creation and modification notify clients about keys and values.
+Events for entry removal and expiration notify clients about keys only.
+====
+
+.Event listener registration
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/register-event-listener.js[]
+----
+
+You can tune notifications from event listeners to avoid unnecessary roundtrips with the `key-value-with-previous-converter-factory` converter.
+This allows you to, for example, find out values associated with keys within the event instead of retrieving them afterwards.
+
+.Remote event converter
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/key-value-converter.js[]
+----
+
+[TIP]
+====
+You can add custom converters to {brandname} Server.
+See the link:{doc_home}[{brandname} documentation] for information.
+====

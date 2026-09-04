@@ -1,0 +1,49 @@
+[id='admin_{context}']
+= Performing admin operations
+
+Use the `admin` property on the client to manage caches and Protobuf schemas on {brandname} Server.
+
+Admin operations let you create and remove caches, list cache names, update configuration attributes, manage index schemas, and register or remove Protobuf schemas.
+
+[NOTE]
+====
+Admin operations require the authenticated user to have administrative permissions on {brandname} Server.
+====
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/admin-operations.js[]
+----
+
+.Available admin operations
+[cols="1,3",options="header"]
+|===
+|Method |Description
+
+|`createCache(name, config, opts)`
+|Creates a cache with a JSON, XML, or YAML configuration. Use `opts.template` to create from a server template. Use `opts.flags` (e.g. `'VOLATILE'`) for non-persistent caches.
+
+|`getOrCreateCache(name, config, opts)`
+|Creates a cache if it does not already exist, otherwise returns the existing cache.
+
+|`removeCache(name)`
+|Removes a cache and all its data.
+
+|`cacheNames()`
+|Returns a list of all cache names on the server.
+
+|`updateConfigurationAttribute(name, attribute, value)`
+|Updates a mutable configuration attribute on a cache (e.g. `'memory.max-count'`).
+
+|`reindex(name)`
+|Rebuilds indexes for an indexed cache.
+
+|`updateIndexSchema(name)`
+|Updates the index schema for an indexed cache.
+
+|`registerSchema(name, schema)`
+|Registers or updates a Protobuf schema (`.proto` file) on the server.
+
+|`removeSchema(name)`
+|Removes a registered Protobuf schema from the server.
+|===

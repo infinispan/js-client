@@ -1,0 +1,85 @@
+[id='client-usage_{context}']
+= {hr_js} client examples
+
+After you install and configure your {hr_js} client, start using it by trying out some basic cache operations before moving on to more complex interactions with {brandname}.
+
+== Hello world
+
+Create a cache named "myCache" on {brandname} Server then add and retrieve an entry.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/hello-world.js[]
+----
+
+== Working with entries and retrieving cache statistics
+
+Add, retrieve, remove single entries and view statistics for the cache.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/single-entries.js[]
+----
+
+== Working with multiple cache entries
+
+Create multiple cache entries with simple recursive loops.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/multiple-entries.js[]
+----
+
+== Using Async and Await constructs
+
+Node.js provides `async` and `await` constructs that can simplify cache operations.
+
+.Single cache entries
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/await-single-entries.js[]
+----
+
+.Multiple cache entries
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/await-multiple-entries.js[]
+----
+
+== Running server-side scripts
+
+You can add custom scripts to {brandname} Server and then run them from {hr_js} clients.
+
+.Sample script
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/sample-script.js[]
+----
+
+.Script execution
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/sample-script-execute.js[]
+----
+
+== Using conditional operations
+
+The Hot Rod protocol stores metadata about values in {brandname}.
+This metadata provides a deterministic factor that lets you perform cache operations for certain conditions.
+For example, if you want to replace the value of a key if the versions do not match.
+
+Use the `getWithMetadata` method to retrieve metadata associated with the value for a key.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/conditional-operations.js[]
+----
+
+== Working with ephemeral data
+
+Use the `getWithMetadata` and `size` methods expire cache entries.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/ephemeral-data.js[]
+----

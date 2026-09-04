@@ -1,0 +1,6 @@
+:source-highlighter: highlight.js
+:highlightjs-theme: github
+:docinfo: shared-head
+:docinfodir: docinfo
+
+include::titles/index.asciidoc[]
