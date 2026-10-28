@@ -102,6 +102,10 @@ exports.getM = function(k) {
   return function(client) { return client.getWithMetadata(k); };
 };
 
+exports.peek = function(k) {
+  return function(client) { return client.peek(k); };
+};
+
 exports.putIfAbsent = function(k, v, opts) {
   return function(client) { return client.putIfAbsent(k, v, opts); };
 };

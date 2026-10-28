@@ -3,7 +3,7 @@ x-server-build: &server-build
     context: .
     dockerfile: Dockerfile.server
     args:
-      INFINISPAN_VERSION: ${INFINISPAN_VERSION:-16.1}
+      INFINISPAN_VERSION: ${INFINISPAN_VERSION:-latest}
 
 services:
   # Standalone server for local tests
