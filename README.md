@@ -103,7 +103,7 @@ the containers on exit.
 To test against a specific Infinispan version:
 
 ```bash
-INFINISPAN_VERSION=16.1.3 npm run test:docker
+INFINISPAN_VERSION=16.3.1 npm run test:docker
 ```
 
 ### Manual container lifecycle

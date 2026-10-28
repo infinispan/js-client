@@ -75,6 +75,18 @@ Use the `getWithMetadata` method to retrieve metadata associated with the value 
 include::code_examples/conditional-operations.js[]
 ----
 
+== Peeking at entries without touching them
+
+Use the `peek` method to inspect a value and its metadata without affecting the entry's expiration or eviction lifecycle. Unlike `getWithMetadata`, it does not reset the max-idle timer nor update the eviction access order, making it suitable for monitoring an entry while letting it expire naturally. Entries that have already exceeded their idle time but were not yet reaped may still be returned; evicted entries are not. Requires Infinispan server 16.3+.
+
+[source,javascript,options="nowrap"]
+----
+var meta = await client.peek('key');
+if (meta) {
+  console.log('value=' + meta.value + ' lifespan=' + meta.lifespan + ' maxIdle=' + meta.maxIdle);
+}
+----
+
 == Working with ephemeral data
 
 Use the `getWithMetadata` and `size` methods expire cache entries.

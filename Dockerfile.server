@@ -1,4 +1,4 @@
-ARG INFINISPAN_VERSION=16.1
+ARG INFINISPAN_VERSION=latest
 FROM quay.io/infinispan/server:${INFINISPAN_VERSION}
 
 # Install Nashorn script engine for server-side JavaScript execution
