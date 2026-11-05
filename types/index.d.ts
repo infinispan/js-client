@@ -14,6 +14,16 @@
  */
 export function client(uri: string, options?: Record<string, any>): Promise<any>;
 
+export var flags: {
+    FORCE_RETURN_VALUE: number;
+    DEFAULT_LIFESPAN: number;
+    DEFAULT_MAXIDLE: number;
+    SKIP_CACHE_LOAD: number;
+    SKIP_INDEXING: number;
+    SKIP_LISTENER_NOTIFICATION: number;
+    PEEK: number;
+};
+
 export function client(args: {
     /**
      * - Server host name.
@@ -250,6 +260,26 @@ export function client(args: {
              * - Max idle time of entry, defined in seconds.
              * If the entry is no transient, it would be -1.
              */
+            maxIdle: number;
+        }>;
+        /**
+         * Get the value and metadata associated with the given key without
+         * affecting its expiration or eviction lifecycle.
+         * Unlike {@link Client#getWithMetadata}, this does not reset the
+         * max-idle timer nor update the eviction access order.
+         * Requires Infinispan server 16.3+.
+         *
+         * @param k {(String|Object)} Key to retrieve.
+         * @returns {Promise.<?MetadataValue>}
+         * A promise that will be completed with the value and metadata
+         * associated with the key, or undefined if the value is not present.
+         * @memberof Client#
+         * @since 0.16.3
+         */
+        peek: (k: (string | any)) => Promise<{
+            value: (string | any);
+            version: Buffer;
+            lifespan: number;
             maxIdle: number;
         }>;
         /**

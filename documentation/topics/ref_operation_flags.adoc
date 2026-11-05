@@ -51,4 +51,8 @@ client.put('key', 'value', {
 |`SKIP_LISTENER_NOTIFICATION`
 |0x0020
 |Suppresses cache listener notifications for the operation.
+
+|`PEEK`
+|0x0040
+|Skips updating the entry's last access time on read operations, so max-idle expiration and eviction order are not affected. Used internally by the `peek()` method. Requires Infinispan server 16.3+.
 |===
