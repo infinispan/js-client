@@ -1,4 +1,30 @@
 /**
+ * Named parameter for Ickle queries.
+ */
+export interface NamedParameter {
+    /** Parameter name matching :name in the query string. */
+    name: string;
+    /** Parameter value: number, string, boolean, or number[] for vector/kNN queries. */
+    value: string | number | boolean | number[];
+}
+
+/**
+ * Query request object for Ickle queries.
+ */
+export interface QueryRequest {
+    /** Ickle query string. */
+    queryString: string;
+    /** Number of matching results to skip. */
+    startOffset?: number;
+    /** Maximum number of results to return. */
+    maxResults?: number;
+    /** Named parameter bindings for the query. */
+    namedParameters?: NamedParameter[];
+    /** Whether the query is limited to the node receiving the request. */
+    local?: boolean;
+}
+
+/**
  * Connect to an Infinispan Server using a Hot Rod URI.
  *
  * URI format: hotrod://[user:pass@]host1[:port1][,host2[:port2]][?params]
@@ -198,7 +224,7 @@ export function client(args: {
          * @memberof Client#
          * @since 1.3
          */
-        query: (q: (any)) => Promise<any[] | null>;
+        query: (q: QueryRequest) => Promise<any[] | null>;
         /**
          * Check whether the given key is present.
          *

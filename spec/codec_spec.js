@@ -340,3 +340,71 @@ describe('decodeWrappedMessage', function() {
     expect(Buffer.from(decoded.wrappedMessage)).toEqual(inner);
   });
 });
+
+describe('wrapScalar with float arrays', function() {
+  var WrappedMessage;
+  beforeAll(function() {
+    var root = protobuf.loadSync(path.join(__dirname, '..', 'lib', 'protostream', 'message-wrapping.proto'));
+    WrappedMessage = root.lookupType('org.infinispan.protostream.WrappedMessage');
+  });
+
+  it('encodes a float array with container fields', function() {
+    var bytes = codec.wrapScalar([1.0, 2.0, 3.0]);
+    var decoded = WrappedMessage.decode(bytes);
+    expect(decoded.wrappedContainerTypeName).toBe('org.infinispan.protostream.commons.FloatArray');
+    expect(decoded.wrappedContainerSize).toBe(3);
+  });
+
+  it('encodes the correct number of float values in raw bytes', function() {
+    var values = [1.5, 2.5, 3.5, 4.5];
+    var bytes = Buffer.from(codec.wrapScalar(values));
+    // Count field 2 wire type 5 tags (tag byte = 0x15)
+    var floatCount = 0;
+    var floats = [];
+    for (var i = 0; i < bytes.length; i++) {
+      if (bytes[i] === 0x15) {
+        floats.push(bytes.readFloatLE(i + 1));
+        floatCount++;
+        i += 4;
+      }
+    }
+    expect(floatCount).toBe(4);
+    expect(floats[0]).toBeCloseTo(1.5);
+    expect(floats[1]).toBeCloseTo(2.5);
+    expect(floats[2]).toBeCloseTo(3.5);
+    expect(floats[3]).toBeCloseTo(4.5);
+  });
+
+  it('encodes an empty float array', function() {
+    var bytes = codec.wrapScalar([]);
+    var decoded = WrappedMessage.decode(bytes);
+    expect(decoded.wrappedContainerTypeName).toBe('org.infinispan.protostream.commons.FloatArray');
+    expect(decoded.wrappedContainerSize).toBe(0);
+  });
+});
+
+describe('query with named parameters', function() {
+  it('encodes a kNN query with vector and scalar parameters', function() {
+    var query = {
+      queryString: 'FROM Entity e WHERE e.embedding <-> [:vec]~:k',
+      namedParameters: [
+        { name: 'vec', value: [1.0, 2.0, 3.0] },
+        { name: 'k', value: 3 }
+      ]
+    };
+    var bytebuf = { buf: Buffer.alloc(2048), offset: 0 };
+    var encoder = codec.encodeQuery(query);
+    var result = encoder(bytebuf);
+    expect(result.answer).toBeGreaterThan(0);
+  });
+
+  it('encodes a query without named parameters', function() {
+    var query = {
+      queryString: 'FROM Entity e'
+    };
+    var bytebuf = { buf: Buffer.alloc(1024), offset: 0 };
+    var encoder = codec.encodeQuery(query);
+    var result = encoder(bytebuf);
+    expect(result.answer).toBeGreaterThan(0);
+  });
+});
